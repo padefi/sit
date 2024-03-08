@@ -1,5 +1,6 @@
 <?php
 
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +15,15 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
+    return Inertia::render('Auth/Login');
+})->middleware('guest');
+
+
+Route::resource('users', \App\Http\Controllers\UserController::class);
+Route::resource('roles', \App\Http\Controllers\RoleController::class);
+
+Route::get('/home', function () {
+    return Inertia::render('Home');
+})->middleware(['auth', 'verified'])->name('home');
+
+require __DIR__ . '/auth.php';
