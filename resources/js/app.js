@@ -1,9 +1,6 @@
 import "./bootstrap";
-import "../css/app.css";
-import "primeflex/primeflex.css";
-import "primevue/resources/themes/aura-light-green/theme.css";
-import "primevue/resources/primevue.min.css"; /* Deprecated */
 import "primeicons/primeicons.css";
+import "../css/app.css";
 import "../css/flags.css";
 
 import { createApp, h } from "vue";
@@ -23,7 +20,6 @@ import Badge from "primevue/badge";
 import BadgeDirective from "primevue/badgedirective";
 import BlockUI from "primevue/blockui";
 import Button from "primevue/button";
-import ButtonGroup from "primevue/buttongroup";
 import Breadcrumb from "primevue/breadcrumb";
 import Calendar from "primevue/calendar";
 import Card from "primevue/card";
@@ -51,28 +47,23 @@ import Dropdown from "primevue/dropdown";
 import DynamicDialog from "primevue/dynamicdialog";
 import Fieldset from "primevue/fieldset";
 import FileUpload from "primevue/fileupload";
-import FloatLabel from "primevue/floatlabel";
 import FocusTrap from "primevue/focustrap";
 import Galleria from "primevue/galleria";
-import IconField from "primevue/iconfield";
-import InputIcon from "primevue/inputicon";
 import Image from "primevue/image";
 import InlineMessage from "primevue/inlinemessage";
 import Inplace from "primevue/inplace";
 import InputGroup from "primevue/inputgroup";
 import InputGroupAddon from "primevue/inputgroupaddon";
-import InputMask from "primevue/inputmask";
-import InputNumber from "primevue/inputnumber";
-import InputOtp from "primevue/inputotp";
 import InputSwitch from "primevue/inputswitch";
 import InputText from "primevue/inputtext";
+import InputMask from "primevue/inputmask";
+import InputNumber from "primevue/inputnumber";
 import Knob from "primevue/knob";
 import Listbox from "primevue/listbox";
 import MegaMenu from "primevue/megamenu";
 import Menu from "primevue/menu";
 import Menubar from "primevue/menubar";
 import Message from "primevue/message";
-import MeterGroup from "primevue/metergroup";
 import MultiSelect from "primevue/multiselect";
 import OrderList from "primevue/orderlist";
 import OrganizationChart from "primevue/organizationchart";
@@ -98,8 +89,6 @@ import SpeedDial from "primevue/speeddial";
 import SplitButton from "primevue/splitbutton";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
-import Stepper from "primevue/stepper";
-import StepperPanel from "primevue/stepperpanel";
 import Steps from "primevue/steps";
 import StyleClass from "primevue/styleclass";
 import TabMenu from "primevue/tabmenu";
@@ -120,7 +109,11 @@ import TreeSelect from "primevue/treeselect";
 import TreeTable from "primevue/treetable";
 import TriStateCheckbox from "primevue/tristatecheckbox";
 import VirtualScroller from "primevue/virtualscroller";
-import Lara from "@/presets/lara";
+import ThemeSwitcher from "./Components/ThemeSwitcher.vue";
+import Configurator from "./Components/Configurator.vue";
+import Lara from "./presets/lara";
+import Wind from "./presets/wind";
+import appState from "./plugins/appState.js";
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel";
 
@@ -138,7 +131,7 @@ createInertiaApp({
                 .use(ZiggyVue)
 
                 // PrimeVue
-                .use(PrimeVue, { ripple: true })
+                .use(PrimeVue, { ripple: true, unstyled: true, pt: Lara })
                 .use(ConfirmationService)
                 .use(ToastService)
                 .use(DialogService)
@@ -159,7 +152,6 @@ createInertiaApp({
                 .component("BlockUI", BlockUI)
                 .component("Breadcrumb", Breadcrumb)
                 .component("Button", Button)
-                .component("ButtonGroup", ButtonGroup)
                 .component("Calendar", Calendar)
                 .component("Card", Card)
                 .component("Carousel", Carousel)
@@ -184,18 +176,14 @@ createInertiaApp({
                 .component("DynamicDialog", DynamicDialog)
                 .component("Fieldset", Fieldset)
                 .component("FileUpload", FileUpload)
-                .component("FloatLabel", FloatLabel)
                 .component("Galleria", Galleria)
-                .component("IconField", IconField)
                 .component("Image", Image)
                 .component("InlineMessage", InlineMessage)
                 .component("Inplace", Inplace)
                 .component("InputGroup", InputGroup)
                 .component("InputGroupAddon", InputGroupAddon)
-                .component("InputIcon", InputIcon)
                 .component("InputMask", InputMask)
                 .component("InputNumber", InputNumber)
-                .component("InputOtp", InputOtp)
                 .component("InputSwitch", InputSwitch)
                 .component("InputText", InputText)
                 .component("Knob", Knob)
@@ -204,7 +192,6 @@ createInertiaApp({
                 .component("Menu", Menu)
                 .component("Menubar", Menubar)
                 .component("Message", Message)
-                .component("MeterGroup", MeterGroup)
                 .component("MultiSelect", MultiSelect)
                 .component("OrderList", OrderList)
                 .component("OrganizationChart", OrganizationChart)
@@ -229,8 +216,6 @@ createInertiaApp({
                 .component("SplitButton", SplitButton)
                 .component("Splitter", Splitter)
                 .component("SplitterPanel", SplitterPanel)
-                .component("Stepper", Stepper)
-                .component("StepperPanel", StepperPanel)
                 .component("Steps", Steps)
                 .component("TabMenu", TabMenu)
                 .component("TabView", TabView)
@@ -248,6 +233,9 @@ createInertiaApp({
                 .component("TreeTable", TreeTable)
                 .component("TriStateCheckbox", TriStateCheckbox)
                 .component("VirtualScroller", VirtualScroller)
+                .component("ThemeSwitcher", ThemeSwitcher)
+                .component("Configurator", Configurator)
+                .use(appState)
 
                 .mount(el)
         );

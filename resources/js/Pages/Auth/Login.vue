@@ -50,7 +50,7 @@ const submit = () => {
     <GuestLayout>
 
         <Head title="Log in" />
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
+        <div v-if="status" class="mb-4 font-medium text-base text-green-600">
             {{ status }}
         </div>
 
@@ -75,25 +75,26 @@ const submit = () => {
                             v-model="form.password" :blurFunction="blurInput"
                             :colorInput="form.errors.password ? 'alert-input' : 'normal-input'"
                             :colorLabel="form.errors.password ? 'alert-label' : 'normal-label'" />
-                        <EyeIcon class="absolute right-0.5 mt-2 w-5 h-5 cursor-pointer text-gray-400"
+                        <EyeIcon class="absolute right-0.5 mt-2 h-6 cursor-pointer text-gray-400"
                             @click="togglePassword" v-if="!visible" />
-                        <EyeSlashIcon class="absolute right-0.5 mt-2 w-5 h-5 cursor-pointer text-gray-400"
+                        <EyeSlashIcon class="absolute right-0.5 mt-2 h-6 cursor-pointer text-gray-400"
                             @click="togglePassword" v-if="visible" />
                     </div>
                     <InputError class="mt-2" :message="form.errors.password" />
                 </div>
 
                 <div class="flex items-center justify-end my-4">
-                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">Log
-                        in</PrimaryButton>
+                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                        Log in
+                    </PrimaryButton>
                 </div>
             </form>
 
             <hr class="relative !my-5 w-[28rem] left-1/2 -translate-x-1/2 border-gray-300">
 
             <button
-                class="transition duration-200 !m-0 px-2 py-2 cursor-pointer font-normal text-sm rounded-lg text-gray-500 hover:border-2 hover:border-dashed hover:border-blue-300">
-                <LockClosedIcon class="w-5 h-5 inline-block" />
+                class="transition duration-200 !m-0 px-2 py-2 cursor-pointer font-normal text-base rounded-lg text-gray-500 hover:border-2 hover:border-dashed hover:border-blue-300">
+                <LockClosedIcon class="h-6 inline-block" />
                 <span class="inline-block ml-1">¿Ha olvidado su contraseña?</span>
             </button>
         </div>
