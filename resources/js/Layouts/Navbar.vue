@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from "vue";
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { usePermissions } from '@/composables/permissions'
+
+const { user, username, hasRole, hasPermission } = usePermissions();
 
 const items = ref([
     {
@@ -58,6 +61,35 @@ const items = ref([
         icon: 'pi pi-envelope',
         badge: 3
     },
+    {
+        label: user(),
+        icon: 'pi pi-user',
+        items: [
+            {
+                label: 'Logout',
+                icon: 'pi pi-sign-out',
+                method: 'post',
+                route: 'logout',
+            },
+        ]
+
+    },
+]);
+
+const userItems = ref([
+    {
+        label: user(),
+        icon: 'pi pi-user',
+        items: [
+            {
+                label: 'Logout',
+                icon: 'pi pi-sign-out',
+                method: 'post',
+                route: 'logout',
+            },
+        ]
+
+    },
 ]);
 </script>
 <template>
@@ -79,15 +111,6 @@ const items = ref([
                 <i v-if="hasSubmenu"
                     :class="['pi pi-angle-down text-primary-500 dark:text-primary-400-500 dark:text-primary-400', { 'pi-angle-down ml-2': root, 'pi-angle-right ml-auto': !root }]"></i>
             </a>
-        </template>
-        <template #end>
-            <div class="flex items-center gap-2">
-                <Link v-ripple :href="route('logout')" method="post" as="button"
-                    class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400">
-                <span class="pi pi-sign-out"></span>
-                <span class="ml-2">Logout</span>
-                </Link>
-            </div>
         </template>
     </Menubar>
 </template>
