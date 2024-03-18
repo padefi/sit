@@ -13,63 +13,20 @@ const items = ref([
         route: 'home'
     },
     {
-        label: 'Features',
-        icon: 'pi pi-star'
-    },
-    {
-        label: 'Projects',
-        icon: 'pi pi-search',
-        items: [
-            {
-                label: 'Core',
-                icon: 'pi pi-bolt',
-                shortcut: '⌘+S'
-            },
-            {
-                label: 'Blocks',
-                icon: 'pi pi-server',
-                shortcut: '⌘+B'
-            },
-            {
-                label: 'UI Kit',
-                icon: 'pi pi-pencil',
-                shortcut: '⌘+U'
-            },
-            {
-                separator: true
-            },
-            {
-                label: 'Templates',
-                icon: 'pi pi-palette',
-                items: [
-                    {
-                        label: 'Apollo',
-                        icon: 'pi pi-palette',
-                        badge: 2
-                    },
-                    {
-                        label: 'Ultima',
-                        icon: 'pi pi-palette',
-                        badge: 3
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        label: 'Contact',
-        icon: 'pi pi-envelope',
-        badge: 3
+        label: 'Usuarios',
+        icon: 'pi pi-users',
+        method: 'get',
+        route: 'users.index'
     },
     {
         label: user(),
         icon: 'pi pi-user',
         items: [
             {
-                label: 'Logout',
-                icon: 'pi pi-sign-out',
-                method: 'post',
-                route: 'logout',
+                label: 'Perfil',
+                icon: 'pi pi-user-edit',
+                /* method: 'post',
+                route: 'logout', */
             },
         ]
 
@@ -78,17 +35,10 @@ const items = ref([
 
 const userItems = ref([
     {
-        label: user(),
-        icon: 'pi pi-user',
-        items: [
-            {
-                label: 'Logout',
-                icon: 'pi pi-sign-out',
-                method: 'post',
-                route: 'logout',
-            },
-        ]
-
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        method: 'post',
+        route: 'logout',
     },
 ]);
 </script>
@@ -111,6 +61,13 @@ const userItems = ref([
                 <i v-if="hasSubmenu"
                     :class="['pi pi-angle-down text-primary-500 dark:text-primary-400-500 dark:text-primary-400', { 'pi-angle-down ml-2': root, 'pi-angle-right ml-auto': !root }]"></i>
             </a>
+        </template>
+        <template #end>
+            <Link v-for="userItem in userItems" v-ripple :href="route(userItem.route)" :method="userItem.method" as="button"
+                class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400">
+            <span :class="userItem.icon"></span>
+            <span class="ml-2">{{ userItem.label }}</span>
+            </Link>
         </template>
     </Menubar>
 </template>

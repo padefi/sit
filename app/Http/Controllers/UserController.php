@@ -20,7 +20,7 @@ class UserController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): Response {
-        return Inertia::render('Admin/Users/UserIndex', [
+        return Inertia::render('Users/UserIndex', [
             'users' => UserResource::collection(User::all()),
             'roles' => RoleResource::collection(Role::all()),
             'permissions' => PermissionResource::collection(Permission::all()),
