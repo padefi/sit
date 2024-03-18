@@ -131,7 +131,68 @@ createInertiaApp({
                 .use(ZiggyVue)
 
                 // PrimeVue
-                .use(PrimeVue, { ripple: true, unstyled: true, pt: Lara })
+                .use(PrimeVue, {
+                    ripple: true,
+                    unstyled: true,
+                    pt: Lara,
+                    locale: {
+                        accept: "Aceptar",
+                        reject: "Rechazar",
+                        emptyMessage: "No hay opciones para mostrar",
+                        ariaFirstPageLabel: "Primera",
+                        ariaLastPageLabel: "Ultima",
+                        ariaNextPageLabel: "Siguiente",
+                        ariaPreviousPageLabel: "Anterior",
+                        close: "Cerrar",
+                        cancel: "Cancelar",
+                        dayNames: [
+                            "Domingo",
+                            "Lunes",
+                            "Martes",
+                            "Miercoles",
+                            "Jueves",
+                            "Viernes",
+                            "Sabado",
+                        ],
+                        dayNamesShort: [
+                            "Dom",
+                            "Lun",
+                            "Mar",
+                            "Mie",
+                            "Jue",
+                            "Vie",
+                            "Sab",
+                        ],
+                        monthNames: [
+                            "Enero",
+                            "Febrero",
+                            "Marzo",
+                            "Abril",
+                            "Mayo",
+                            "Junio",
+                            "Julio",
+                            "Agosto",
+                            "Septiembre",
+                            "Octubre",
+                            "Noviembre",
+                            "Diciembre",
+                        ],
+                        monthNamesShort: [
+                            "Ene",
+                            "Feb",
+                            "Mar",
+                            "Abr",
+                            "May",
+                            "Jun",
+                            "Jul",
+                            "Ago",
+                            "Sep",
+                            "Oct",
+                            "Nov",
+                            "Dic",
+                        ],
+                    },
+                })
                 .use(ConfirmationService)
                 .use(ToastService)
                 .use(DialogService)

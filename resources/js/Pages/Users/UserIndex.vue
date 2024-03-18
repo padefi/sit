@@ -10,29 +10,38 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    roles: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
-const getRoleName = (user) => {
-  return user.roles && user.roles.length > 0 ? user.roles[0] : 'SIN ROL';
-};
+const rolesSelect = ref([]); 
 
-const getStatusName = (user) => {
-  return user.is_active ? 'Activo' : 'Inactivo';
-};
+onMounted(() => {
+    props.users.map((user) => {
+        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+    });
 
-console.log(props.users);
+    props.users.map((user) => {
+        user.roles = user.roles[0]
+    })
+
+    rolesSelect.value = props.roles.map((role) => {
+        return {
+            label: role.name,
+            value: role.name
+        }
+    })
+});
 
 const products = ref();
 const editingRows = ref([]);
-const statuses = ref([
-    { label: 'In Stock', value: 'INSTOCK' },
-    { label: 'Low Stock', value: 'LOWSTOCK' },
-    { label: 'Out of Stock', value: 'OUTOFSTOCK' }
-]);
 
-onMounted(() => {
-    // ProductService.getProductsMini().then((data) => (products.value = data));
-});
+const statuses = ref([
+    { label: 'ACTIVO', value: 'ACTIVO' },
+    { label: 'INACTIVO', value: 'INACTIVO' }
+]);
 
 const onRowEditSave = (event) => {
     let { newData, index } = event;
@@ -41,100 +50,78 @@ const onRowEditSave = (event) => {
 };
 const getStatusLabel = (status) => {
     switch (status) {
-        case 'INSTOCK':
+        case 'ACTIVO':
             return 'success';
 
-        case 'LOWSTOCK':
-            return 'warning';
-
-        case 'OUTOFSTOCK':
+        case 'INACTIVO':
             return 'danger';
 
         default:
             return null;
     }
 };
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-}
 </script>
 
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5">
+        <Card class="mt-5 uppercase">
             <template #title>Panel de usuarios</template>
             <template #content>
                 <DataTable v-model:editingRows="editingRows" :value="users" editMode="row" dataKey="id"
                     @row-edit-save="onRowEditSave" :pt="{
                     table: { style: 'min-width: 50rem' }
                 }">
-                    <Column field="surname" header="Apellido">
+                    <Column field="surname" header="Apellido" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText v-model="data[field]" />
                         </template>
                     </Column>
-                    <Column field="name" header="Nombre">
+                    <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText v-model="data[field]" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email">
+                    <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
                             <InputText v-model="data[field]" />
                         </template>
                     </Column>
-                    <Column field="username" header="Usuario">
+                    <Column field="username" header="Usuario" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText v-model="data[field]" />
                         </template>
                     </Column>
-                    <Column field="roles" header="Rol">                        
+                    <Column field="roles" header="Rol" style="width: 10%;">
                         <template #body="slotProps">
-                            {{ getRoleName(slotProps.data) }}
+                            <Tag :value="slotProps.data.roles"
+                                class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                         </template>
                         <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
-                        </template>
-                    </Column>
-                    <Column field="is_active" header="Estado">
-                        <template #body="slotProps">
-                            {{ getStatusName(slotProps.data) }}
-                        </template>
-                        <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
-                        </template>
-                    </Column><!-- 
-                    <Column field="role" header="Rol">
-                        <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
-                                placeholder="Select a Status">
+                            <Dropdown v-model="data[field]" :options="rolesSelect" optionLabel="label"
+                                optionValue="value" placeholder="Seleccione un rol">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
-                                        :severity="getStatusLabel(slotProps.option.value)" />
+                                        class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                                 </template>
                             </Dropdown>
                         </template>
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.inventoryStatus"
-                                :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
-                        </template>
                     </Column>
-                    <Column field="is_active" header="Status">
+                    <Column field="is_active" header="Estado" style="width: 10%;">
+                        <template #body="slotProps">
+                            <Tag :value="slotProps.data.is_active" class="!text-sm uppercase"
+                                :severity="getStatusLabel(slotProps.data.is_active)" />
+                        </template>
                         <template #editor="{ data, field }">
                             <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
                                 placeholder="Seleccione un estado">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
-                                        :severity="getStatusLabel(slotProps.option.value)" />
+                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
                         </template>
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.inventoryStatus"
-                                :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
-                        </template>
-                    </Column> -->
-                    <Column header="Acciones" :rowEditor="true" style="width: 10%; min-width: 8rem"
+                    </Column>
+                    <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem"
                         bodyStyle="text-align:center">
                     </Column>
                 </DataTable>
