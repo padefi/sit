@@ -9,4 +9,5 @@ import Navbar from './Navbar.vue';
     <div>
         <slot />
     </div>
+    <Toast />
 </template>

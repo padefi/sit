@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-// import { ProductService } from '@/service/ProductService';
-
-// defineProps(['users'])
+import InputError from '@/Components/InputError.vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { useToast } from "primevue/usetoast";
+import { usePermissions } from '@/composables/permissions'
 
 const props = defineProps({
     users: {
@@ -16,38 +17,26 @@ const props = defineProps({
     },
 });
 
-const rolesSelect = ref([]); 
-
-onMounted(() => {
-    props.users.map((user) => {
-        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
-    });
-
-    props.users.map((user) => {
-        user.roles = user.roles[0]
-    })
-
-    rolesSelect.value = props.roles.map((role) => {
-        return {
-            label: role.name,
-            value: role.name
-        }
-    })
-});
-
-const products = ref();
+const { username } = usePermissions();
+const page = usePage();
+const toast = useToast();
+const rolesSelect = ref([]);
 const editingRows = ref([]);
+const rules = 'Debe completar el campo'
+
+const validateEmail = value => {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
+        return true
+    } else {
+        return false
+    }
+}
 
 const statuses = ref([
     { label: 'ACTIVO', value: 'ACTIVO' },
     { label: 'INACTIVO', value: 'INACTIVO' }
 ]);
 
-const onRowEditSave = (event) => {
-    let { newData, index } = event;
-
-    products.value[index] = newData;
-};
 const getStatusLabel = (status) => {
     switch (status) {
         case 'ACTIVO':
@@ -60,6 +49,68 @@ const getStatusLabel = (status) => {
             return null;
     }
 };
+
+const onRowEditSave = (event) => {
+    let { newData } = event;
+
+    if (!newData.surname || !newData.name || !validateEmail(newData.email)) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+        return;
+    }
+
+    const form = useForm({
+        surname: newData.surname,
+        name: newData.name,
+        email: newData.email,
+        role: newData.role,
+        is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
+    })
+
+    form.put(route("users.update", newData.id));
+};
+
+onMounted(() => {
+    props.users.map((user) => {
+        user.role = user.role[0]
+        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+    });
+
+    rolesSelect.value = props.roles.map((role) => {
+        return {
+            label: role.name,
+            value: role.name
+        }
+    })
+});
+
+watch(() => page.props.flash, (next) => {
+    toast.add({
+        severity: next.info.type,
+        detail: next.info.message,
+        life: 3000,
+    });
+
+    props.users.map((user) => {
+        user.role = user.role[0]
+        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+    });
+
+    rolesSelect.value = props.roles.map((role) => {
+        return {
+            label: role.name,
+            value: role.name
+        }
+    })
+});
+
+const funcion = (data) => {
+    console.log(data);
+
+}
 </script>
 
 <template>
@@ -70,34 +121,36 @@ const getStatusLabel = (status) => {
                 <DataTable v-model:editingRows="editingRows" :value="users" editMode="row" dataKey="id"
                     @row-edit-save="onRowEditSave" :pt="{
                     table: { style: 'min-width: 50rem' }
-                }">
+                }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" ref="dataTable">
                     <Column field="surname" header="Apellido" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]" />
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]" />
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || !validateEmail(data[field])" />
+                            <InputError
+                                :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
                     <Column field="username" header="Usuario" style="width: 10%;">
-                        <template #editor="{ data, field }">
-                            <InputText v-model="data[field]" />
-                        </template>
                     </Column>
-                    <Column field="roles" header="Rol" style="width: 10%;">
+                    <Column field="role" header="Rol" style="width: 10%;">
                         <template #body="slotProps">
-                            <Tag :value="slotProps.data.roles"
+                            <Tag :value="slotProps.data.role"
                                 class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="rolesSelect" optionLabel="label"
+                            <Dropdown v-model="data[field]" :options="rolesSelect" filter optionLabel="label"
                                 optionValue="value" placeholder="Seleccione un rol">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
@@ -121,8 +174,8 @@ const getStatusLabel = (status) => {
                             </Dropdown>
                         </template>
                     </Column>
-                    <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem"
-                        bodyStyle="text-align:center">
+                    <Column header="Acciones" style="width: 5%; min-width: 8rem" bodyStyle="text-align:center"
+                        :rowEditor="true">
                     </Column>
                 </DataTable>
             </template>

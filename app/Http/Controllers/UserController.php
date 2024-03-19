@@ -60,7 +60,7 @@ class UserController extends Controller {
         ])->assignRole($request->role);
 
         return Redirect::back()->with([
-            'message' => [
+            'info' => [
                 'type' => 'success',
                 'message' => 'Usuario creado exitosamente.'
             ],
@@ -90,7 +90,7 @@ class UserController extends Controller {
 
         if ($userEmail) {
             return Redirect::back()->with([
-                'message' => [
+                'info' => [
                     'type' => 'error',
                     'message' => 'El email ya se encuentra registrado.'
                 ],
@@ -108,7 +108,7 @@ class UserController extends Controller {
         $user->syncRoles($request->role);
 
         return Redirect::back()->with([
-            'message' => [
+            'info' => [
                 'type' => 'success',
                 'message' => 'Usuario modificado exitosamente.'
             ],

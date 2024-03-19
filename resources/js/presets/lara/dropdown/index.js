@@ -5,8 +5,15 @@ export default {
             'inline-flex',
             'relative',
 
+            // Borders
+            'border-0 border-b appearance-none',
+            'focus:outline-none focus:ring-0 peer',
+
+            // Spacing
+            'top-[0.1rem]',
+
             // Shape
-            'rounded-md',
+            // 'rounded-md',
 
             // Color and Background
             'bg-surface-0 dark:bg-surface-900',
@@ -22,7 +29,7 @@ export default {
 
             // States
             { 'hover:border-primary-500 dark:hover:border-primary-300': !props.invalid },
-            { 'outline-none outline-offset-0 ring ring-primary-400/50 dark:ring-primary-300/50': state.focused },
+            // { 'outline-none outline-offset-0 ring ring-primary-400/50 dark:ring-primary-300/50': state.focused },
 
             // Misc
             'cursor-pointer',
@@ -142,7 +149,7 @@ export default {
             //States
             { 'hover:bg-surface-100 dark:hover:bg-surface-600/80': !context.focused && !context.selected },
             { 'hover:text-surface-700 hover:bg-surface-100 dark:hover:text-white dark:hover:bg-surface-600/80': context.focused && !context.selected },
-            'focus-visible:outline-none focus-visible:outline-offset-0 focus-visible:ring focus-visible:ring-inset focus-visible:ring-primary-400/50 dark:focus-visible:ring-primary-300/50',
+            // 'focus-visible:outline-none focus-visible:outline-offset-0 focus-visible:ring focus-visible:ring-inset focus-visible:ring-primary-400/50 dark:focus-visible:ring-primary-300/50',
 
             // Transitions
             'transition-shadow',
@@ -198,7 +205,7 @@ export default {
 
             // Color
             'text-surface-700 dark:text-white/80',
-            'bg-surface-100 dark:bg-surface-800',
+            'bg-surface-0 dark:bg-surface-800',
             'border-surface-300 dark:border-surface-700'
         ]
     },
@@ -210,6 +217,11 @@ export default {
             // Font
             'font-sans',
             'leading-none',
+            'uppercase',
+
+            // Borders
+            'border-0 border-b appearance-none',
+            'focus:outline-none focus:ring-0 peer',
 
             // Sizing
             'pr-7 py-3 px-3',
@@ -219,11 +231,12 @@ export default {
             //Color
             'text-surface-700 dark:text-white/80',
             'bg-surface-0 dark:bg-surface-900',
-            'border-surface-200 dark:border-surface-700',
+            'border-gray-500 dark:border-surface-700',
+
 
             // Shape
             'border',
-            'rounded-lg',
+            // 'rounded-lg',
             'appearance-none',
 
             // Transitions
@@ -232,6 +245,7 @@ export default {
 
             // States
             'hover:border-primary-500 dark:hover:border-primary-300',
+            'focus:border-gray-500 dark:focus:border-primary-400',            
             'focus:ring focus:outline-none focus:outline-offset-0',
             'focus:ring-primary-400/50 dark:focus:ring-primary-300/50',
 

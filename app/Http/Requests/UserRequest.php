@@ -22,7 +22,7 @@ class UserRequest extends FormRequest {
             'surname' => ['required', 'string', 'max:50'],
             'name' => ['required', 'string', 'max:50'],
             'email' => ['required', 'string', 'max:100'],
-            'role' => ['required', 'numeric', 'exists:roles,id'],
+            'role' => ['required', 'string', 'exists:roles,name'],
             'is_active' => ['boolean'],
         ];
     }
