@@ -23,6 +23,8 @@ const toast = useToast();
 const rolesSelect = ref([]);
 const editingRows = ref([]);
 const rules = 'Debe completar el campo'
+const editing = ref(false);
+const invalid = ref(false);
 
 const validateEmail = value => {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
@@ -107,9 +109,25 @@ watch(() => page.props.flash, (next) => {
     })
 });
 
-const funcion = (data) => {
-    console.log(data);
+const disabledEditButtons = (callback, event) => {
+    editing.value = true;
+    callback(event);
+}
+const enabledEditButtons = (callback, event) => {
+    editing.value = false;
+    callback(event);
+}
+const validate = (event, saveCallback, data, field) => {
+    if (!field.surname || !field.name || !validateEmail(field.email)) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+        return;
+    }
 
+    saveCallback(event);
 }
 </script>
 
@@ -121,7 +139,7 @@ const funcion = (data) => {
                 <DataTable v-model:editingRows="editingRows" :value="users" editMode="row" dataKey="id"
                     @row-edit-save="onRowEditSave" :pt="{
                     table: { style: 'min-width: 50rem' }
-                }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]" ref="dataTable">
+                }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]">
                     <Column field="surname" header="Apellido" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]" />
@@ -174,8 +192,24 @@ const funcion = (data) => {
                             </Dropdown>
                         </template>
                     </Column>
-                    <Column header="Acciones" style="width: 5%; min-width: 8rem" bodyStyle="text-align:center"
-                        :rowEditor="true">
+                    <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
+                        <template #body="{ editorInitCallback }">
+                            <div class="space-x-4 flex pl-6">
+                                <button v-tooltip="'Editar'"><i
+                                        class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                        @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
+                                <button v-tooltip="'Ver permisos'"><i
+                                        class="pi pi-eye text-cyan-500 text-lg font-extrabold"></i></button>
+                            </div>
+                        </template>
+                        <template #editor="{ data, field, editorSaveCallback, editorCancelCallback }">
+                            <div class="space-x-4 flex pl-7">
+                                <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
+                                        @click="validate($event, editorSaveCallback, editorCancelCallback, data, field)"></i></button>
+                                <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
+                                        @click="enabledEditButtons(editorCancelCallback, $event)"></i></button>
+                            </div>
+                        </template>
                     </Column>
                 </DataTable>
             </template>
