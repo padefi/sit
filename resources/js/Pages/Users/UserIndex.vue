@@ -4,7 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
-import { usePermissions } from '@/composables/permissions'
+import { usePermissions } from '@/composables/permissions';
+import { useConfirm } from "primevue/useconfirm";
 
 const props = defineProps({
     users: {
@@ -25,6 +26,7 @@ const editingRows = ref([]);
 const rules = 'Debe completar el campo'
 const editing = ref(false);
 const invalid = ref(false);
+const confirm = useConfirm();
 
 const validateEmail = value => {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
@@ -72,7 +74,14 @@ const onRowEditSave = (event) => {
         is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
     })
 
+    if (newData.condition === 'newUser') {
+        form.post(route("users.store", newData.id));
+        editing.value = false;
+        return;
+    }
+
     form.put(route("users.update", newData.id));
+    editing.value = false;
 };
 
 onMounted(() => {
@@ -109,14 +118,54 @@ watch(() => page.props.flash, (next) => {
     })
 });
 
+const addNewUser = (event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de agregar un nuevo usuario.',
+            life: 3000,
+        });
+        return;
+    }
+
+    const newUser = {
+        id: props.users.length + 1,
+        surname: '',
+        name: '',
+        email: '',
+        username: '',
+        role: '',
+        is_active: '',
+        condition: 'newUser',
+    };
+
+    props.users.unshift(newUser);
+    editing.value = true;
+    editingRows.value = [newUser];
+};
+
 const disabledEditButtons = (callback, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de agregar un modificar un usuario.',
+            life: 3000,
+        });
+        return;
+    }
+
     editing.value = true;
     callback(event);
 }
-const enabledEditButtons = (callback, event) => {
+const enabledEditButtons = (callback, event, data) => {
+    if(data.condition === 'newUser') {
+        props.users.shift();
+    }
+
     editing.value = false;
     callback(event);
 }
+
 const validate = (event, saveCallback, data, field) => {
     if (!field.surname || !field.name || !validateEmail(field.email)) {
         toast.add({
@@ -127,35 +176,67 @@ const validate = (event, saveCallback, data, field) => {
         return;
     }
 
-    saveCallback(event);
+    if (field.condition === 'newUser') {
+        confirm.require({
+            target: event.currentTarget,
+            message: '¿Está seguro de agrear el usuario?',
+            rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+            accept: () => {
+                saveCallback(event);
+            },
+        });
+
+        return;
+    }
+
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de modificar el usuario?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            saveCallback(event);
+        },
+    });
 }
 </script>
 
 <template>
     <AuthenticatedLayout>
         <Card class="mt-5 uppercase">
-            <template #title>Panel de usuarios</template>
+            <template #title>
+                <div class="flex justify-between items-center mx-4">
+                    <div class="align-left">
+                        <h3 class="uppercase">Panel de usuarios</h3>
+                    </div>
+                    <div class="align-right">
+                        <Button label="Agregar usuario" severity="info" outlined icon="pi pi-user-plus" size="large"
+                            @click="addNewUser($event)" />
+                    </div>
+                </div>
+            </template>
             <template #content>
                 <DataTable v-model:editingRows="editingRows" :value="users" editMode="row" dataKey="id"
                     @row-edit-save="onRowEditSave" :pt="{
-                    table: { style: 'min-width: 50rem' }
-                }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]">
+                                table: { style: 'min-width: 50rem' }
+                            }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]">
                     <Column field="surname" header="Apellido" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]" />
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
+                                placeholder="Apellido" />
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]" />
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
+                                placeholder="Nombre" />
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]"
-                                :invalid="!data[field] || !validateEmail(data[field])" />
+                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email" />
                             <InputError
                                 :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
@@ -204,10 +285,11 @@ const validate = (event, saveCallback, data, field) => {
                         </template>
                         <template #editor="{ data, field, editorSaveCallback, editorCancelCallback }">
                             <div class="space-x-4 flex pl-7">
+                                <ConfirmPopup></ConfirmPopup>
                                 <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
                                         @click="validate($event, editorSaveCallback, editorCancelCallback, data, field)"></i></button>
                                 <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
-                                        @click="enabledEditButtons(editorCancelCallback, $event)"></i></button>
+                                        @click="enabledEditButtons(editorCancelCallback, $event, data, field)"></i></button>
                             </div>
                         </template>
                     </Column>

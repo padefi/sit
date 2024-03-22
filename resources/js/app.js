@@ -137,7 +137,7 @@ createInertiaApp({
                     pt: Lara,
                     locale: {
                         accept: "Aceptar",
-                        reject: "Rechazar",
+                        reject: "Cancelar",
                         emptyMessage: "No hay opciones para mostrar",
                         ariaFirstPageLabel: "Primera",
                         ariaLastPageLabel: "Ultima",

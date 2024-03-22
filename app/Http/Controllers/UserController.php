@@ -62,7 +62,7 @@ class UserController extends Controller {
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
-                'message' => 'Usuario creado exitosamente.'
+                'message' => 'Usuario agregado exitosamente.'
             ],
             'success' => true,
         ]);
