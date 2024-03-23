@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Permission;
@@ -27,22 +28,12 @@ class UserController extends Controller {
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(UserRequest $request) {
         $userEmail = User::where('email', $request->email)->first();
 
         if ($userEmail) {
             return Redirect::back()->with([
-                'message' => [
+                'info' => [
                     'type' => 'error',
                     'message' => 'El email ya se encuentra registrado.'
                 ],
@@ -68,33 +59,12 @@ class UserController extends Controller {
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id) {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id) {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UserRequest $request, User $user) {
         $userEmail = User::where('email', $request->email)->whereNot('id', $user->id)->first();
 
         if ($userEmail) {
-            return Redirect::back()->with([
-                'info' => [
-                    'type' => 'error',
-                    'message' => 'El email ya se encuentra registrado.'
-                ],
-                'success' => false,
+            throw ValidationException::withMessages([
+                'message' => trans('El email ya se encuentra registrado.')
             ]);
         }
 
@@ -114,12 +84,5 @@ class UserController extends Controller {
             ],
             'success' => true,
         ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id) {
-        //
     }
 }

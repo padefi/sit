@@ -1,4 +1,7 @@
 <script setup>
+import { toastService } from '@/composables/toastService'
+
+toastService();
 </script>
 
 <template>
@@ -7,4 +10,5 @@
             <slot />
         </div>
     </div>
+    <Toast />
 </template>

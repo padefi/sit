@@ -40,6 +40,7 @@ const togglePassword = () => {
 }
 
 const submit = () => {
+
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
     });
@@ -84,7 +85,7 @@ const submit = () => {
                 </div>
 
                 <div class="flex items-center justify-end my-4">
-                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing || !form.username || !form.password">
                         Log in
                     </PrimaryButton>
                 </div>

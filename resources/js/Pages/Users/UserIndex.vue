@@ -6,6 +6,9 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
+import { toastService } from '@/composables/toastService'
+
+toastService();
 
 const props = defineProps({
     users: {
@@ -73,56 +76,34 @@ const onRowEditSave = (event) => {
         role: newData.role,
         is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
     })
+    console.log(editingRows);
 
     if (newData.condition === 'newUser') {
-        form.post(route("users.store", newData.id));
-        editing.value = false;
+        form.post(route("users.store", newData.id), {
+            onSuccess: () => editing.value = false,
+            onError: () => {
+                editing.value = true,
+                    editingRows.value = [newData];
+            }
+        });
+
         return;
     }
 
-    form.put(route("users.update", newData.id));
-    editing.value = false;
+    form.put(route("users.update", newData.id), {
+        onSuccess: () => editing.value = false,
+        onError: () => {
+            editing.value = true,
+                editingRows.value = [newData];
+        }
+    });
 };
 
-onMounted(() => {
-    props.users.map((user) => {
-        user.role = user.role[0]
-        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
-    });
-
-    rolesSelect.value = props.roles.map((role) => {
-        return {
-            label: role.name,
-            value: role.name
-        }
-    })
-});
-
-watch(() => page.props.flash, (next) => {
-    toast.add({
-        severity: next.info.type,
-        detail: next.info.message,
-        life: 3000,
-    });
-
-    props.users.map((user) => {
-        user.role = user.role[0]
-        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
-    });
-
-    rolesSelect.value = props.roles.map((role) => {
-        return {
-            label: role.name,
-            value: role.name
-        }
-    })
-});
-
-const addNewUser = (event) => {
+const addNewUser = () => {
     if (editing.value) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de agregar un nuevo usuario.',
+            detail: 'Debe guardar los cambios antes de agregar un usuario.',
             life: 3000,
         });
         return;
@@ -148,17 +129,18 @@ const disabledEditButtons = (callback, event) => {
     if (editing.value) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de agregar un modificar un usuario.',
+            detail: 'Debe guardar los cambios antes de modificar un usuario.',
             life: 3000,
         });
         return;
     }
+    console.log(editingRows);
 
     editing.value = true;
     callback(event);
 }
 const enabledEditButtons = (callback, event, data) => {
-    if(data.condition === 'newUser') {
+    if (data.condition === 'newUser') {
         props.users.shift();
     }
 
@@ -166,8 +148,8 @@ const enabledEditButtons = (callback, event, data) => {
     callback(event);
 }
 
-const validate = (event, saveCallback, data, field) => {
-    if (!field.surname || !field.name || !validateEmail(field.email)) {
+const validate = (event, saveCallback, data) => {
+    if (!data.surname || !data.name || !validateEmail(data.email)) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -176,7 +158,7 @@ const validate = (event, saveCallback, data, field) => {
         return;
     }
 
-    if (field.condition === 'newUser') {
+    if (data.condition === 'newUser') {
         confirm.require({
             target: event.currentTarget,
             message: '¿Está seguro de agrear el usuario?',
@@ -198,6 +180,34 @@ const validate = (event, saveCallback, data, field) => {
         },
     });
 }
+
+onMounted(() => {
+    props.users.map((user) => {
+        user.role = user.role[0]
+        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+    });
+
+    rolesSelect.value = props.roles.map((role) => {
+        return {
+            label: role.name,
+            value: role.name
+        }
+    })
+});
+
+watch(() => page.props.flash, (next) => {
+    props.users.map((user) => {
+        user.role = user.role[0]
+        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+    });
+
+    rolesSelect.value = props.roles.map((role) => {
+        return {
+            label: role.name,
+            value: role.name
+        }
+    })
+});
 </script>
 
 <template>
@@ -283,13 +293,13 @@ const validate = (event, saveCallback, data, field) => {
                                         class="pi pi-eye text-cyan-500 text-lg font-extrabold"></i></button>
                             </div>
                         </template>
-                        <template #editor="{ data, field, editorSaveCallback, editorCancelCallback }">
+                        <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
                             <div class="space-x-4 flex pl-7">
                                 <ConfirmPopup></ConfirmPopup>
                                 <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
-                                        @click="validate($event, editorSaveCallback, editorCancelCallback, data, field)"></i></button>
+                                        @click="validate($event, editorSaveCallback, data)"></i></button>
                                 <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
-                                        @click="enabledEditButtons(editorCancelCallback, $event, data, field)"></i></button>
+                                        @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
                             </div>
                         </template>
                     </Column>

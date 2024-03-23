@@ -51,7 +51,7 @@ class LoginRequest extends FormRequest {
 
         if ($user) {
             throw ValidationException::withMessages([
-                'message' => trans('Usuario bloqueado.'),
+                'message' => trans('Usuario bloqueado.')
             ]);
         }
 
@@ -60,7 +60,7 @@ class LoginRequest extends FormRequest {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'message' => trans('Usuario y/o contraseña incorrectos.'),
+                'message' => trans('Usuario y/o contraseña incorrectos.')
             ]);
         }
 
