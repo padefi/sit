@@ -24,9 +24,9 @@ const props = defineProps({
 const { username } = usePermissions();
 const usersArray = ref([]);
 const originalUsersArray = ref([]);
-const page = usePage();
 const toast = useToast();
 const rolesSelect = ref([]);
+const newRow = ref([]);
 const editingRows = ref([]);
 const rules = 'Debe completar el campo'
 const editing = ref(false);
@@ -75,13 +75,13 @@ const addNewUser = () => {
 
     const newUser = {
         id: createId(),
-        surname: '',
-        name: '',
-        email: '',
+        surname: newRow.value?.surname,
+        name: newRow.value?.name,
+        email: newRow.value?.email,
         username: '',
-        role: '',
-        is_active: '',
-        condition: '',
+        role: newRow.value?.role,
+        is_active: newRow.value?.is_active,
+        condition: 'newUser',
     };
 
     usersArray.value.unshift(newUser);
@@ -126,7 +126,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 const validate = (event, saveCallback, data) => {
-    if (!data.surname || !data.name || !validateEmail(data.email)) {
+    if (!data.surname || !data.name || !validateEmail(data.email) || !data.role || !data.is_active) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -142,6 +142,7 @@ const validate = (event, saveCallback, data) => {
             message: '¿Está seguro de agrear el usuario?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
+                newRow.value = data;
                 saveCallback(event);
             },
         });
@@ -181,8 +182,7 @@ const onRowEditSave = (event) => {
             onError: () => {
                 usersArray.value = [...originalUsersArray.value];
                 editing.value = false;
-                /* editing.value = true;
-                editingRows.value = [newData]; */
+                addNewUser();
             }
         });
 
@@ -193,13 +193,6 @@ const onRowEditSave = (event) => {
         onSuccess: () => {
             editing.value = false;
             usersArray.value[index] = newData;
-            /* usersArray.value = usersArray.value.map(user => {
-                if (user.id === newData.id) {
-                    return newData;
-                } else {
-                    return user;
-                }
-            }); */
         },
         onError: () => {
             editing.value = true;
@@ -211,6 +204,8 @@ const onRowEditSave = (event) => {
 const onRowEditCancel = (event) => {
     usersArray.value = [...originalUsersArray.value];
     editing.value = false;
+    newRow.value = [];
+    editingRows.value = [];
 };
 
 onMounted(() => {
@@ -225,21 +220,6 @@ onMounted(() => {
             value: role.name
         }
     })
-});
-
-watch(() => usersArray.value, (next) => {
-    /* props.users.map((user) => {
-        user.role = user.role[0]
-        user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
-    });
-
-    rolesSelect.value = props.roles.map((role) => {
-        return {
-            label: role.name,
-            value: role.name
-        }
-    })
-     */
 });
 </script>
 
