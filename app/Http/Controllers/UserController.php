@@ -37,7 +37,7 @@ class UserController extends Controller {
             ]);
         }
 
-        User::create([
+        $user = User::create([
             'surname' => $request->surname,
             'name' => $request->name,
             'email' => $request->email,
@@ -49,7 +49,8 @@ class UserController extends Controller {
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
-                'message' => 'Usuario agregado exitosamente.'
+                'message' => 'Usuario agregado exitosamente.',
+                'user' => $user,
             ],
             'success' => true,
         ]);

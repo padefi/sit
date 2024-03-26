@@ -75,13 +75,13 @@ const addNewUser = () => {
 
     const newUser = {
         id: createId(),
-        surname: 'A',
-        name: 'A',
-        email: 'JPEREZ@SIT.COM',
+        surname: '',
+        name: '',
+        email: '',
         username: '',
-        role: 'USUARIO',
-        is_active: 'ACTIVO',
-        condition: 'newUser',
+        role: '',
+        is_active: '',
+        condition: '',
     };
 
     usersArray.value.unshift(newUser);
@@ -103,7 +103,6 @@ const createId = () => {
 const onRowEditInit = (event) => {
     originalUsersArray.value = [...usersArray.value];
     editingRows.value = [event.data];
-    console.log(event);
 }
 
 const disabledEditButtons = (callback, event) => {
@@ -161,25 +160,29 @@ const validate = (event, saveCallback, data) => {
 }
 
 const onRowEditSave = (event) => {
-    let { newData } = event;
+    let { newData, index } = event;
 
     const form = useForm({
-        surname: event.data.surname,
-        name: event.data.name,
-        email: event.data.email,
-        role: event.data.role,
-        is_active: event.data.is_active === 'ACTIVO' ? 1 : 0,
+        surname: newData.surname,
+        name: newData.name,
+        email: newData.email,
+        role: newData.role,
+        is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
     })
 
-    if (event.data.condition === 'newUser') {
-        form.post(route("users.store", event.data.id), {
-            onSuccess: () => {
+    if (newData.condition === 'newUser') {
+        form.post(route("users.store", newData.id), {
+            onSuccess: (result) => {
                 editing.value = false;
-                event.data.condition = 'editUser';
+                newData.condition = 'editUser';
+                newData.id = result.props.flash.info.user.id;
+                newData.username = result.props.flash.info.user.username;
             },
             onError: () => {
-                editing.value = true;
-                editingRows.value = [event.data];
+                usersArray.value = [...originalUsersArray.value];
+                editing.value = false;
+                /* editing.value = true;
+                editingRows.value = [newData]; */
             }
         });
 
@@ -187,17 +190,20 @@ const onRowEditSave = (event) => {
     }
 
     form.put(route("users.update", newData.id), {
-        onSuccess: () => editing.value = false,
-        onError: () => {
-            editing.value = true;
-            editingRows.value = [newData];
-            usersArray.value = usersArray.value.map(user => {
+        onSuccess: () => {
+            editing.value = false;
+            usersArray.value[index] = newData;
+            /* usersArray.value = usersArray.value.map(user => {
                 if (user.id === newData.id) {
                     return newData;
                 } else {
                     return user;
                 }
-            });
+            }); */
+        },
+        onError: () => {
+            editing.value = true;
+            editingRows.value = [newData];
         }
     });
 };
@@ -253,8 +259,8 @@ watch(() => usersArray.value, (next) => {
             </template>
             <template #content>
                 <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
-                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel($event)"
-                    :pt="{
+                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                    @row-edit-cancel="onRowEditCancel($event)" :pt="{
                                 table: { style: 'min-width: 50rem' }
                             }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
