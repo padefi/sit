@@ -22,14 +22,17 @@ const props = defineProps({
 });
 
 const { username } = usePermissions();
+const usersArray = ref([]);
+const originalUsersArray = ref([]);
 const page = usePage();
 const toast = useToast();
 const rolesSelect = ref([]);
 const editingRows = ref([]);
 const rules = 'Debe completar el campo'
 const editing = ref(false);
-const invalid = ref(false);
 const confirm = useConfirm();
+
+usersArray.value = props.users;
 
 const validateEmail = value => {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
@@ -57,48 +60,6 @@ const getStatusLabel = (status) => {
     }
 };
 
-const onRowEditSave = (event) => {
-    let { newData } = event;
-
-    if (!newData.surname || !newData.name || !validateEmail(newData.email)) {
-        toast.add({
-            severity: 'error',
-            detail: 'Debe completar todos los campos.',
-            life: 3000,
-        });
-        return;
-    }
-
-    const form = useForm({
-        surname: newData.surname,
-        name: newData.name,
-        email: newData.email,
-        role: newData.role,
-        is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
-    })
-    console.log(editingRows);
-
-    if (newData.condition === 'newUser') {
-        form.post(route("users.store", newData.id), {
-            onSuccess: () => editing.value = false,
-            onError: () => {
-                editing.value = true,
-                    editingRows.value = [newData];
-            }
-        });
-
-        return;
-    }
-
-    form.put(route("users.update", newData.id), {
-        onSuccess: () => editing.value = false,
-        onError: () => {
-            editing.value = true,
-                editingRows.value = [newData];
-        }
-    });
-};
-
 const addNewUser = () => {
     if (editing.value) {
         toast.add({
@@ -106,24 +67,44 @@ const addNewUser = () => {
             detail: 'Debe guardar los cambios antes de agregar un usuario.',
             life: 3000,
         });
+
         return;
     }
 
+    originalUsersArray.value = [...usersArray.value];
+
     const newUser = {
-        id: props.users.length + 1,
-        surname: '',
-        name: '',
-        email: '',
+        id: createId(),
+        surname: 'A',
+        name: 'A',
+        email: 'JPEREZ@SIT.COM',
         username: '',
-        role: '',
-        is_active: '',
+        role: 'USUARIO',
+        is_active: 'ACTIVO',
         condition: 'newUser',
     };
 
-    props.users.unshift(newUser);
+    usersArray.value.unshift(newUser);
     editing.value = true;
     editingRows.value = [newUser];
 };
+
+const createId = () => {
+    let id = '';
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    for (var i = 0; i < 5; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    return id;
+}
+
+const onRowEditInit = (event) => {
+    originalUsersArray.value = [...usersArray.value];
+    editingRows.value = [event.data];
+    console.log(event);
+}
 
 const disabledEditButtons = (callback, event) => {
     if (editing.value) {
@@ -132,19 +113,16 @@ const disabledEditButtons = (callback, event) => {
             detail: 'Debe guardar los cambios antes de modificar un usuario.',
             life: 3000,
         });
+
         return;
     }
-    console.log(editingRows);
 
     editing.value = true;
     callback(event);
 }
-const enabledEditButtons = (callback, event, data) => {
-    if (data.condition === 'newUser') {
-        props.users.shift();
-    }
-
+const enabledEditButtons = (callback, event) => {
     editing.value = false;
+    editingRows.value = [];
     callback(event);
 }
 
@@ -155,6 +133,7 @@ const validate = (event, saveCallback, data) => {
             detail: 'Debe completar todos los campos.',
             life: 3000,
         });
+
         return;
     }
 
@@ -181,6 +160,53 @@ const validate = (event, saveCallback, data) => {
     });
 }
 
+const onRowEditSave = (event) => {
+    let { newData } = event;
+
+    const form = useForm({
+        surname: event.data.surname,
+        name: event.data.name,
+        email: event.data.email,
+        role: event.data.role,
+        is_active: event.data.is_active === 'ACTIVO' ? 1 : 0,
+    })
+
+    if (event.data.condition === 'newUser') {
+        form.post(route("users.store", event.data.id), {
+            onSuccess: () => {
+                editing.value = false;
+                event.data.condition = 'editUser';
+            },
+            onError: () => {
+                editing.value = true;
+                editingRows.value = [event.data];
+            }
+        });
+
+        return;
+    }
+
+    form.put(route("users.update", newData.id), {
+        onSuccess: () => editing.value = false,
+        onError: () => {
+            editing.value = true;
+            editingRows.value = [newData];
+            usersArray.value = usersArray.value.map(user => {
+                if (user.id === newData.id) {
+                    return newData;
+                } else {
+                    return user;
+                }
+            });
+        }
+    });
+};
+
+const onRowEditCancel = (event) => {
+    usersArray.value = [...originalUsersArray.value];
+    editing.value = false;
+};
+
 onMounted(() => {
     props.users.map((user) => {
         user.role = user.role[0]
@@ -195,8 +221,8 @@ onMounted(() => {
     })
 });
 
-watch(() => page.props.flash, (next) => {
-    props.users.map((user) => {
+watch(() => usersArray.value, (next) => {
+    /* props.users.map((user) => {
         user.role = user.role[0]
         user.is_active = user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
     });
@@ -207,6 +233,7 @@ watch(() => page.props.flash, (next) => {
             value: role.name
         }
     })
+     */
 });
 </script>
 
@@ -225,10 +252,13 @@ watch(() => page.props.flash, (next) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="users" editMode="row" dataKey="id"
-                    @row-edit-save="onRowEditSave" :pt="{
+                <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
+                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel($event)"
+                    :pt="{
                                 table: { style: 'min-width: 50rem' }
-                            }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 20, 50]">
+                            }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios">
                     <Column field="surname" header="Apellido" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
@@ -303,6 +333,11 @@ watch(() => page.props.flash, (next) => {
                             </div>
                         </template>
                     </Column>
+                    <!-- <Column header="Rol" style="width: 10%;">
+                        <template #body="slotProps">
+                            {{ slotProps.data }}
+                        </template>
+                    </Column> -->
                 </DataTable>
             </template>
         </Card>

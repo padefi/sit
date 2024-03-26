@@ -32,12 +32,8 @@ class UserController extends Controller {
         $userEmail = User::where('email', $request->email)->first();
 
         if ($userEmail) {
-            return Redirect::back()->with([
-                'info' => [
-                    'type' => 'error',
-                    'message' => 'El email ya se encuentra registrado.'
-                ],
-                'success' => false,
+            throw ValidationException::withMessages([
+                'message' => trans('El email ya se encuentra registrado.')
             ]);
         }
 
