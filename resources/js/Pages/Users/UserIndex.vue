@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
@@ -16,6 +16,10 @@ const props = defineProps({
         default: () => ({}),
     },
     roles: {
+        type: Object,
+        default: () => ({}),
+    },
+    permissions: {
         type: Object,
         default: () => ({}),
     },
@@ -201,7 +205,7 @@ const onRowEditSave = (event) => {
     });
 };
 
-const onRowEditCancel = (event) => {
+const onRowEditCancel = () => {
     usersArray.value = [...originalUsersArray.value];
     editing.value = false;
     newRow.value = [];
@@ -221,6 +225,43 @@ onMounted(() => {
         }
     })
 });
+
+/*  */
+import PermissionModal from './PermissionModal.vue';
+import { useDialog } from 'primevue/usedialog';
+const permissions = ref([]);
+const dialog = useDialog();
+
+props.permissions.map((data) => {
+    const category = data.description;
+
+    permissions.value[category] ??= [];
+    permissions.value[category].push({
+        id: data.id,
+        name: data.name,
+        show: data.show,
+    });
+});
+
+const modalPermissions = () => {
+    const dialogRef = dialog.open(PermissionModal, {
+        props: {
+            header: 'Product List',
+            style: {
+                width: '50vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true
+        },
+        data: {
+            permissions: props.permissions,
+        }
+    });
+}
+/*  */
 </script>
 
 <template>
@@ -240,7 +281,7 @@ onMounted(() => {
             <template #content>
                 <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
-                    @row-edit-cancel="onRowEditCancel($event)" :pt="{
+                    @row-edit-cancel="onRowEditCancel" :pt="{
                                 table: { style: 'min-width: 50rem' }
                             }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -300,13 +341,14 @@ onMounted(() => {
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
-                        <template #body="{ editorInitCallback }">
-                            <div class="space-x-4 flex pl-6">
+                        <template #body="{ editorInitCallback, data }">
+                            <div class="space-x-4 flex pl-6" v-if="data.username != username()">
                                 <button v-tooltip="'Editar'"><i
                                         class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 <button v-tooltip="'Ver permisos'"><i
-                                        class="pi pi-eye text-cyan-500 text-lg font-extrabold"></i></button>
+                                        class="pi pi-eye text-cyan-500 text-lg font-extrabold"
+                                        @click="modalPermissions()"></i></button>
                             </div>
                         </template>
                         <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
@@ -327,5 +369,7 @@ onMounted(() => {
                 </DataTable>
             </template>
         </Card>
+
+        <DynamicDialog />
     </AuthenticatedLayout>
 </template>
