@@ -229,7 +229,7 @@ onMounted(() => {
 /*  */
 import PermissionModal from './PermissionModal.vue';
 import { useDialog } from 'primevue/usedialog';
-const permissions = ref([]);
+const permissions = ref({});
 const dialog = useDialog();
 
 props.permissions.map((data) => {
@@ -243,10 +243,10 @@ props.permissions.map((data) => {
     });
 });
 
-const modalPermissions = () => {
+const modalPermissions = (name, surname) => {
     const dialogRef = dialog.open(PermissionModal, {
         props: {
-            header: 'Product List',
+            header: `Permisos del usuario ${name} ${surname}`,      
             style: {
                 width: '50vw',
             },
@@ -257,7 +257,7 @@ const modalPermissions = () => {
             modal: true
         },
         data: {
-            permissions: props.permissions,
+            permissions: permissions,
         }
     });
 }
@@ -348,7 +348,7 @@ const modalPermissions = () => {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 <button v-tooltip="'Ver permisos'"><i
                                         class="pi pi-eye text-cyan-500 text-lg font-extrabold"
-                                        @click="modalPermissions()"></i></button>
+                                        @click="modalPermissions(data.name, data.surname)"></i></button>
                             </div>
                         </template>
                         <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
