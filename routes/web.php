@@ -26,6 +26,7 @@ Route::get('/home', function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('users', UserController::class);
+    Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
     Route::resource('roles', RoleController::class);
     // Route::resource('permissions', PermissionController::class);
 });

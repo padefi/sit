@@ -1,12 +1,34 @@
 <script setup>
-import { ref, onMounted, inject } from "vue";
+import { useForm } from "@inertiajs/vue3";
+import { ref, onMounted, inject, watch } from "vue";
 
+const userId = ref([]);
 const permissions = ref([]);
 const dialogRef = inject("dialogRef");
 
 onMounted(() => {
     permissions.value = dialogRef.value.data.permissions;
+    userId.value = dialogRef.value.data.userId;
 });
+
+
+watch(() => dialogRef.value.data, (newData) => {
+    permissions.value = newData.permissions;
+    userId.value = newData.userId;
+});
+
+const updateUserPermission = (permissionId) => {
+    const form = useForm({
+        permission: permissionId,
+    });
+
+    form.put(route("users.updatePermission", userId.value), {
+        onSuccess: () => {
+        },
+        onError: () => {
+        }
+    });
+};
 </script>
 <template>
     <div class="flex flex-col">
@@ -32,7 +54,8 @@ onMounted(() => {
                                     <td class="text-base items-center text-center text-gray-900 font-light px-6 py-4 whitespace-nowrap"
                                         v-if="permission.show === 1">
                                         <input :name="'permission_' + permission.id" type="checkbox"
-                                            :checked="permission.show" :value="permission.name"
+                                            :checked="permission.hasPermission" :value="permission.name"
+                                            @click="updateUserPermission(permission.id)"
                                             class="w-6 h-6 cursor-pointer text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                                     </td>
                                 </template>

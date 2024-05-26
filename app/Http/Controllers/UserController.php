@@ -21,10 +21,13 @@ class UserController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): Response {
+        $userPermissions = User::with('permissions')->get();
+        $roles = Role::with('permissions')->get();
+
         return Inertia::render('Users/UserIndex', [
-            'users' => UserResource::collection(User::all()),
-            'roles' => RoleResource::collection(Role::all()),
-            'permissions' => PermissionResource::collection(Permission::all()),
+            'users' => UserResource::collection($userPermissions),
+            'roles' => RoleResource::collection($roles),
+            // 'permissions' => PermissionResource::collection(Permission::all()),
         ]);
     }
 
@@ -78,6 +81,24 @@ class UserController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Usuario modificado exitosamente.'
+            ],
+            'success' => true,
+        ]);
+    }
+
+    public function updatePermission(Request $request, User $user) {
+        $permission = Permission::findById($request->permission);
+        
+        if($user->hasDirectPermission($permission->name)){
+            $user->revokePermissionTo($permission->name);
+        } else {
+            $user->givePermissionTo($permission->name);
+        }
+
+        return Redirect::back()->with([ 
+            'info' => [
+                'type' => 'success',
+                'message' => 'Permisos actualizados exitosamente.'
             ],
             'success' => true,
         ]);

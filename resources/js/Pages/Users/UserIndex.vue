@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -16,10 +16,6 @@ const props = defineProps({
         default: () => ({}),
     },
     roles: {
-        type: Object,
-        default: () => ({}),
-    },
-    permissions: {
         type: Object,
         default: () => ({}),
     },
@@ -229,24 +225,34 @@ onMounted(() => {
 /*  */
 import PermissionModal from './PermissionModal.vue';
 import { useDialog } from 'primevue/usedialog';
-const permissions = ref({});
+// const permissions = ref({});
 const dialog = useDialog();
+const userRolePermission = (userRole, userId) => {
+    const userPermissions = props.users.find(user => user.id === userId).permissions;
+    const rolePermissions = props.roles.find(role => role.name === userRole).permissions;
 
-props.permissions.map((data) => {
-    const category = data.description;
+    const permissions = {};
 
-    permissions.value[category] ??= [];
-    permissions.value[category].push({
-        id: data.id,
-        name: data.name,
-        show: data.show,
+    rolePermissions.map((data) => {
+        const category = data.description;
+        permissions[category] ??= [];
+        permissions[category].push({
+            id: data.id,
+            name: data.name,
+            show: data.show,
+            hasPermission: userPermissions.includes(data.name),
+        });
     });
-});
 
-const modalPermissions = (name, surname) => {
-    const dialogRef = dialog.open(PermissionModal, {
+    return permissions;
+}
+
+const modalPermissions = (name, surname, userId, userRole) => {
+    const permissions = userRolePermission(userRole, userId);
+
+    dialog.open(PermissionModal, {
         props: {
-            header: `Permisos del usuario ${name} ${surname}`,      
+            header: `Permisos del usuario ${name} ${surname}`,
             style: {
                 width: '50vw',
             },
@@ -257,6 +263,7 @@ const modalPermissions = (name, surname) => {
             modal: true
         },
         data: {
+            userId: userId,
             permissions: permissions,
         }
     });
@@ -348,7 +355,7 @@ const modalPermissions = (name, surname) => {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 <button v-tooltip="'Ver permisos'"><i
                                         class="pi pi-eye text-cyan-500 text-lg font-extrabold"
-                                        @click="modalPermissions(data.name, data.surname)"></i></button>
+                                        @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>
                             </div>
                         </template>
                         <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
