@@ -16,15 +16,21 @@ class RolePermissionSeeder extends Seeder {
         $allPermissions = Permission::all();
         $adminRole->syncPermissions($allPermissions);
 
-        $tesoreroRole = Role::findByName('tesorero');
-        $tesoreroPermissions = Permission::where('name', 'not like', '%user%')->get();
-        $tesoreroRole->syncPermissions($tesoreroPermissions);
+        $treasurerRole = Role::findByName('tesorero');
+        $treasurerPermissions = Permission::where('name', 'not like', '%create users%')
+            ->where('name', 'not like', '%edit users%')
+            ->get();
+        $treasurerRole->syncPermissions($treasurerPermissions);
 
-        $userRole = Role::findByName('usuario');
-        $specificPermissions = Permission::where(function ($query) {
+        $auxiliaryRole = Role::findByName('auxiliar');
+        $auxiliaryPermissions = Permission::where('name', 'not like', '%users%')->get();
+        $auxiliaryRole->syncPermissions($auxiliaryPermissions);
+
+        $administrativeRole = Role::findByName('administrativo');
+        $AdministrativePermissions = Permission::where(function ($query) {
             $query->where('name', 'like', '%providers%')
-                  ->orWhere('name', 'like', '%vouchers%');
+                ->orWhere('name', 'like', '%vouchers%');
         })->get();
-        $userRole->syncPermissions($specificPermissions);
+        $administrativeRole->syncPermissions($AdministrativePermissions);
     }
 }

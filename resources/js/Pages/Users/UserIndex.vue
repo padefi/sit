@@ -234,6 +234,8 @@ const userRolePermission = (userRole, userId) => {
     const permissions = {};
 
     rolePermissions.map((data) => {
+        if (data.show === 0) return;
+
         const category = data.description;
         permissions[category] ??= [];
         permissions[category].push({

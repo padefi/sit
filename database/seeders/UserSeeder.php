@@ -33,6 +33,16 @@ class UserSeeder extends Seeder {
         ])->assignRole('tesorero');
 
         User::create([
+            'name' => 'Juan',
+            'surname' => 'Gonzalez',
+            'email' => 'jgonzalez@sit.com',
+            'username' => 'jgonzalez',
+            'password' => Hash::make('12345678'),            
+            'is_active' => true,
+            'created_at' => now(),
+        ])->assignRole('auxiliar');
+
+        User::create([
             'name' => 'Roberto',
             'surname' => 'Gomez',
             'email' => 'rgomez@sit.com',
@@ -40,6 +50,6 @@ class UserSeeder extends Seeder {
             'password' => Hash::make('12345678'),            
             'is_active' => true,
             'created_at' => now(),
-        ])->assignRole('usuario');
+        ])->assignRole('administrativo');
     }
 }

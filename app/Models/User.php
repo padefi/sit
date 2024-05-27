@@ -6,7 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable {
@@ -56,5 +58,33 @@ class User extends Authenticatable {
         }
 
         return $username;
+    }
+
+    public static function assignDefaultPermissions($user, $roleName) {
+        $defaultPermissions = [
+            'admin' => Permission::all(),
+            'tesorero' => Permission::where('name', 'not like', '%create users%')
+                ->where('name', 'not like', '%edit users%')
+                ->get(),
+            'auxiliar' => Permission::where(function ($query) {
+                $query->where('name', 'not like', '%users%')
+                    ->where('name', 'like', '%view%')
+                    ->orWhere('name', 'like', '%providers%')
+                    ->orWhere('name', 'like', '%vouchers%');
+            })->get(),
+            'administrativo' => Permission::where(function ($query) {
+                $query->where('name', 'like', '%view providers%')
+                    ->orWhere('name', 'like', '%view vouchers%');
+            })->get(),
+        ];
+
+        if (isset($defaultPermissions[$roleName])) {
+            $permissions = $defaultPermissions[$roleName];
+            $user->syncPermissions($permissions);
+        } else {
+            throw ValidationException::withMessages([
+                'message' => trans('Sin registros predeterminados para el rol: ' . $roleName),
+            ]);
+        }
     }
 }

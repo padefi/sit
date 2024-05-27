@@ -49,6 +49,8 @@ class UserController extends Controller {
             'password' => Hash::make(User::generateUsername($request->name, $request->surname)),
         ])->assignRole($request->role);
 
+        User::assignDefaultPermissions($user, $request->role);
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -75,7 +77,12 @@ class UserController extends Controller {
             'is_active' => ($request->is_active) ? 1 : 0,
         ]);
 
+        $userRole = User::with('roles')->find($user->id);
         $user->syncRoles($request->role);
+
+        if($userRole->roles->first()->name !== $request->role){
+            User::assignDefaultPermissions($user, $request->role);
+        }
 
         return Redirect::back()->with([
             'info' => [
