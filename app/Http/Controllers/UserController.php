@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
-use App\Http\Resources\PermissionResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -20,14 +19,13 @@ class UserController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response {
+    public function index(): Response {        
         $userPermissions = User::with('permissions')->get();
         $roles = Role::with('permissions')->get();
 
         return Inertia::render('Users/UserIndex', [
             'users' => UserResource::collection($userPermissions),
             'roles' => RoleResource::collection($roles),
-            // 'permissions' => PermissionResource::collection(Permission::all()),
         ]);
     }
 

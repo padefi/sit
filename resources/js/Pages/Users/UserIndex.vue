@@ -22,6 +22,7 @@ const props = defineProps({
 });
 
 const { username } = usePermissions();
+const { hasPermission } = usePermissions();
 const usersArray = ref([]);
 const originalUsersArray = ref([]);
 const toast = useToast();
@@ -281,18 +282,20 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     <div class="align-left">
                         <h3 class="uppercase">Panel de usuarios</h3>
                     </div>
-                    <div class="align-right">
-                        <Button label="Agregar usuario" severity="info" outlined icon="pi pi-user-plus" size="large"
-                            @click="addNewUser($event)" />
-                    </div>
+                    <template v-if="hasPermission('create users')">
+                        <div class="align-right">
+                            <Button label="Agregar usuario" severity="info" outlined icon="pi pi-user-plus" size="large"
+                                @click="addNewUser($event)" />
+                        </div>
+                    </template>
                 </div>
             </template>
             <template #content>
                 <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
-                                table: { style: 'min-width: 50rem' }
-                            }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
+                        table: { style: 'min-width: 50rem' }
+                    }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios">
                     <Column field="surname" header="Apellido" style="width: 10%;">
@@ -351,13 +354,17 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
                         <template #body="{ editorInitCallback, data }">
-                            <div class="space-x-4 flex pl-6" v-if="data.username != username()">
-                                <button v-tooltip="'Editar'"><i
-                                        class="pi pi-pencil text-orange-500 text-lg font-extrabold"
-                                        @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
-                                <button v-tooltip="'Ver permisos'"><i
-                                        class="pi pi-eye text-cyan-500 text-lg font-extrabold"
-                                        @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>
+                            <div class="space-x-4 flex pl-6" v-if="data.username != username() && data.role != 'admin'">
+                                <template v-if="hasPermission('edit users')">
+                                    <button v-tooltip="'Editar'"><i
+                                            class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                            @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
+                                </template>
+                                <template v-if="hasPermission('view users')">
+                                    <button v-tooltip="'Ver permisos'"><i
+                                            class="pi pi-eye text-cyan-500 text-lg font-extrabold"
+                                            @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>
+                                </template>
                             </div>
                         </template>
                         <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
