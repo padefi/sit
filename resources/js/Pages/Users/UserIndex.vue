@@ -276,7 +276,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
 
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5 uppercase">
+        <Card class="mt-5 uppercase" >
             <template #title>
                 <div class="flex justify-between items-center mx-4">
                     <div class="align-left">
@@ -360,7 +360,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                             class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
-                                <template v-if="hasPermission('view users')">
+                                <template v-if="hasPermission('permission users')">
                                     <button v-tooltip="'Ver permisos'"><i
                                             class="pi pi-eye text-cyan-500 text-lg font-extrabold"
                                             @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +21,15 @@ class UserController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index(): Response {        
+
+    public function __construct() {
+        $this->middleware('check.permission:view users')->only('index');
+        $this->middleware('check.permission:create users')->only('store');
+        $this->middleware('check.permission:edit users')->only('update');
+        $this->middleware('check.permission:permission users')->only('updatePermission');
+    }
+    
+    public function index(): Response {
         $userPermissions = User::with('permissions')->get();
         $roles = Role::with('permissions')->get();
 
@@ -78,7 +88,7 @@ class UserController extends Controller {
         $userRole = User::with('roles')->find($user->id);
         $user->syncRoles($request->role);
 
-        if($userRole->roles->first()->name !== $request->role){
+        if ($userRole->roles->first()->name !== $request->role) {
             User::assignDefaultPermissions($user, $request->role);
         }
 
@@ -93,14 +103,14 @@ class UserController extends Controller {
 
     public function updatePermission(Request $request, User $user) {
         $permission = Permission::findById($request->permission);
-        
-        if($user->hasDirectPermission($permission->name)){
+
+        if ($user->hasDirectPermission($permission->name)) {
             $user->revokePermissionTo($permission->name);
         } else {
             $user->givePermissionTo($permission->name);
         }
 
-        return Redirect::back()->with([ 
+        return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
                 'message' => 'Permisos actualizados exitosamente.'
