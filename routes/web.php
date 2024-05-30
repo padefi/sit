@@ -31,7 +31,7 @@ Route::get('/home', function () {
     // Route::resource('permissions', PermissionController::class);
 }); */
 
-Route::group(['middleware' => ['auth', 'role:admin|tesorero']], function () {
+Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
     Route::resource('users', UserController::class);
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
     Route::resource('roles', RoleController::class);
