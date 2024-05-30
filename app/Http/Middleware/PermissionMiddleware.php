@@ -18,7 +18,7 @@ class PermissionMiddleware {
     public function handle($request, Closure $next, $permission) {
         $user = Auth::user();
 
-        if (!$user || !$user->hasPermissionTo($permission)) {
+        if (!$user || !$user->hasDirectPermission($permission)) {
             abort(403, 'Sin autorización.');
         }
 
