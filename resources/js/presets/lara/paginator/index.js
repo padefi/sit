@@ -180,9 +180,13 @@ export default {
                 'inline-flex',
                 'relative',
 
+                // Borders
+                'border-0 border-b appearance-none',
+                'focus:outline-none focus:ring-0 peer',
+
                 // Shape
-                'h-12',
-                'rounded-md',
+                // 'h-12',
+                // 'rounded-md',
 
                 // Spacing
                 'mx-2',

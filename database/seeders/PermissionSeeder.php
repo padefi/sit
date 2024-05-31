@@ -63,9 +63,9 @@ class PermissionSeeder extends Seeder
         ]; */
 
         $permissions = [
-            ['name' => 'view users', 'description' => 'Usuarios', 'show' => true],
-            ['name' => 'create users', 'description' => 'Usuarios', 'show' => true],
-            ['name' => 'edit users', 'description' => 'Usuarios', 'show' => true],
+            ['name' => 'view users', 'description' => 'Usuarios', 'show' => false],
+            ['name' => 'create users', 'description' => 'Usuarios', 'show' => false],
+            ['name' => 'edit users', 'description' => 'Usuarios', 'show' => false],
             ['name' => 'permission users', 'description' => 'Usuarios', 'show' => false],
             ['name' => 'view voucher types', 'description' => 'Tipo', 'show' => false],
             ['name' => 'create voucher types', 'description' => 'Tipo', 'show' => false],

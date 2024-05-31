@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -276,7 +276,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
 
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5 uppercase" >
+        <Card class="mt-5 uppercase">
             <template #title>
                 <div class="flex justify-between items-center mx-4">
                     <div class="align-left">
@@ -294,11 +294,16 @@ const modalPermissions = (name, surname, userId, userRole) => {
                 <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
-                        table: { style: 'min-width: 50rem' }
-                    }" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]"
+                        table: { style: 'min-width: 50rem' },
+                        paginator: {
+                            root: { class: 'p-paginator-custom'},
+                            current: { class: 'p-paginator-current' },
+                        }
+                    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios">
-                    <Column field="surname" header="Apellido" style="width: 10%;">
+                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios"
+                    class="data-table">
+                    <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
                                 placeholder="Apellido" />

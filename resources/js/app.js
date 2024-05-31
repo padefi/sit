@@ -2,6 +2,7 @@ import "./bootstrap";
 import "primeicons/primeicons.css";
 import "../css/app.css";
 import "../css/flags.css";
+import "../css/styles.scss";
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";

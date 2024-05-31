@@ -1,0 +1,32 @@
+.data-table {
+    border: 0.1rem;
+    border-style: solid;
+    border-color: #bfdbfe;
+    border-radius: 0.5rem;
+    border-collapse: separate;
+    overflow: hidden;
+
+    td,
+    th {
+        padding: 0.75rem;
+    }
+
+    .p-paginator-custom {
+        display: flex;
+        // justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.25rem 2rem;
+    }
+
+    .p-paginator-custom .p-paginator-current {
+        flex-grow: 1;
+        text-align: center;
+        width: 50%;
+        // margin-left: 25%;
+    }
+
+    div[data-pc-name="rowperpagedropdown"] {
+        margin-left: 10%;
+    }
+}
