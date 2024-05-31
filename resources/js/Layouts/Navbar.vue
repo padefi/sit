@@ -13,6 +13,28 @@ const items = ref([
         route: 'home'
     },
     {
+        label: 'Tesorería',
+        icon: 'pi pi-building-columns',
+        items: [
+            {
+                label: 'Comprobantes',
+                icon: 'pi pi-dollar',
+            },
+            {
+                label: 'Subtipos',
+                icon: 'pi pi-list',
+                method: 'get',
+                route: 'voucher-subtypes.index',
+            },
+            {
+                label: 'Gastos',
+                icon: 'pi pi-list',
+                method: 'get',
+                // route: 'voucher-subtypes.index',
+            },
+        ]
+    },
+    {
         label: 'Usuarios',
         icon: 'pi pi-users',
         method: 'get',
@@ -63,7 +85,8 @@ const userItems = ref([
             </a>
         </template>
         <template #end>
-            <Link v-for="userItem in userItems" v-ripple :href="route(userItem.route)" :method="userItem.method" as="button"
+            <Link v-for="userItem in userItems" v-ripple :href="route(userItem.route)" :method="userItem.method"
+                as="button"
                 class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400">
             <span :class="userItem.icon"></span>
             <span class="ml-2">{{ userItem.label }}</span>

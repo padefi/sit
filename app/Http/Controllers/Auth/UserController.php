@@ -1,14 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
-use App\Http\Middleware\PermissionMiddleware;
-use App\Http\Requests\UserRequest;
-use App\Http\Resources\RoleResource;
-use App\Http\Resources\UserResource;
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\UserRequest;
+use App\Http\Resources\Auth\RoleResource;
+use App\Http\Resources\Auth\UserResource;
+use App\Models\Auth\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;

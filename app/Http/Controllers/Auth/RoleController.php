@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
-use App\Http\Resources\PermissionResource;
-use App\Http\Resources\RoleResource;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Auth\RoleResource;
+use App\Http\Resources\Auth\PermissionResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
