@@ -11,9 +11,9 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('voucher_subtypes', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->collation('utf8mb4_general_ci');
+            $table->string('name', 100)->collation('utf8mb4_general_ci');
             $table->unsignedBigInteger('idUserCreated');
-            $table->unsignedBigInteger('idUserUpdated');
+            $table->unsignedBigInteger('idUserUpdated')->nullable();;
             $table->timestamps();
             $table->boolean('status')->default(true);
 

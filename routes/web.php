@@ -35,14 +35,12 @@ Route::get('/home', function () {
 Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
     Route::resource('users', UserController::class);
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
-    Route::resource('roles', RoleController::class);
+    // Route::resource('roles', RoleController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {
     Route::resource('voucher-subtypes', VoucherSubtypesController::class);
 });
-
-
 
 Route::middleware('auth')->group(function () {
     /* Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

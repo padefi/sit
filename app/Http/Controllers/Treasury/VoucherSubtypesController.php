@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Treasury;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Treasury\VoucherSubtypeRequest;
 use App\Http\Resources\Treasury\VoucherSubtypesResource;
 use App\Models\Treasury\VoucherSubtypes;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class VoucherSubtypesController extends Controller {
     /**
@@ -19,8 +23,7 @@ class VoucherSubtypesController extends Controller {
         $this->middleware('check.permission:edit voucher subtypes')->only('update');
     }
 
-    public function index() {
-
+    public function index(): Response {
         $voucherSubtypes = VoucherSubtypes::all();
         
         return Inertia::render('Treasury/VoucherSubtypes/VoucherSubtypesIndex', [
@@ -29,44 +32,38 @@ class VoucherSubtypesController extends Controller {
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
-        //
-    }
+    public function store(VoucherSubtypeRequest $request) {
+        $voucherSubtypesName = VoucherSubtypes::where('name', $request->name)->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(VoucherSubtypes $voucherSubtypes) {
-        //
-    }
+        if ($voucherSubtypesName) {
+            throw ValidationException::withMessages([
+                'message' => trans('El subtipo ya se encuentra ingresado.')
+            ]);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(VoucherSubtypes $voucherSubtypes) {
-        //
+        $VoucherSubtypes = VoucherSubtypes::create([
+            'name' => $request->name,
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'status' => ($request->is_active) ? 1 : 0,
+        ]);
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Subtipo agregado exitosamente.',
+                'voucherSubtypes' => $VoucherSubtypes,
+            ],
+            'success' => true,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, VoucherSubtypes $voucherSubtypes) {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(VoucherSubtypes $voucherSubtypes) {
         //
     }
 }
