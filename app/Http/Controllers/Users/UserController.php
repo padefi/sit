@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\UserRequest;
-use App\Http\Resources\Auth\RoleResource;
-use App\Http\Resources\Auth\UserResource;
-use App\Models\Auth\User;
+use App\Http\Requests\Users\UserRequest;
+use App\Http\Resources\Users\RoleResource;
+use App\Http\Resources\Users\UserResource;
+use App\Models\Users\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;

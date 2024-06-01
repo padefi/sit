@@ -276,7 +276,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
 
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5 uppercase">
+        <Card class="mt-5 mx-4 uppercase">
             <template #title>
                 <div class="flex justify-between items-center mx-4">
                     <div class="align-left">
@@ -301,7 +301,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                         }
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Mostrando del {first} al {last} de {totalRecords} usuarios"
+                    currentPageReportTemplate="{first} - {last} de {totalRecords}"
                     class="data-table">
                     <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg">
                         <template #editor="{ data, field }">

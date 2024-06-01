@@ -2,8 +2,8 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\RoleController;
-use App\Http\Controllers\Auth\UserController;
+use App\Http\Controllers\Users\RoleController;
+use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Treasury\VoucherSubtypesController;
 
 /*
