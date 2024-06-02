@@ -194,6 +194,30 @@ onMounted(() => {
         voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
     });
 });
+
+/*  */
+import infoModal from '@/Components/InfoModal.vue';
+import { useDialog } from 'primevue/usedialog';
+
+const dialog = useDialog();
+
+const info = (data) => {
+    dialog.open(infoModal, {
+        props: {
+            header: `Información del subtipo ${data.name.toUpperCase()}`,
+            style: {
+                width: '50vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true
+        },
+        data: data
+    });
+}
+/*  */
 </script>
 
 <template>
@@ -258,9 +282,9 @@ onMounted(() => {
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('permission users')">
-                                    <button v-tooltip="'Ver permisos'"><i
-                                            class="pi pi-eye text-cyan-500 text-lg font-extrabold"
-                                            @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>
+                                    <button v-tooltip="'+Info'"><i
+                                            class="pi pi-id-card text-cyan-500 text-2xl"
+                                            @click="info(data)"></i></button>
                                 </template>
                             </div>
                         </template>

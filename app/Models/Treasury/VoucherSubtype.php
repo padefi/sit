@@ -2,11 +2,11 @@
 
 namespace App\Models\Treasury;
 
+use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VoucherSubtype extends Model
-{
+class VoucherSubtype extends Model {
     use HasFactory;
 
     protected $fillable = [
@@ -17,4 +17,12 @@ class VoucherSubtype extends Model
         'updated_at',
         'status',
     ];
+
+    public function userCreated() {
+        return $this->belongsTo(User::class, 'idUserCreated');
+    }
+
+    public function userUpdated() {
+        return $this->belongsTo(User::class, 'idUserUpdated');
+    }
 }

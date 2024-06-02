@@ -382,11 +382,6 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             </div>
                         </template>
                     </Column>
-                    <!-- <Column header="Rol" style="width: 10%;">
-                        <template #body="slotProps">
-                            {{ slotProps.data }}
-                        </template>
-                    </Column> -->
                 </DataTable>
             </template>
         </Card>
