@@ -5,7 +5,7 @@ namespace App\Http\Resources\Treasury;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class VoucherSubtypesResource extends JsonResource
+class VoucherSubtypeResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,7 +17,7 @@ class VoucherSubtypesResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'is_active' => $this->is_active,
+            'status' => $this->status,
         ];
     }
 }

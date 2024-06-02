@@ -63,7 +63,7 @@ const addNewVoucherSubtype = () => {
     const newVoucherSubtype = {
         id: createId(),
         name: newRow.value?.name,
-        is_active: newRow.value?.is_active,
+        status: newRow.value?.status,
         condition: 'newVoucherSubtype',
     };
 
@@ -110,7 +110,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 const validate = (event, saveCallback, data) => {
-    if (!data.name || !data.is_active) {
+    if (!data.name || !data.status) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -149,7 +149,7 @@ const onRowEditSave = (event) => {
 
     const form = useForm({
         name: newData.name,
-        is_active: newData.is_active === 'ACTIVO' ? 1 : 0,
+        status: newData.status === 'ACTIVO' ? 1 : 0,
     })
 
     if (newData.condition === 'newVoucherSubtype') {
@@ -157,8 +157,8 @@ const onRowEditSave = (event) => {
             onSuccess: (result) => {
                 editing.value = false;
                 newData.condition = 'editVoucherSubtype';
-                newData.id = result.props.flash.info.user.id;
-                newData.username = result.props.flash.info.user.username;
+                newData.id = result.props.flash.info.voucherSubtype.id;
+                newData.name = result.props.flash.info.voucherSubtype.name;
             },
             onError: () => {
                 voucherSubtypesArray.value = [...originalVoucherSubtypesArray.value];
@@ -169,7 +169,7 @@ const onRowEditSave = (event) => {
 
         return;
     }
-
+    
     form.put(route("voucher-subtypes.update", newData.id), {
         onSuccess: () => {
             editing.value = false;
@@ -191,7 +191,7 @@ const onRowEditCancel = () => {
 
 onMounted(() => {
     props.voucherSubtypes.map((voucherSubtype) => {
-        voucherSubtype.is_active = voucherSubtype.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+        voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
     });
 });
 </script>
@@ -234,10 +234,10 @@ onMounted(() => {
                     </Column>
                     <Column field="subtypeExpenseRelationship" header="Gastos relacionados" style="width: 10%;">
                     </Column>
-                    <Column field="is_active" header="Estado" style="width: 10%;">
+                    <Column field="status" header="Estado" style="width: 10%;">
                         <template #body="slotProps">
-                            <Tag :value="slotProps.data.is_active" class="!text-sm uppercase"
-                                :severity="getStatusLabel(slotProps.data.is_active)" />
+                            <Tag :value="slotProps.data.status" class="!text-sm uppercase"
+                                :severity="getStatusLabel(slotProps.data.status)" />
                         </template>
                         <template #editor="{ data, field }">
                             <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
@@ -252,7 +252,7 @@ onMounted(() => {
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
-                                <template v-if="hasPermission('edit users')">
+                                <template v-if="hasPermission('edit voucher subtypes')">
                                     <button v-tooltip="'Editar'"><i
                                             class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>

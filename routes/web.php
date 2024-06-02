@@ -2,9 +2,8 @@
 
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Users\RoleController;
 use App\Http\Controllers\Users\UserController;
-use App\Http\Controllers\Treasury\VoucherSubtypesController;
+use App\Http\Controllers\Treasury\VoucherSubtypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,11 +34,10 @@ Route::get('/home', function () {
 Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
     Route::resource('users', UserController::class);
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
-    // Route::resource('roles', RoleController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {
-    Route::resource('voucher-subtypes', VoucherSubtypesController::class);
+    Route::resource('voucher-subtypes', VoucherSubtypeController::class);
 });
 
 Route::middleware('auth')->group(function () {

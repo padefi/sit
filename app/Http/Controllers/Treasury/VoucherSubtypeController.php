@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Treasury;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\VoucherSubtypeRequest;
-use App\Http\Resources\Treasury\VoucherSubtypesResource;
-use App\Models\Treasury\VoucherSubtypes;
-use Illuminate\Http\Request;
+use App\Http\Resources\Treasury\VoucherSubtypeResource;
+use App\Models\Treasury\VoucherSubtype;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class VoucherSubtypesController extends Controller {
+class VoucherSubtypeController extends Controller {
     /**
      * Display a listing of the resource.
      */
@@ -24,10 +23,10 @@ class VoucherSubtypesController extends Controller {
     }
 
     public function index(): Response {
-        $voucherSubtypes = VoucherSubtypes::all();
+        $voucherSubtypes = VoucherSubtype::all();
         
         return Inertia::render('Treasury/VoucherSubtypes/VoucherSubtypesIndex', [
-            'voucherSubtypes' => VoucherSubtypesResource::collection($voucherSubtypes),
+            'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
         ]);
     }
 
@@ -35,26 +34,26 @@ class VoucherSubtypesController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(VoucherSubtypeRequest $request) {
-        $voucherSubtypesName = VoucherSubtypes::where('name', $request->name)->first();
+        $voucherSubtypeName = VoucherSubtype::where('name', $request->name)->first();
 
-        if ($voucherSubtypesName) {
+        if ($voucherSubtypeName) {
             throw ValidationException::withMessages([
                 'message' => trans('El subtipo ya se encuentra ingresado.')
             ]);
         }
 
-        $VoucherSubtypes = VoucherSubtypes::create([
+        $VoucherSubtype = VoucherSubtype::create([
             'name' => $request->name,
             'idUserCreated' => auth()->user()->id,
             'created_at' => now(),
-            'status' => ($request->is_active) ? 1 : 0,
+            'status' => ($request->status) ? 1 : 0,
         ]);
 
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
                 'message' => 'Subtipo agregado exitosamente.',
-                'voucherSubtypes' => $VoucherSubtypes,
+                'voucherSubtype' => $VoucherSubtype,
             ],
             'success' => true,
         ]);
@@ -63,7 +62,28 @@ class VoucherSubtypesController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, VoucherSubtypes $voucherSubtypes) {
-        //
+    public function update(VoucherSubtypeRequest $request, VoucherSubtype $voucherSubtype) {
+        $voucherSubtypeName = VoucherSubtype::where('name', $request->name)->whereNot('id', $voucherSubtype->id)->first();
+
+        if ($voucherSubtypeName) {
+            throw ValidationException::withMessages([
+                'message' => trans('El subtipo ya se encuentra ingresado.')
+            ]);
+        }
+
+        $voucherSubtype->update([
+            'name' => $request->name,
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+            'status' => ($request->status) ? 1 : 0,
+        ]);
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Subtipo modificado exitosamente.'
+            ],
+            'success' => true,
+        ]);
     }
 }

@@ -5,12 +5,12 @@ namespace App\Models\Treasury;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VoucherSubtypes extends Model
+class VoucherSubtype extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name', // Agrega 'name' aquí
+        'name',
         'idUserCreated',
         'created_at',
         'idUserUpdated',
