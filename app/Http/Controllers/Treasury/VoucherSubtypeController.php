@@ -20,12 +20,13 @@ class VoucherSubtypeController extends Controller {
         $this->middleware('check.permission:view voucher subtypes')->only('index');
         $this->middleware('check.permission:create voucher subtypes')->only('store');
         $this->middleware('check.permission:edit voucher subtypes')->only('update');
+        $this->middleware('check.permission:view voucher subtypes')->only('info');
     }
 
     public function index(): Response {
         $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated'])->get();
         
-        return Inertia::render('Treasury/VoucherSubtypes/VoucherSubtypesIndex', [
+        return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [
             'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
         ]);
     }
@@ -42,10 +43,11 @@ class VoucherSubtypeController extends Controller {
             ]);
         }
 
-        $VoucherSubtype = VoucherSubtype::create([
+        $voucherSubtype = VoucherSubtype::create([
             'name' => $request->name,
             'idUserCreated' => auth()->user()->id,
             'created_at' => now(),
+            'updated_at' => null,
             'status' => ($request->status) ? 1 : 0,
         ]);
 
@@ -53,7 +55,7 @@ class VoucherSubtypeController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Subtipo agregado exitosamente.',
-                'voucherSubtype' => $VoucherSubtype,
+                'voucherSubtype' => $voucherSubtype,
             ],
             'success' => true,
         ]);
@@ -81,9 +83,21 @@ class VoucherSubtypeController extends Controller {
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
-                'message' => 'Subtipo modificado exitosamente.'
+                'message' => 'Subtipo modificado exitosamente.',
             ],
             'success' => true,
         ]);
+    }
+
+    public function info(VoucherSubtype $voucherSubtype) {
+        $voucherSubtype = VoucherSubtype::with(['userCreated', 'userUpdated'])->where('id', $voucherSubtype->id)->first();
+
+        if (!$voucherSubtype) {
+            throw ValidationException::withMessages([
+                'message' => trans('Subtipo no encontrado.')
+            ]);
+        }
+
+        return new VoucherSubtypeResource($voucherSubtype);
     }
 }

@@ -30,7 +30,7 @@ const items = ref([
                 label: 'Gastos',
                 icon: 'pi pi-list',
                 method: 'get',
-                // route: 'voucher-subtypes.index',
+                route: 'voucher-expenses.index',
             },
         ]
     },

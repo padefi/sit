@@ -4,6 +4,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Treasury\VoucherSubtypeController;
+use App\Http\Controllers\Treasury\VoucherExpenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,12 @@ Route::group(['middleware' => ['auth', 'check.permission:view users']], function
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {
     Route::resource('voucher-subtypes', VoucherSubtypeController::class);
+    Route::get('/voucher-subtypes/{voucher_subtype}/info', [VoucherSubtypeController::class, 'info'])->name('voucher-subtypes.info');
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']], function () {
+    Route::resource('voucher-expenses', VoucherExpenseController::class);
+    Route::get('/voucher-expenses/{voucher_expense}/info', [VoucherExpenseController::class, 'info'])->name('voucher-expenses.info');
 });
 
 Route::middleware('auth')->group(function () {

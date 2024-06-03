@@ -75,7 +75,7 @@ const addNewUser = () => {
     originalUsersArray.value = [...usersArray.value];
 
     const newUser = {
-        id: createId(),
+        id: crypto.randomUUID(),
         surname: newRow.value?.surname,
         name: newRow.value?.name,
         email: newRow.value?.email,
@@ -89,17 +89,6 @@ const addNewUser = () => {
     editing.value = true;
     editingRows.value = [newUser];
 };
-
-const createId = () => {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return id;
-}
 
 const onRowEditInit = (event) => {
     originalUsersArray.value = [...usersArray.value];
@@ -179,6 +168,7 @@ const onRowEditSave = (event) => {
                 newData.condition = 'editUser';
                 newData.id = result.props.flash.info.user.id;
                 newData.username = result.props.flash.info.user.username;
+                newRow.value = [];
             },
             onError: () => {
                 usersArray.value = [...originalUsersArray.value];

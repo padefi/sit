@@ -11,15 +11,15 @@ import { toastService } from '@/composables/toastService'
 toastService();
 
 const props = defineProps({
-    voucherSubtypes: {
+    voucherExpenses: {
         type: Object,
         default: () => ({}),
     },
 });
 
 const { hasPermission } = usePermissions();
-const voucherSubtypesArray = ref([]);
-const originalVoucherSubtypesArray = ref([]);
+const voucherExpensesArray = ref([]);
+const originalVoucherExpensesArray = ref([]);
 const toast = useToast();
 const newRow = ref([]);
 const editingRows = ref([]);
@@ -27,7 +27,7 @@ const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
 
-voucherSubtypesArray.value = props.voucherSubtypes;
+voucherExpensesArray.value = props.voucherExpenses;
 
 const statuses = ref([
     { label: 'ACTIVO', value: 'ACTIVO' },
@@ -47,44 +47,33 @@ const getStatusLabel = (status) => {
     }
 };
 
-const addNewVoucherSubtype = () => {
+const addNewVoucherExpense = () => {
     if (editing.value) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de agregar un subtipo.',
+            detail: 'Debe guardar los cambios antes de agregar un gasto.',
             life: 3000,
         });
 
         return;
     }
 
-    originalVoucherSubtypesArray.value = [...voucherSubtypesArray.value];
+    originalVoucherExpensesArray.value = [...voucherExpensesArray.value];
 
-    const newVoucherSubtype = {
-        id: createId(),
+    const newVoucherExpense = {
+        id: crypto.randomUUID(),
         name: newRow.value?.name,
         status: newRow.value?.status,
-        condition: 'newVoucherSubtype',
+        condition: 'newVoucherExpense',
     };
 
-    voucherSubtypesArray.value.unshift(newVoucherSubtype);
+    voucherExpensesArray.value.unshift(newVoucherExpense);
     editing.value = true;
-    editingRows.value = [newVoucherSubtype];
+    editingRows.value = [newVoucherExpense];
 };
 
-const createId = () => {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return id;
-}
-
 const onRowEditInit = (event) => {
-    originalVoucherSubtypesArray.value = [...voucherSubtypesArray.value];
+    originalVoucherExpensesArray.value = [...voucherExpensesArray.value];
     editingRows.value = [event.data];
 }
 
@@ -120,10 +109,10 @@ const validate = (event, saveCallback, data) => {
         return;
     }
 
-    if (data.condition === 'newVoucherSubtype') {
+    if (data.condition === 'newVoucherExpense') {
         confirm.require({
             target: event.currentTarget,
-            message: '¿Está seguro de agrear el subtipo?',
+            message: '¿Está seguro de agrear el gasto?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
                 newRow.value = data;
@@ -136,7 +125,7 @@ const validate = (event, saveCallback, data) => {
 
     confirm.require({
         target: event.currentTarget,
-        message: '¿Está seguro de modificar el subtipo?',
+        message: '¿Está seguro de modificar el gasto?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             saveCallback(event);
@@ -152,28 +141,29 @@ const onRowEditSave = (event) => {
         status: newData.status === 'ACTIVO' ? 1 : 0,
     })
 
-    if (newData.condition === 'newVoucherSubtype') {
-        form.post(route("voucher-subtypes.store", newData.id), {
+    if (newData.condition === 'newVoucherExpense') {
+        form.post(route("voucher-expenses.store", newData.id), {
             onSuccess: (result) => {
                 editing.value = false;
-                newData.condition = 'editVoucherSubtype';
-                newData.id = result.props.flash.info.voucherSubtype.id;
-                newData.name = result.props.flash.info.voucherSubtype.name;
+                newData.condition = 'editVoucherExpense';
+                newData.id = result.props.flash.info.voucherExpense.id;
+                newData.name = result.props.flash.info.voucherExpense.name;
+                newRow.value = [];
             },
             onError: () => {
-                voucherSubtypesArray.value = [...originalVoucherSubtypesArray.value];
+                voucherExpensesArray.value = [...originalVoucherExpensesArray.value];
                 editing.value = false;
-                addNewVoucherSubtype();
+                addNewVoucherExpense();
             }
         });
 
         return;
     }
-    
-    form.put(route("voucher-subtypes.update", newData.id), {
+
+    form.put(route("voucher-expenses.update", newData.id), {
         onSuccess: () => {
             editing.value = false;
-            voucherSubtypesArray.value[index] = newData;
+            voucherExpensesArray.value[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -183,15 +173,15 @@ const onRowEditSave = (event) => {
 };
 
 const onRowEditCancel = () => {
-    voucherSubtypesArray.value = [...originalVoucherSubtypesArray.value];
+    voucherExpensesArray.value = [...originalVoucherExpensesArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
 };
 
 onMounted(() => {
-    props.voucherSubtypes.map((voucherSubtype) => {
-        voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
+    props.voucherExpenses.map((voucherExpense) => {
+        voucherExpense.status = voucherExpense.status === 1 ? 'ACTIVO' : 'INACTIVO';
     });
 });
 
@@ -202,20 +192,30 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 
 const info = (data) => {
-    dialog.open(infoModal, {
-        props: {
-            header: `Información del subtipo ${data.name.toUpperCase()}`,
-            style: {
-                width: '50vw',
-            },
-            breakpoints: {
-                '960px': '75vw',
-                '640px': '90vw'
-            },
-            modal: true
-        },
-        data: data
-    });
+    axios.get(`/voucher-expenses/${data.id}/info`)
+        .then((response) => {
+            dialog.open(infoModal, {
+                props: {
+                    header: `Información del gasto ${data.name.toUpperCase()}`,
+                    style: {
+                        width: '50vw',
+                    },
+                    breakpoints: {
+                        '960px': '75vw',
+                        '640px': '90vw'
+                    },
+                    modal: true
+                },
+                data: response.data
+            });
+        })
+        .catch((error) => {
+            toast.add({
+                severity: 'error',
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
 }
 /*  */
 </script>
@@ -226,29 +226,28 @@ const info = (data) => {
             <template #title>
                 <div class="flex justify-between items-center mx-4">
                     <div class="align-left">
-                        <h3 class="uppercase">Subtipos</h3>
+                        <h3 class="uppercase">Gastos</h3>
                     </div>
-                    <template v-if="hasPermission('create voucher subtypes')">
+                    <template v-if="hasPermission('create voucher expenses')">
                         <div class="align-right">
-                            <Button label="Agregar subtipo" severity="info" outlined icon="pi pi-folder-plus" size="large"
-                                @click="addNewVoucherSubtype($event)" />
+                            <Button label="Agregar gasto" severity="info" outlined icon="pi pi-folder-plus" size="large"
+                                @click="addNewVoucherExpense($event)" />
                         </div>
                     </template>
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="voucherSubtypesArray" editMode="row" dataKey="id"
+                <DataTable v-model:editingRows="editingRows" :value="voucherExpensesArray" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
-                            root: { class: 'p-paginator-custom'},
+                            root: { class: 'p-paginator-custom' },
                             current: { class: 'p-paginator-current' },
                         }
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="{first} - {last} de {totalRecords}"
-                    class="data-table">
+                    currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="name" header="Descripción" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
@@ -256,7 +255,7 @@ const info = (data) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="subtypeExpenseRelationship" header="Gastos relacionados" style="width: 10%;">
+                    <Column field="expenseExpenseRelationship" header="Subtipos relacionados" style="width: 10%;">
                     </Column>
                     <Column field="status" header="Estado" style="width: 10%;">
                         <template #body="slotProps">
@@ -276,14 +275,13 @@ const info = (data) => {
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
-                                <template v-if="hasPermission('edit voucher subtypes')">
+                                <template v-if="hasPermission('edit voucher expenses')">
                                     <button v-tooltip="'Editar'"><i
                                             class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
-                                <template v-if="hasPermission('permission users')">
-                                    <button v-tooltip="'+Info'"><i
-                                            class="pi pi-id-card text-cyan-500 text-2xl"
+                                <template v-if="hasPermission('view users')">
+                                    <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                             @click="info(data)"></i></button>
                                 </template>
                             </div>
