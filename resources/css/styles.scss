@@ -1,3 +1,14 @@
+.menubar {
+    ul[data-pc-section="submenu"],
+    div[data-pc-section="content"] {
+        border-radius: 6px;
+    }
+    
+    a[data-pc-section="action"] {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
 .data-table {
     border: 0.1rem;
     border-style: solid;

@@ -11,15 +11,15 @@ import { toastService } from '@/composables/toastService'
 toastService();
 
 const props = defineProps({
-    voucherSubtypes: {
+    banks: {
         type: Object,
         default: () => ({}),
     },
 });
 
 const { hasPermission } = usePermissions();
-const voucherSubtypesArray = ref([]);
-const originalVoucherSubtypesArray = ref([]);
+const banksArray = ref([]);
+const originalBanksArray = ref([]);
 const toast = useToast();
 const newRow = ref([]);
 const editingRows = ref([]);
@@ -27,53 +27,45 @@ const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
 
-voucherSubtypesArray.value = props.voucherSubtypes;
+banksArray.value = props.banks;
 
-const statuses = ref([
-    { label: 'ACTIVO', value: 'ACTIVO' },
-    { label: 'INACTIVO', value: 'INACTIVO' }
-]);
-
-const getStatusLabel = (status) => {
-    switch (status) {
-        case 'ACTIVO':
-            return 'success';
-
-        case 'INACTIVO':
-            return 'danger';
-
-        default:
-            return null;
+const validateEmail = value => {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
+        return true
+    } else {
+        return false
     }
-};
+}
 
-const addNewVoucherSubtype = () => {
+const addNewBank = () => {
     if (editing.value) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de agregar un subtipo.',
+            detail: 'Debe guardar los cambios antes de agregar un banco.',
             life: 3000,
         });
 
         return;
     }
 
-    originalVoucherSubtypesArray.value = [...voucherSubtypesArray.value];
+    originalBanksArray.value = [...banksArray.value];
 
-    const newVoucherSubtype = {
+    const newBank = {
         id: crypto.randomUUID(),
         name: newRow.value?.name,
-        status: newRow.value?.status,
-        condition: 'newVoucherSubtype',
+        address: newRow.value?.address,
+        phone: newRow.value?.phone,
+        email: newRow.value?.email,
+        condition: 'newBank',
     };
 
-    voucherSubtypesArray.value.unshift(newVoucherSubtype);
+    banksArray.value.unshift(newBank);
     editing.value = true;
-    editingRows.value = [newVoucherSubtype];
+    editingRows.value = [newBank];
 };
 
 const onRowEditInit = (event) => {
-    originalVoucherSubtypesArray.value = [...voucherSubtypesArray.value];
+    originalBanksArray.value = [...banksArray.value];
     editingRows.value = [event.data];
 }
 
@@ -81,7 +73,7 @@ const disabledEditButtons = (callback, event) => {
     if (editing.value) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de modificar un sutipo.',
+            detail: 'Debe guardar los cambios antes de modificar un banco.',
             life: 3000,
         });
 
@@ -99,7 +91,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 const validate = (event, saveCallback, data) => {
-    if (!data.name || !data.status) {
+    if (!data.name || !data.address || !data.phone || !data.email) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -109,10 +101,10 @@ const validate = (event, saveCallback, data) => {
         return;
     }
 
-    if (data.condition === 'newVoucherSubtype') {
+    if (data.condition === 'newBank') {
         confirm.require({
             target: event.currentTarget,
-            message: '¿Está seguro de agrear el subtipo?',
+            message: '¿Está seguro de agrear el banco?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
                 newRow.value = data;
@@ -125,7 +117,7 @@ const validate = (event, saveCallback, data) => {
 
     confirm.require({
         target: event.currentTarget,
-        message: '¿Está seguro de modificar el subtipo?',
+        message: '¿Está seguro de modificar el banco?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             saveCallback(event);
@@ -138,32 +130,39 @@ const onRowEditSave = (event) => {
 
     const form = useForm({
         name: newData.name,
-        status: newData.status === 'ACTIVO' ? 1 : 0,
+        address: newData.address,
+        phone: newData.phone,
+        email: newData.email,
+        notes: newData.notes,
     })
 
-    if (newData.condition === 'newVoucherSubtype') {
-        form.post(route("voucher-subtypes.store", newData.id), {
+    if (newData.condition === 'newBank') {
+        form.post(route("banks.store", newData.id), {
             onSuccess: (result) => {
                 editing.value = false;
-                newData.condition = 'editVoucherSubtype';
-                newData.id = result.props.flash.info.voucherSubtype.id;
-                newData.name = result.props.flash.info.voucherSubtype.name;
+                newData.condition = 'editBank';
+                newData.id = result.props.flash.info.bank.id;
+                newData.name = result.props.flash.info.bank.name;
+                newData.address = result.props.flash.info.bank.address;
+                newData.phone = result.props.flash.info.bank.phone;
+                newData.email = result.props.flash.info.bank.email;
+                newData.notes = result.props.flash.info.bank.notes;
                 newRow.value = [];
             },
             onError: () => {
-                voucherSubtypesArray.value = [...originalVoucherSubtypesArray.value];
+                banksArray.value = [...originalBanksArray.value];
                 editing.value = false;
-                addNewVoucherSubtype();
+                addNewBank();
             }
         });
 
         return;
     }
 
-    form.put(route("voucher-subtypes.update", newData.id), {
+    form.put(route("banks.update", newData.id), {
         onSuccess: () => {
             editing.value = false;
-            voucherSubtypesArray.value[index] = newData;
+            banksArray.value[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -173,16 +172,14 @@ const onRowEditSave = (event) => {
 };
 
 const onRowEditCancel = () => {
-    voucherSubtypesArray.value = [...originalVoucherSubtypesArray.value];
+    banksArray.value = [...originalBanksArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
 };
 
 onMounted(() => {
-    props.voucherSubtypes.map((voucherSubtype) => {
-        voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
-    });
+    console.log(props.banks);
 });
 
 /*  */
@@ -192,11 +189,11 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 
 const info = (data) => {
-    axios.get(`/voucher-subtypes/${data.id}/info`)
+    axios.get(`/banks/${data.id}/info`)
         .then((response) => {
             dialog.open(infoModal, {
                 props: {
-                    header: `Información del subtipo ${data.name.toUpperCase()}`,
+                    header: `Información del banco ${data.name.toUpperCase()}`,
                     style: {
                         width: '50vw',
                     },
@@ -226,18 +223,18 @@ const info = (data) => {
             <template #title>
                 <div class="flex justify-between items-center mx-4">
                     <div class="align-left">
-                        <h3 class="uppercase">Subtipos</h3>
+                        <h3 class="uppercase">Bancos</h3>
                     </div>
-                    <template v-if="hasPermission('create voucher subtypes')">
+                    <template v-if="hasPermission('create banks')">
                         <div class="align-right">
-                            <Button label="Agregar subtipo" severity="info" outlined icon="pi pi-folder-plus"
-                                size="large" @click="addNewVoucherSubtype($event)" />
+                            <Button label="Agregar banco" severity="info" outlined icon="pi pi-building-columns"
+                                size="large" @click="addNewBank($event)" />
                         </div>
                     </template>
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="voucherSubtypesArray" editMode="row" dataKey="id"
+                <DataTable v-model:editingRows="editingRows" :value="banksArray" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
@@ -248,34 +245,41 @@ const info = (data) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
-                    <Column field="name" header="Descripción" style="width: 10%;">
+                    <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Descripcion" style="width: 100%;" />
+                                placeholder="Nombre" style="width: 100%;" />
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="subtypeExpenseRelationship" header="Gastos relacionados" style="width: 10%;">
-                    </Column>
-                    <Column field="status" header="Estado" style="width: 10%;">
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.status" class="!text-sm uppercase"
-                                :severity="getStatusLabel(slotProps.data.status)" />
-                        </template>
+                    <Column field="address" header="Dirección" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
-                                placeholder="Seleccione un estado">
-                                <template #option="slotProps">
-                                    <Tag :value="slotProps.option.value"
-                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
-                                </template>
-                            </Dropdown>
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
+                                placeholder="Dirección" style="width: 100%;" />
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
+                    </Column>
+                    <Column field="phone" header="Teléfono" style="width: 10%;">
+                        <template #editor="{ data, field }">
+                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
+                                placeholder="Teléfono" style="width: 100%;" />
+                            <InputError :message="!data[field] ? rules : ''" />
+                        </template>
+                    </Column>
+                    <Column field="email" header="Email" style="width: 15%;">
+                        <template #editor="{ data, field }">
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email"  style="width: 100%;" />
+                            <InputError
+                                :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
+                        </template>
+                    </Column>
+                    <Column field="bankAccountRelationship" header="Cuentas asociadas" style="width: 10%;">
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
-                                <template v-if="hasPermission('edit voucher subtypes')">
+                                <template v-if="hasPermission('edit banks')">
                                     <button v-tooltip="'Editar'"><i
                                             class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>

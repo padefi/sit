@@ -4,11 +4,13 @@ namespace App\Http\Requests\Treasury;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VoucherExpenseRequest extends FormRequest {
+class BankRequest extends FormRequest
+{
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool {
+    public function authorize(): bool
+    {
         return true;
     }
 
@@ -20,7 +22,9 @@ class VoucherExpenseRequest extends FormRequest {
     public function rules(): array {
         return [
             'name' => ['required', 'string', 'max:100'],
-            'is_active' => ['boolean'],
+            'address' => ['required', 'string', 'max:100'],
+            'phone' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'string', 'max:100'],
         ];
     }
 
@@ -28,7 +32,12 @@ class VoucherExpenseRequest extends FormRequest {
         return [
             'name.required' => 'La Descripción es obligatoria.',
             'name.max' => 'La Descripción no puede exceder los :max caracteres.',
-            'is_active.required' => 'El Estado es obligatorio.',
+            'address.required' => 'La Dirección es obligatoria.',
+            'address.max' => 'La Dirección no puede exceder los :max caracteres.',
+            'phone.required' => 'El teléfono es obligatoria.',
+            'phone.max' => 'El teléfono no puede exceder los :max caracteres.',
+            'email.required' => 'El Email es obligatoria.',
+            'email.max' => 'El Email no puede exceder los :max caracteres.',
         ];
     }
 }

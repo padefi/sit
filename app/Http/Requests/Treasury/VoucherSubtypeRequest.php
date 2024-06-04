@@ -27,7 +27,7 @@ class VoucherSubtypeRequest extends FormRequest {
     public function messages(): array {
         return [
             'name.required' => 'La Descripción es obligatoria.',
-            'name.max' => 'El Descripción no puede exceder los :max caracteres.',
+            'name.max' => 'La Descripción no puede exceder los :max caracteres.',
             'is_active.required' => 'El Estado es obligatorio.',
         ];
     }

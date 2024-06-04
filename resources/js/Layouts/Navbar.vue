@@ -14,11 +14,13 @@ const items = ref([
     },
     {
         label: 'Tesorería',
-        icon: 'pi pi-building-columns',
+        icon: 'pi pi-money-bill',
         items: [
             {
                 label: 'Comprobantes',
                 icon: 'pi pi-dollar',
+                method: 'get',
+                route: 'voucher-subtypes.index',
             },
             {
                 label: 'Subtipos',
@@ -31,6 +33,12 @@ const items = ref([
                 icon: 'pi pi-list',
                 method: 'get',
                 route: 'voucher-expenses.index',
+            },
+            {
+                label: 'Bancos',
+                icon: 'pi pi-building-columns',
+                method: 'get',
+                route: 'banks.index',
             },
         ]
     },
@@ -65,10 +73,10 @@ const userItems = ref([
 ]);
 </script>
 <template>
-    <Menubar :model="items">
+    <Menubar :model="items" class="menubar">
         <template #item="{ item, props, hasSubmenu, root }">
             <Link v-if="item.route" v-ripple :href="route(item.route)" :method="item.method" as="button"
-                class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400">
+                class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400 hover:rounded-md">
             <span :class="item.icon"></span>
             <span class="ml-2">{{ item.label }}</span>
             </Link>

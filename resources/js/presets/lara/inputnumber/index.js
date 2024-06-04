@@ -24,6 +24,10 @@ export default {
                 // Font
                 'font-sans leading-none',
 
+                // Borders
+                'border-0 border-b appearance-none',
+                'focus:outline-none focus:ring-0 peer',
+
                 //Text
                 { 'text-center': parent.props.showButtons && parent.props.buttonLayout == 'vertical' },
 
@@ -32,7 +36,7 @@ export default {
                 'm-0',
 
                 // Shape
-                'rounded-lg',
+                // 'rounded-lg',
                 { 'rounded-tr-none rounded-br-none': parent.props.showButtons },
                 { 'rounded-tl-none rounded-bl-none': parent.props.showButtons && parent.props.buttonLayout == 'horizontal' },
                 { 'rounded-none': parent.props.showButtons && parent.props.buttonLayout == 'vertical' },
@@ -51,7 +55,7 @@ export default {
                 { 'border-red-500 dark:border-red-400': parent.props.invalid },
 
                 // States
-                { 'hover:border-primary-500 dark:hover:border-primary-400': !parent.props.invalid },
+                { 'hover:border-primary-500 dark:hover:border-primary-400': !context.disabled && !parent.props.invalid },
                 'focus:outline-none focus:outline-offset-0 focus:ring focus:ring-primary-500/50 dark:focus:ring-primary-400/50 focus:z-10',
                 { 'opacity-60 select-none pointer-events-none cursor-default': context.disabled },
 
