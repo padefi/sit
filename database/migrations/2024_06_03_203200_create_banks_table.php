@@ -15,9 +15,9 @@ return new class extends Migration {
             $table->string('address', 100)->collation('utf8mb4_general_ci');
             $table->string('phone', 100)->collation('utf8mb4_general_ci');
             $table->string('email', 100)->collation('utf8mb4_general_ci');
-            $table->string('notes', 250)->collation('utf8mb4_general_ci');
+            $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
             $table->unsignedBigInteger('idUserCreated');
-            $table->unsignedBigInteger('idUserUpdated')->nullable();;
+            $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
 
             $table->index('idUserCreated');

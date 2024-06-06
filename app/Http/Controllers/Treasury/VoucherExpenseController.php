@@ -24,7 +24,7 @@ class VoucherExpenseController extends Controller {
     }
 
     public function index(): Response {
-        $voucherExpenses = VoucherExpense::with(['userCreated', 'userUpdated'])->get();
+        $voucherExpenses = VoucherExpense::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
         
         return Inertia::render('Treasury/Voucher/VoucherExpensesIndex', [
             'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),

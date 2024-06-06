@@ -21,7 +21,7 @@ class BankController extends Controller {
     }
 
     public function index(): Response {
-        $banks = Bank::with(['userCreated', 'userUpdated'])->get();
+        $banks = Bank::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
         
         return Inertia::render('Treasury/Bank/BanksIndex', [
             'banks' => BankResource::collection($banks),

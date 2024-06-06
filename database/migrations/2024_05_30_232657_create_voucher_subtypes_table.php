@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name', 100)->collation('utf8mb4_general_ci');
             $table->unsignedBigInteger('idUserCreated');
-            $table->unsignedBigInteger('idUserUpdated')->nullable();;
+            $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
             $table->boolean('status')->default(true);
 
