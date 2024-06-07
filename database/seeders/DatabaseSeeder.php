@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call(RolePermissionSeeder::class);
         $this->call(UserPermissionSeeder::class);
         $this->call(BankSeeder::class);
+        $this->call(BankAccountTypeSeeder::class);
+        $this->call(BankAccountSeeder::class);
         $this->call(VoucherSubtypeSeeder::class);
         $this->call(VoucherExpenseSeeder::class);
     }

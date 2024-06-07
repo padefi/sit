@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Treasury;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\BankRequest;
+use App\Http\Resources\Treasury\BankAccountResource;
 use App\Http\Resources\Treasury\BankResource;
 use App\Models\Treasury\Bank;
+use App\Models\Treasury\BankAccount;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -22,9 +24,11 @@ class BankController extends Controller {
 
     public function index(): Response {
         $banks = Bank::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
-        
+        $bankAccounts = BankAccount::with(['bank', 'accountType', 'userCreated', 'userUpdated'])->orderBy('accountNumber', 'asc')->get();
+
         return Inertia::render('Treasury/Bank/BanksIndex', [
             'banks' => BankResource::collection($banks),
+            'bankAccounts' => BankAccountResource::collection($bankAccounts),
         ]);
     }
 

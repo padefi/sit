@@ -15,19 +15,27 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    bankAccounts: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission } = usePermissions();
 const banksArray = ref([]);
 const originalBanksArray = ref([]);
+const bankAccountsArray = ref([]);
+const originalBankAccountsArray = ref([]);
 const toast = useToast();
 const newRow = ref([]);
 const editingRows = ref([]);
+const expandedRows = ref({});
 const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
 
 banksArray.value = props.banks;
+bankAccountsArray.value = props.bankAccounts;
 
 const validateEmail = value => {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
@@ -180,6 +188,7 @@ const onRowEditCancel = () => {
 
 onMounted(() => {
     console.log(props.banks);
+    console.log(props.bankAccounts);
 });
 
 /*  */
@@ -234,8 +243,8 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="banksArray" editMode="row" dataKey="id"
-                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="banksArray"
+                    editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -245,6 +254,7 @@ const info = (data) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                    <Column expander style="width: 1%" />
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
@@ -269,7 +279,8 @@ const info = (data) => {
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]"
-                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email"  style="width: 100%;" />
+                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email"
+                                style="width: 100%;" />
                             <InputError
                                 :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
@@ -300,6 +311,14 @@ const info = (data) => {
                             </div>
                         </template>
                     </Column>
+                    <template #expansion="banksArray">
+                        <DataTable :value="banksArray" editMode="row" dataKey="id" class="data-table">
+                            <Column field="name" header="Nombre"></Column>
+                            <Column field="address" header="Dirección"></Column>
+                            <Column field="phone" header="Telfoon"></Column>
+                            <Column field="email" header="Email"></Column>
+                        </DataTable>
+                    </template>
                 </DataTable>
             </template>
         </Card>
