@@ -4,13 +4,11 @@ namespace App\Http\Requests\Treasury;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class BankRequest extends FormRequest
-{
+class BankRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
+    public function authorize(): bool {
         return true;
     }
 

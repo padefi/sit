@@ -34,8 +34,32 @@ const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
 
-banksArray.value = props.banks;
-bankAccountsArray.value = props.bankAccounts;
+const dataArray = ref([]);
+const originalDataArray = ref([]);
+props.banks.map((bank) => {
+    const bankAccount = props.bankAccounts
+        .filter(account => account.bank.id === bank.id)
+        .map(account => ({
+            id: account.id,
+            idAT: account.accountType.id,
+            accountType: account.accountType.name,
+            accountNumber: account.accountNumber,
+            cbu: account.cbu,
+            alias: account.alias,
+            status: account.status,
+        }));
+
+    const data = {
+        id: bank.id,
+        name: bank.name,
+        address: bank.address,
+        phone: bank.phone,
+        email: bank.email,
+        accounts: bankAccount,
+    };
+
+    dataArray.value.push(data);
+});
 
 const validateEmail = value => {
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
@@ -56,7 +80,7 @@ const addNewBank = () => {
         return;
     }
 
-    originalBanksArray.value = [...banksArray.value];
+    originalDataArray.value = [...dataArray.value];
 
     const newBank = {
         id: crypto.randomUUID(),
@@ -67,13 +91,13 @@ const addNewBank = () => {
         condition: 'newBank',
     };
 
-    banksArray.value.unshift(newBank);
+    dataArray.value.unshift(newBank);
     editing.value = true;
     editingRows.value = [newBank];
 };
 
 const onRowEditInit = (event) => {
-    originalBanksArray.value = [...banksArray.value];
+    originalDataArray.value = [...dataArray.value];
     editingRows.value = [event.data];
 }
 
@@ -158,7 +182,7 @@ const onRowEditSave = (event) => {
                 newRow.value = [];
             },
             onError: () => {
-                banksArray.value = [...originalBanksArray.value];
+                dataArray.value = [...originalDataArray.value];
                 editing.value = false;
                 addNewBank();
             }
@@ -170,7 +194,7 @@ const onRowEditSave = (event) => {
     form.put(route("banks.update", newData.id), {
         onSuccess: () => {
             editing.value = false;
-            banksArray.value[index] = newData;
+            dataArray.value[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -180,16 +204,11 @@ const onRowEditSave = (event) => {
 };
 
 const onRowEditCancel = () => {
-    banksArray.value = [...originalBanksArray.value];
+    dataArray.value = [...originalDataArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
 };
-
-onMounted(() => {
-    console.log(props.banks);
-    console.log(props.bankAccounts);
-});
 
 /*  */
 import infoModal from '@/Components/InfoModal.vue';
@@ -197,12 +216,15 @@ import { useDialog } from 'primevue/usedialog';
 
 const dialog = useDialog();
 
-const info = (data) => {
-    axios.get(`/banks/${data.id}/info`)
+const info = (route, data) => {
+    // console.log(`/${route}/${data.id}/info`);
+    axios.get(`/${route}/${data.id}/info`)
         .then((response) => {
+            const header = (route === 'banks') ? `Información del banco ${data.name.toUpperCase()}` : `Información de la cta. ${data.accountNumber.toUpperCase()}`;
+
             dialog.open(infoModal, {
                 props: {
-                    header: `Información del banco ${data.name.toUpperCase()}`,
+                    header: header,
                     style: {
                         width: '50vw',
                     },
@@ -224,6 +246,10 @@ const info = (data) => {
         });
 }
 /*  */
+
+onMounted(() => {
+    console.log(dataArray);
+});
 </script>
 
 <template>
@@ -243,8 +269,9 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="banksArray"
-                    editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="dataArray"
+                    :emptyMessage="'Sin bancos ingresados'" editMode="row" dataKey="id"
+                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -285,8 +312,7 @@ const info = (data) => {
                                 :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
-                    <Column field="bankAccountRelationship" header="Cuentas asociadas" style="width: 10%;">
-                    </Column>
+                    <!-- <Column field="accounts.length" header="Cuentas asociadas" style="width: 10%;"></Column> -->
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
@@ -297,7 +323,7 @@ const info = (data) => {
                                 </template>
                                 <template v-if="hasPermission('view users')">
                                     <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
-                                            @click="info(data)"></i></button>
+                                            @click="info('banks', data)"></i></button>
                                 </template>
                             </div>
                         </template>
@@ -311,13 +337,51 @@ const info = (data) => {
                             </div>
                         </template>
                     </Column>
-                    <template #expansion="banksArray">
-                        <DataTable :value="banksArray" editMode="row" dataKey="id" class="data-table">
-                            <Column field="name" header="Nombre"></Column>
-                            <Column field="address" header="Dirección"></Column>
-                            <Column field="phone" header="Telfoon"></Column>
-                            <Column field="email" header="Email"></Column>
-                        </DataTable>
+                    <template #expansion="{ data }">
+                        <template v-if="data.accounts.length == 0">
+                            <div class="text-center">
+                                <b class="uppercase text-red-500">Sin cuentas asociadas</b>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <DataTable :value="data.accounts" editMode="row" dataKey="id" class="data-table-expanded"
+                                :emptyMessage="'Sin cuentas asociadas'">
+                                <Column field="accountNumber" header="Nº Cuenta"></Column>
+                                <template #editor="{ data, field }">
+                                    <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
+                                        placeholder="Nombre" style="width: 100%;" />
+                                    <InputError :message="!data[field] ? rules : ''" />
+                                </template>
+                                <Column field="accountType" header="Tipo Cuenta"></Column>
+                                <Column field="cbu" header="CBU"></Column>
+                                <Column field="alias" header="ALIAS"></Column>
+                                <Column header="Acciones" :rowEditor="true">
+                                    <template #body="{ editorInitCallback, data }">
+                                        <div class="space-x-4 flex pl-6">
+                                            <template v-if="hasPermission('edit banks')">
+                                                <button v-tooltip="'Editar'"><i
+                                                        class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                                        @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
+                                            </template>
+                                            <template v-if="hasPermission('view users')">
+                                                <button v-tooltip="'+Info'"><i
+                                                        class="pi pi-id-card text-cyan-500 text-2xl"
+                                                        @click="info('bankAccounts', data)"></i></button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
+                                        <div class="space-x-4 flex pl-7">
+                                            <ConfirmPopup></ConfirmPopup>
+                                            <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
+                                                    @click="validate($event, editorSaveCallback, data)"></i></button>
+                                            <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
+                                                    @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
+                                        </div>
+                                    </template>
+                                </Column>
+                            </DataTable>
+                        </template>
                     </template>
                 </DataTable>
             </template>

@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\Treasury\BankController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Treasury\VoucherSubtypeController;
 use App\Http\Controllers\Treasury\VoucherExpenseController;
+use App\Http\Controllers\Treasury\BankController;
+use App\Http\Controllers\Treasury\BankAccountController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,8 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {
     Route::resource('banks', BankController::class);
     Route::get('/banks/{bank}/info', [BankController::class, 'info'])->name('banks.info');
+    Route::resource('bankAccounts', BankAccountController::class);
+    Route::get('/bankAccounts/{bankAccount}/info', [BankAccountController::class, 'info'])->name('bankAccounts.info');
 });
 
 Route::middleware('auth')->group(function () {

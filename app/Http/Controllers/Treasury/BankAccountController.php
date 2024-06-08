@@ -1,58 +1,40 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Treasury;
 
 use App\Http\Controllers\Controller;
-use App\Models\BankAccount;
+use App\Http\Requests\Treasury\BankAccountRequest;
+use App\Http\Resources\Treasury\BankAccountResource;
+use App\Models\Treasury\BankAccount;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class BankAccountController extends Controller {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index() {
-        //
+    public function __construct() {
+        $this->middleware('check.permission:create bank accounts')->only('store');
+        $this->middleware('check.permission:edit bank accounts')->only('update');
+        $this->middleware('check.permission:view users')->only('info');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(BankAccount $bankAccount) {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BankAccount $bankAccount) {
+    public function store(BankAccountRequest $request) {
         //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, BankAccount $bankAccount) {
+    public function update(BankAccountRequest $request, BankAccount $bankAccount) {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(BankAccount $bankAccount) {
-        //
+    public function info(BankAccount $bankAccount) {
+        $bankAccount = BankAccount::with(['userCreated', 'userUpdated'])->where('id', $bankAccount->id)->first();
+
+        if (!$bankAccount) {
+            throw ValidationException::withMessages([
+                'message' => trans('Cuenta bancaria no encontrada.')
+            ]);
+        }
+
+        return new BankAccountResource($bankAccount);
     }
 }

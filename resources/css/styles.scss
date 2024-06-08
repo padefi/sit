@@ -1,18 +1,27 @@
 .menubar {
+
     ul[data-pc-section="submenu"],
     div[data-pc-section="content"] {
         border-radius: 6px;
     }
-    
+
     a[data-pc-section="action"] {
         padding: 0.75rem 0.5rem;
     }
 }
 
 .data-table {
+    border-color: #bfdbfe !important;
+}
+
+.data-table-expanded {
+    border-color: #10b98180 !important;
+}
+
+.data-table,
+.data-table-expanded {
     border: 0.1rem;
     border-style: solid;
-    border-color: #bfdbfe;
     border-radius: 0.5rem;
     border-collapse: separate;
     overflow: hidden;
@@ -46,4 +55,23 @@
     div[data-pc-name="rowperpagedropdown"] {
         margin-left: 1%;
     }
+
+    tr[data-pc-section="rowexpansion"] // td[data-pc-section="rowexpansioncell"],
+
+        {
+        animation: slide-in .3s ease;
+    }
+}
+
+@keyframes slide-in {
+    0% {
+        // opacity: 0;
+        transform: scaleY(0);
+    }
+
+    100% {
+        // opacity: 1;
+        transform: scaleY(1);
+    }
+
 }

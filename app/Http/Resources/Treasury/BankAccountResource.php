@@ -18,10 +18,12 @@ class BankAccountResource extends JsonResource {
             'cbu' => $this->cbu,
             'alias' => $this->alias,
             'bank' => $this->bank ? [
+                'id' => $this->bank->id,
                 'name' => $this->bank->name,
             ] : null,
-            'accountType' => $this->bankAccountType ? [
-                'name' => $this->bankAccountType->name,
+            'accountType' => $this->accountType ? [
+                'id' => $this->accountType->id,
+                'name' => $this->accountType->name,
             ] : null,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
@@ -33,6 +35,7 @@ class BankAccountResource extends JsonResource {
             ] : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'status' => $this->status,
         ];
     }
 }

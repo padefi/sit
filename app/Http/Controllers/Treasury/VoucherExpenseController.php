@@ -20,7 +20,7 @@ class VoucherExpenseController extends Controller {
         $this->middleware('check.permission:view voucher expenses')->only('index');
         $this->middleware('check.permission:create voucher expenses')->only('store');
         $this->middleware('check.permission:edit voucher expenses')->only('update');
-        $this->middleware('check.permission:view voucher expenses')->only('info');
+        $this->middleware('check.permission:view users')->only('info');
     }
 
     public function index(): Response {
