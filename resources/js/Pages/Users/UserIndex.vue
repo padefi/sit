@@ -7,6 +7,7 @@ import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService'
+import { validateEmail } from '@/utils/validateFunctions';
 
 toastService();
 
@@ -34,14 +35,6 @@ const editing = ref(false);
 const confirm = useConfirm();
 
 usersArray.value = props.users;
-
-const validateEmail = value => {
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
-        return true
-    } else {
-        return false
-    }
-}
 
 const statuses = ref([
     { label: 'ACTIVO', value: 'ACTIVO' },

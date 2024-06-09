@@ -22,8 +22,8 @@ class BankAccountRequest extends FormRequest {
             'accountNumber' => ['required', 'string', 'max:50'],
             'cbu' => ['required', 'string', 'max:22'],
             'alias' => ['required', 'string', 'max:20'],
-            'idBank' => ['required', 'string', 'exists:banks,name'],
-            'idAT' => ['required', 'string', 'exists:bank_account_types,name'],
+            'idBank' => ['required', 'integer', 'exists:banks,id'],
+            'idAT' => ['required', 'integer', 'exists:bank_account_types,id'],
             'status' => ['boolean'],
         ];
     }

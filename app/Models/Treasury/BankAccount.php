@@ -14,8 +14,9 @@ class BankAccount extends Model {
     protected $fillable = [
         'idBank',
         'idAT',
-        'name',
         'accountNumber',
+        'cbu',
+        'alias',
         'idUserCreated',
         'created_at',
         'idUserUpdated',

@@ -32,7 +32,7 @@ class BankController extends Controller {
         return Inertia::render('Treasury/Bank/BanksIndex', [
             'banks' => BankResource::collection($banks),
             'bankAccounts' => BankAccountResource::collection($bankAccounts),
-            'bankAccountType' => BankAccountTypeResource::collection($bankAccountType),
+            'bankAccountTypes' => BankAccountTypeResource::collection($bankAccountType),
         ]);
     }
 
