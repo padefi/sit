@@ -21,7 +21,7 @@ class BankRequest extends FormRequest {
         return [
             'name' => ['required', 'string', 'max:100'],
             'address' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:100'],
+            'phone' => ['required', 'string', 'max:15'],
             'email' => ['required', 'string', 'max:100'],
         ];
     }

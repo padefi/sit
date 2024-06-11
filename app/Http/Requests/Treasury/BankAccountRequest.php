@@ -19,7 +19,7 @@ class BankAccountRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'accountNumber' => ['required', 'string', 'max:50'],
+            'accountNumber' => ['required', 'string', 'max:10'],
             'cbu' => ['required', 'string', 'max:22'],
             'alias' => ['required', 'string', 'max:20'],
             'idBank' => ['required', 'integer', 'exists:banks,id'],

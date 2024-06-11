@@ -1,30 +1,30 @@
 export const validateEmail = (value) => {
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value)) {
-        return true;
-    } else {
-        return false;
-    }
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
 };
+
+export const validatePhoneNumber = (value) => {
+    return /^[0-9-]{6,15}$/.test(value);
+}
+
+export const validateAccountNumber = (value) => {
+    return /^[0-9/]{6,10}$/.test(value);
+}
 
 /* CBU validation */
 export const validateCBU = (value) => {
-    if (/^[0-9]{22}$/.test(value)) {
-        const cod_bcra = value.substring(0, 3);
-        const sucursalNumber = value.substring(3, 7);
-        const accountNumber = value.substring(8, 21);
-        const validate1 = firstPart(cod_bcra, sucursalNumber);
-        const validate2 = secondPart(accountNumber);
-
-        const finalNumber = cod_bcra + sucursalNumber + validate1 + accountNumber  + validate2;
-
-        if(finalNumber === value) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
+    if (!/^[0-9]{22}$/.test(value)) {
         return false;
     }
+
+    const cod_bcra = value.substring(0, 3);
+    const sucursalNumber = value.substring(3, 7);
+    const accountNumber = value.substring(8, 21);
+    const validate1 = firstPart(cod_bcra, sucursalNumber);
+    const validate2 = secondPart(accountNumber);
+
+    const finalNumber = cod_bcra + sucursalNumber + validate1 + accountNumber + validate2;
+
+    return finalNumber === value;
 };
 
 const firstPart = (a, b) => {
@@ -38,7 +38,7 @@ const firstPart = (a, b) => {
         b[3] * 3;
 
     return (value = (10 - (value % 10)) % 10);
-}
+};
 
 const secondPart = (c) => {
     let value =
@@ -57,5 +57,11 @@ const secondPart = (c) => {
         c[12] * 3;
 
     return (value = (10 - (value % 10)) % 10);
-}
+};
 /* CBU validation */
+
+/* Alias validation */
+export const validateAlias = (value) => {
+    return /^[a-zA-Z0-9_.-]{6,22}$/.test(value);
+};
+/* Alias validation */

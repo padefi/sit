@@ -99,7 +99,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 const validate = (event, saveCallback, data) => {
-    if (!data.name || !data.status) {
+    if (!data.name.trim() || !data.status) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -250,9 +250,10 @@ const info = (data) => {
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="name" header="Descripción" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Descripcion" style="width: 100%;" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion"
+                                style="width: 100%;" maxlength="100" />
+                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="expenseExpenseRelationship" header="Subtipos relacionados" style="width: 10%;">
@@ -263,13 +264,14 @@ const info = (data) => {
                                 :severity="getStatusLabel(slotProps.data.status)" />
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
-                                placeholder="Seleccione un estado">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
+                                optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
                                         :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">

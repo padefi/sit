@@ -7,7 +7,7 @@ import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService'
-import { validateEmail, validateCBU } from '@/utils/validateFunctions';
+import { validatePhoneNumber, validateEmail, validateAccountNumber, validateCBU, validateAlias } from '@/utils/validateFunctions';
 
 toastService();
 
@@ -159,7 +159,7 @@ const addNewBank = () => {
 };
 
 const validateBank = (event, saveCallback, data) => {
-    if (!data.name || !data.address || !data.phone || !data.email) {
+    if (!data.name.trim() || !data.address.trim() || !validatePhoneNumber(data.phone) || !validateEmail(data.email)) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -288,7 +288,7 @@ const addNewBankAccount = (data) => {
 };
 
 const validateBankAccount = (event, saveCallback, data) => {
-    if (!data.idAT || !data.accountNumber || !data.cbu || !data.alias || !data.status) {
+    if (!data.idAT || !validateAccountNumber(data.accountNumber) || !validateCBU(data.cbu) || !validateAlias(data.alias) || !data.status) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -439,7 +439,8 @@ const info = (route, data) => {
                 <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="dataArray"
                     :emptyMessage="'Sin bancos ingresados'" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank"
-                    @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+                    @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
+                    @row-collapse="onRowCollapse($event)" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
@@ -451,32 +452,37 @@ const info = (route, data) => {
                     <Column expander style="width: 1%" />
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Nombre" style="width: 100%;" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre"
+                                style="width: 100%;" maxlength="100" />
+                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="address" header="Dirección" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Dirección" style="width: 100%;" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección"
+                                style="width: 100%;" maxlength="100" />
+                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="phone" header="Teléfono" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Teléfono" style="width: 100%;" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])"
+                                placeholder="Teléfono" style="width: 100%;" maxlength="15"
+                                onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
+                            <InputError
+                                :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]"
-                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email"
-                                style="width: 100%;" />
+                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
+                                placeholder="Email" style="width: 100%;" maxlength="100" />
                             <InputError
-                                :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
+                                :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
@@ -517,13 +523,15 @@ const info = (route, data) => {
                         <template v-else>
                             <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row"
                                 dataKey="id" class="data-table-expanded" :emptyMessage="'Sin cuentas asociadas'"
-                                @row-edit-init="onRowEditInitBankAccount($event)" @row-edit-save="onRowEditSaveBankAccount"
+                                @row-edit-init="onRowEditInitBankAccount($event)"
+                                @row-edit-save="onRowEditSaveBankAccount"
                                 @row-edit-cancel="onRowEditCancelBankAccount($event)">
                                 <Column field="accountNumber" header="Nº Cta.">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                            placeholder="Nº Cta." style="width: 100%;" />
-                                        <InputError :message="!data[field] ? rules : ''" />
+                                        <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field] || !validateAccountNumber(data[field])"
+                                            placeholder="Nº Cta." style="width: 100%;" maxlength="10"
+                                            onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
+                                        <InputError :message="!data[field] ? rules : validateAccountNumber(data[field]) ? '' : 'Nº Cta. invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="idAT" header="Tipo Cta.">
@@ -532,30 +540,34 @@ const info = (route, data) => {
                                             class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                                     </template>
                                     <template #editor="{ data, field }">
-                                        <Dropdown v-model="data[field]" :options="bankAccountTypesSelect"
-                                            optionLabel="label" optionValue="value"
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]"
+                                            :options="bankAccountTypesSelect" optionLabel="label" optionValue="value"
                                             placeholder="Seleccione un tipo de cta">
                                             <template #option="slotProps">
                                                 <Tag :value="slotProps.option.label"
                                                     class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                                             </template>
                                         </Dropdown>
+                                        <InputError :message="!data[field] ? rules : ''" />
                                     </template>
                                 </Column>
                                 <Column field="cbu" header="CBU">
                                     <template #editor="{ data, field }">
                                         <InputText v-model="data[field]"
                                             :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU"
-                                            style="width: 100%;" />
+                                            style="width: 100%;" :minlength="22" :maxlength="22"
+                                            onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
                                         <InputError
                                             :message="!data[field] ? rules : validateCBU(data[field]) ? '' : 'CBU invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="alias" header="ALIAS">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                            placeholder="Alias" style="width: 100%;" />
-                                        <InputError :message="!data[field] ? rules : ''" />
+                                        <InputText :class="'uppercase'" v-model="data[field]"
+                                            :invalid="!data[field] || !validateAlias(data[field])" placeholder="Alias"
+                                            style="width: 100%;" minlength="6" maxlength="20" />
+                                        <InputError
+                                            :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="status" header="Estado" style="width: 10%;">
@@ -564,14 +576,15 @@ const info = (route, data) => {
                                             :severity="getStatusLabel(slotProps.data.status)" />
                                     </template>
                                     <template #editor="{ data, field }">
-                                        <Dropdown v-model="data[field]" :options="statuses" optionLabel="label"
-                                            optionValue="value" placeholder="Seleccione un estado">
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
+                                            optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
                                             <template #option="slotProps">
                                                 <Tag :value="slotProps.option.value"
                                                     :severity="getStatusLabel(slotProps.option.value)"
                                                     class="!text-sm uppercase" />
                                             </template>
                                         </Dropdown>
+                                        <InputError :message="!data[field] ? rules : ''" />
                                     </template>
                                 </Column>
                                 <Column header="Acciones" :rowEditor="true">

@@ -109,7 +109,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 const validate = (event, saveCallback, data) => {
-    if (!data.surname || !data.name || !validateEmail(data.email) || !data.role || !data.is_active) {
+    if (!data.surname.trim() || !data.name.trim() || !validateEmail(data.email) || !data.role || !data.is_active) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -279,33 +279,33 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
-                            root: { class: 'p-paginator-custom'},
+                            root: { class: 'p-paginator-custom' },
                             current: { class: 'p-paginator-current' },
                         }
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="{first} - {last} de {totalRecords}"
-                    class="data-table">
+                    currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Apellido" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Apellido" />
+                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" :invalid="!data[field]"
-                                placeholder="Nombre" />
-                            <InputError :message="!data[field] ? rules : ''" />
+                            <InputText :class="'uppercase'" v-model="data[field]"
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" />
+                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]"
-                                :invalid="!data[field] || !validateEmail(data[field])" placeholder="Email" />
+                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
+                                placeholder="Email" />
                             <InputError
-                                :message="!data[field] ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
+                                :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
                     <Column field="username" header="Usuario" style="width: 10%;">
@@ -316,13 +316,14 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                 class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="rolesSelect" filter optionLabel="label"
-                                optionValue="value" placeholder="Seleccione un rol">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="rolesSelect" filter
+                                optionLabel="label" optionValue="value" placeholder="Seleccione un rol">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
                                         class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                                 </template>
                             </Dropdown>
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="is_active" header="Estado" style="width: 10%;">
@@ -331,13 +332,14 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                 :severity="getStatusLabel(slotProps.data.is_active)" />
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :options="statuses" optionLabel="label" optionValue="value"
-                                placeholder="Seleccione un estado">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
+                                optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
                                         :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
+                            <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
