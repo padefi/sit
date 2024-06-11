@@ -56,22 +56,34 @@
         margin-left: 1%;
     }
 
-    tr[data-pc-section="rowexpansion"] // td[data-pc-section="rowexpansioncell"],
-
-        {
-        animation: slide-in .3s ease;
+    div[data-pc-name="datatable"] {
+        animation: slide-in 3.5s ease-out;
+    }
+    
+    div[data-pc-name="datatable"].collapsed{
+        animation: slide-out 1s ease;
     }
 }
 
+
 @keyframes slide-in {
     0% {
-        // opacity: 0;
-        transform: scaleY(0);
+        max-height: 0;
+        overflow: hidden;
     }
 
     100% {
-        // opacity: 1;
-        transform: scaleY(1);
+        max-height: 500px;
+    }
+}
+
+@keyframes slide-out {
+    0% {
+        max-height: 500px;
     }
 
+    100% {
+        max-height: 0;
+        overflow: hidden;
+    }
 }
