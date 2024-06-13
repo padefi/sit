@@ -237,9 +237,9 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="voucherExpensesArray" editMode="row" dataKey="id"
-                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
-                    @row-edit-cancel="onRowEditCancel" :pt="{
+                <DataTable v-model:editingRows="editingRows" :value="voucherExpensesArray" scrollable
+                    scrollHeight="70vh" editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)"
+                    @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },

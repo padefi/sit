@@ -55,14 +55,11 @@
     div[data-pc-name="rowperpagedropdown"] {
         margin-left: 1%;
     }
+}
 
-    div[data-pc-name="datatable"] {
-        animation: slide-in 3.5s ease-out;
-    }
-    
-    div[data-pc-name="datatable"].collapsed{
-        animation: slide-out 1s ease;
-    }
+.data-table-expanded,
+.div-expanded {
+    animation: slide-in 2.5s ease-out;
 }
 
 

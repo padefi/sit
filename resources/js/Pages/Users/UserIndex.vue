@@ -274,8 +274,8 @@ const modalPermissions = (name, surname, userId, userRole) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="usersArray" editMode="row" dataKey="id"
-                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                <DataTable v-model:editingRows="editingRows" :value="usersArray" scrollable scrollHeight="70vh"
+                    editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
