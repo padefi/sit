@@ -102,3 +102,8 @@ const userItems = ref([
         </template>
     </Menubar>
 </template>
+<style scoped>
+ul[data-pc-section="submenu"] {
+    z-index: 50;
+}
+</style>
