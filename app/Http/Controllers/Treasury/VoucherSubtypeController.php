@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Treasury;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\VoucherSubtypeRequest;
+use App\Http\Resources\Treasury\VoucherExpenseResource;
 use App\Http\Resources\Treasury\VoucherSubtypeResource;
+use App\Models\Treasury\VoucherExpense;
 use App\Models\Treasury\VoucherSubtype;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -24,10 +26,12 @@ class VoucherSubtypeController extends Controller {
     }
 
     public function index(): Response {
-        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
+        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses'])->orderBy('name', 'asc')->get();
+        $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
         
         return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [
             'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
+            'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
         ]);
     }
 

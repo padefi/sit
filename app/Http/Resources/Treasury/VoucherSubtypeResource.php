@@ -25,6 +25,18 @@ class VoucherSubtypeResource extends JsonResource {
             ] : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'expenses' => $this->expenses->map(function ($expense) {
+                return [
+                    'id' => $expense->id,
+                    'name' => $expense->name,
+                    'status' => $expense->status,
+                    'userRelated' => $expense->pivot->idUserRelated ? [
+                        'name' => $expense->pivot->idUserRelated,
+                        'surname' => $expense->pivot->idUserRelated,
+                    ] : null,
+                    'related_at' => $expense->pivot->related_at,
+                ];
+            }),
             'status' => $this->status,
         ];
     }

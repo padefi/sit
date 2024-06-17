@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { FilterMatchMode } from 'primevue/api';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -15,11 +16,18 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    voucherExpenses: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission } = usePermissions();
 const voucherSubtypesArray = ref([]);
 const originalVoucherSubtypesArray = ref([]);
+const voucherExpensesArray = ref([]);
+const expenses = ref([]);
+const expensesPanel = ref();
 const toast = useToast();
 const newRow = ref([]);
 const editingRows = ref([]);
@@ -28,6 +36,28 @@ const editing = ref(false);
 const confirm = useConfirm();
 
 voucherSubtypesArray.value = props.voucherSubtypes;
+voucherExpensesArray.value = props.voucherExpenses;
+
+const relate = (data, event) => {
+    voucherExpensesArray.value.map((voucherExpense) => {
+        const matchingExpense = data.expenses.find(expense => expense.id === voucherExpense.id);
+        if (matchingExpense) {
+            voucherExpense.relate = true;
+            voucherExpense.relate_at = matchingExpense.related_at;
+        } else {
+            voucherExpense.relate = false;
+            voucherExpense.relate_at = false;
+        }
+        expenses.value.push(voucherExpense);
+    });
+
+    console.log(expenses.value);
+    expensesPanel.value.toggle(event);
+};
+
+const voucherExpensesFilters = ref({
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+});
 
 const statuses = ref([
     { label: 'ACTIVO', value: 'ACTIVO' },
@@ -256,7 +286,11 @@ const info = (data) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="subtypeExpenseRelationship" header="Gastos relacionados" style="width: 10%;">
+                    <Column header="Gastos relacionados" style="width: 10%;">
+                        <template #body="{ data }">
+                            <Button severity="info" raised rounded outlined @click="relate(data, $event)">{{
+                        data.expenses.length }}</Button>
+                        </template>
                     </Column>
                     <Column field="status" header="Estado" style="width: 10%;">
                         <template #body="slotProps">
@@ -299,6 +333,26 @@ const info = (data) => {
                         </template>
                     </Column>
                 </DataTable>
+
+                <OverlayPanel ref="expensesPanel" appendTo="body">
+                    <DataTable v-model:filters="voucherExpensesFilters" :value="voucherExpensesArray" paginator
+                        :rows="5" dataKey="id" filterDisplay="row" :globalFilterFields="['name']">
+                        <Column field="name" header="Gasto" style="min-width: 12rem">
+                            <template #body="{ data }">
+                                {{ data.name }}
+                            </template>
+                            <template #filter="{ filterModel, filterCallback }">
+                                <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
+                                    class="p-column-filter uppercase" placeholder="Buscar por gasto" />
+                            </template>
+                        </Column>
+                        <Column header="Relacionado" style="width: 5%; min-width: 8rem;">
+                            <template #body="{ data }">
+
+                            </template>
+                        </Column>
+                    </DataTable>
+                </OverlayPanel>
             </template>
         </Card>
 
