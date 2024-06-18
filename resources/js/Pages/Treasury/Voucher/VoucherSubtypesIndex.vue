@@ -8,6 +8,7 @@ import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService'
+import { format } from "@formkit/tempo"
 
 toastService();
 
@@ -26,7 +27,6 @@ const { hasPermission } = usePermissions();
 const voucherSubtypesArray = ref([]);
 const originalVoucherSubtypesArray = ref([]);
 const voucherExpensesArray = ref([]);
-const expenses = ref([]);
 const expensesPanel = ref();
 const toast = useToast();
 const newRow = ref([]);
@@ -36,22 +36,27 @@ const editing = ref(false);
 const confirm = useConfirm();
 
 voucherSubtypesArray.value = props.voucherSubtypes;
-voucherExpensesArray.value = props.voucherExpenses;
 
-const relate = (data, event) => {
-    voucherExpensesArray.value.map((voucherExpense) => {
+const related = (data, event) => {
+    voucherExpensesArray.value = [];
+
+    props.voucherExpenses.map((voucherExpense) => {
         const matchingExpense = data.expenses.find(expense => expense.id === voucherExpense.id);
         if (matchingExpense) {
-            voucherExpense.relate = true;
-            voucherExpense.relate_at = matchingExpense.related_at;
+            voucherExpense.related = {
+                related_at: matchingExpense.related_at ? format(matchingExpense.related_at, "DD/MM/YYYY HH:mm:ss", "es") : '00/00/0000 00:00:00',
+                userRelated: {
+                    name: matchingExpense.userRelated.name,
+                    surname: matchingExpense.userRelated.surname
+                }
+            }
         } else {
-            voucherExpense.relate = false;
-            voucherExpense.relate_at = false;
+            voucherExpense.related = false;
         }
-        expenses.value.push(voucherExpense);
+
+        voucherExpensesArray.value.push(voucherExpense);
     });
 
-    console.log(expenses.value);
     expensesPanel.value.toggle(event);
 };
 
@@ -93,6 +98,7 @@ const addNewVoucherSubtype = () => {
     const newVoucherSubtype = {
         id: crypto.randomUUID(),
         name: newRow.value?.name,
+        expenses: [],
         status: newRow.value?.status,
         condition: 'newVoucherSubtype',
     };
@@ -288,7 +294,7 @@ const info = (data) => {
                     </Column>
                     <Column header="Gastos relacionados" style="width: 10%;">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="relate(data, $event)">{{
+                            <Button severity="info" raised rounded outlined @click="related(data, $event)">{{
                         data.expenses.length }}</Button>
                         </template>
                     </Column>
@@ -348,7 +354,10 @@ const info = (data) => {
                         </Column>
                         <Column header="Relacionado" style="width: 5%; min-width: 8rem;">
                             <template #body="{ data }">
-
+                                <i class="pi"
+                                    :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"
+                                    v-tooltip="data.related ? `Usuario: ${data.related.userRelated.surname} ${data.related.userRelated.name} \n Fecha: ${data.related.related_at}` : 'No relacionado'">
+                                </i>
                             </template>
                         </Column>
                     </DataTable>

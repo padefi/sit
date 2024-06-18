@@ -26,7 +26,7 @@ class VoucherSubtypeController extends Controller {
     }
 
     public function index(): Response {
-        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses'])->orderBy('name', 'asc')->get();
+        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses.userRelated'])->orderBy('name', 'asc')->get();
         $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
         
         return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Treasury;
 
+use App\Models\Users\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,13 +27,14 @@ class VoucherSubtypeResource extends JsonResource {
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'expenses' => $this->expenses->map(function ($expense) {
+                $userRelated = $expense->pivot->idUserRelated ? User::find($expense->pivot->idUserRelated) : null;
                 return [
                     'id' => $expense->id,
                     'name' => $expense->name,
                     'status' => $expense->status,
-                    'userRelated' => $expense->pivot->idUserRelated ? [
-                        'name' => $expense->pivot->idUserRelated,
-                        'surname' => $expense->pivot->idUserRelated,
+                    'userRelated' => $userRelated ? [
+                        'name' => $userRelated->name,
+                        'surname' => $userRelated->surname,
                     ] : null,
                     'related_at' => $expense->pivot->related_at,
                 ];

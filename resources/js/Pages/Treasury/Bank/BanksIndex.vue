@@ -416,7 +416,7 @@ const info = (route, data) => {
             });
         });
 }
-/*  */ 
+/*  */
 </script>
 
 <template>
@@ -439,8 +439,8 @@ const info = (route, data) => {
                 <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="dataArray" scrollable
                     scrollHeight="70vh" :emptyMessage="'Sin bancos ingresados'" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank"
-                    @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)" @row-toggle="onRowToggle($event)"
-                    @row-collapse="onRowCollapse($event)" :pt="{
+                    @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
+                    @row-toggle="onRowToggle($event)" @row-collapse="onRowCollapse($event)" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
@@ -516,108 +516,105 @@ const info = (route, data) => {
                     </Column>
                     <template #expansion="{ data }">
                         <template v-if="data.accounts">
-                            <template v-if="data.accounts.length === 0">
-                                <div class="text-center div-expanded">
-                                    <b class="uppercase text-red-500">Sin cuentas asociadas</b>
-                                </div>
-                            </template>
-                            <template v-else>
-                                <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row"
-                                    dataKey="id" class="data-table-expanded" :emptyMessage="'Sin cuentas asociadas'"
-                                    @row-edit-init="onRowEditInitBankAccount($event)"
-                                    @row-edit-save="onRowEditSaveBankAccount"
-                                    @row-edit-cancel="onRowEditCancelBankAccount($event)">
-                                    <Column field="accountNumber" header="Nº Cta.">
-                                        <template #editor="{ data, field }">
-                                            <InputText :class="'uppercase'" v-model="data[field]"
-                                                :invalid="!data[field] || !validateAccountNumber(data[field])"
-                                                placeholder="Nº Cta." style="width: 100%;" maxlength="10"
-                                                onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
-                                            <InputError
-                                                :message="!data[field] ? rules : validateAccountNumber(data[field]) ? '' : 'Nº Cta. invalido'" />
-                                        </template>
-                                    </Column>
-                                    <Column field="idAT" header="Tipo Cta.">
-                                        <template #body="slotProps">
-                                            <Tag :value="slotProps.data.accountType"
-                                                class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
-                                        </template>
-                                        <template #editor="{ data, field }">
-                                            <Dropdown v-model="data[field]" :invalid="!data[field]"
-                                                :options="bankAccountTypesSelect" optionLabel="label"
-                                                optionValue="value" placeholder="Seleccione un tipo de cta">
-                                                <template #option="slotProps">
-                                                    <Tag :value="slotProps.option.label"
-                                                        class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
-                                                </template>
-                                            </Dropdown>
-                                            <InputError :message="!data[field] ? rules : ''" />
-                                        </template>
-                                    </Column>
-                                    <Column field="cbu" header="CBU">
-                                        <template #editor="{ data, field }">
-                                            <InputText v-model="data[field]"
-                                                :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU"
-                                                style="width: 100%;" :minlength="22" :maxlength="22"
-                                                onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
-                                            <InputError
-                                                :message="!data[field] ? rules : validateCBU(data[field]) ? '' : 'CBU invalido'" />
-                                        </template>
-                                    </Column>
-                                    <Column field="alias" header="ALIAS">
-                                        <template #editor="{ data, field }">
-                                            <InputText :class="'uppercase'" v-model="data[field]"
-                                                :invalid="!data[field] || !validateAlias(data[field])"
-                                                placeholder="Alias" style="width: 100%;" minlength="6" maxlength="20" />
-                                            <InputError
-                                                :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
-                                        </template>
-                                    </Column>
-                                    <Column field="status" header="Estado" style="width: 10%;">
-                                        <template #body="slotProps">
-                                            <Tag :value="slotProps.data.status" class="!text-sm uppercase"
-                                                :severity="getStatusLabel(slotProps.data.status)" />
-                                        </template>
-                                        <template #editor="{ data, field }">
-                                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
-                                                optionLabel="label" optionValue="value"
-                                                placeholder="Seleccione un estado">
-                                                <template #option="slotProps">
-                                                    <Tag :value="slotProps.option.value"
-                                                        :severity="getStatusLabel(slotProps.option.value)"
-                                                        class="!text-sm uppercase" />
-                                                </template>
-                                            </Dropdown>
-                                            <InputError :message="!data[field] ? rules : ''" />
-                                        </template>
-                                    </Column>
-                                    <Column header="Acciones" :rowEditor="true">
-                                        <template #body="{ editorInitCallback, data }">
-                                            <div class="space-x-4 flex pl-6">
-                                                <template v-if="hasPermission('edit banks')">
-                                                    <button v-tooltip="'Editar'"><i
-                                                            class="pi pi-pencil text-orange-500 text-lg font-extrabold"
-                                                            @click="disabledEditButtons(editorInitCallback, $event, 'bankAccounts')"></i></button>
-                                                </template>
-                                                <template v-if="hasPermission('view users')">
-                                                    <button v-tooltip="'+Info'"><i
-                                                            class="pi pi-id-card text-cyan-500 text-2xl"
-                                                            @click="info('bankAccounts', data)"></i></button>
-                                                </template>
-                                            </div>
-                                        </template>
-                                        <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
-                                            <div class="space-x-4 flex pl-7">
-                                                <ConfirmPopup></ConfirmPopup>
-                                                <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
-                                                        @click="validateBankAccount($event, editorSaveCallback, data)"></i></button>
-                                                <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
-                                                        @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
-                                            </div>
-                                        </template>
-                                    </Column>
-                                </DataTable>
-                            </template>
+                            <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row"
+                                dataKey="id" class="data-table-expanded" emptyMessage
+                                @row-edit-init="onRowEditInitBankAccount($event)"
+                                @row-edit-save="onRowEditSaveBankAccount"
+                                @row-edit-cancel="onRowEditCancelBankAccount($event)">
+                                <template #empty>
+                                    <div class="text-center text-lg text-red-500">
+                                        Sin cuentas asociadas
+                                    </div>
+                                </template>
+                                <Column field="accountNumber" header="Nº Cta.">
+                                    <template #editor="{ data, field }">
+                                        <InputText :class="'uppercase'" v-model="data[field]"
+                                            :invalid="!data[field] || !validateAccountNumber(data[field])"
+                                            placeholder="Nº Cta." style="width: 100%;" maxlength="10"
+                                            onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
+                                        <InputError
+                                            :message="!data[field] ? rules : validateAccountNumber(data[field]) ? '' : 'Nº Cta. invalido'" />
+                                    </template>
+                                </Column>
+                                <Column field="idAT" header="Tipo Cta.">
+                                    <template #body="slotProps">
+                                        <Tag :value="slotProps.data.accountType"
+                                            class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
+                                    </template>
+                                    <template #editor="{ data, field }">
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]"
+                                            :options="bankAccountTypesSelect" optionLabel="label" optionValue="value"
+                                            placeholder="Seleccione un tipo de cta">
+                                            <template #option="slotProps">
+                                                <Tag :value="slotProps.option.label"
+                                                    class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
+                                            </template>
+                                        </Dropdown>
+                                        <InputError :message="!data[field] ? rules : ''" />
+                                    </template>
+                                </Column>
+                                <Column field="cbu" header="CBU">
+                                    <template #editor="{ data, field }">
+                                        <InputText v-model="data[field]"
+                                            :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU"
+                                            style="width: 100%;" :minlength="22" :maxlength="22"
+                                            onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
+                                        <InputError
+                                            :message="!data[field] ? rules : validateCBU(data[field]) ? '' : 'CBU invalido'" />
+                                    </template>
+                                </Column>
+                                <Column field="alias" header="ALIAS">
+                                    <template #editor="{ data, field }">
+                                        <InputText :class="'uppercase'" v-model="data[field]"
+                                            :invalid="!data[field] || !validateAlias(data[field])" placeholder="Alias"
+                                            style="width: 100%;" minlength="6" maxlength="20" />
+                                        <InputError
+                                            :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
+                                    </template>
+                                </Column>
+                                <Column field="status" header="Estado" style="width: 10%;">
+                                    <template #body="slotProps">
+                                        <Tag :value="slotProps.data.status" class="!text-sm uppercase"
+                                            :severity="getStatusLabel(slotProps.data.status)" />
+                                    </template>
+                                    <template #editor="{ data, field }">
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
+                                            optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
+                                            <template #option="slotProps">
+                                                <Tag :value="slotProps.option.value"
+                                                    :severity="getStatusLabel(slotProps.option.value)"
+                                                    class="!text-sm uppercase" />
+                                            </template>
+                                        </Dropdown>
+                                        <InputError :message="!data[field] ? rules : ''" />
+                                    </template>
+                                </Column>
+                                <Column header="Acciones" :rowEditor="true">
+                                    <template #body="{ editorInitCallback, data }">
+                                        <div class="space-x-4 flex pl-6">
+                                            <template v-if="hasPermission('edit banks')">
+                                                <button v-tooltip="'Editar'"><i
+                                                        class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                                        @click="disabledEditButtons(editorInitCallback, $event, 'bankAccounts')"></i></button>
+                                            </template>
+                                            <template v-if="hasPermission('view users')">
+                                                <button v-tooltip="'+Info'"><i
+                                                        class="pi pi-id-card text-cyan-500 text-2xl"
+                                                        @click="info('bankAccounts', data)"></i></button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
+                                        <div class="space-x-4 flex pl-7">
+                                            <ConfirmPopup></ConfirmPopup>
+                                            <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
+                                                    @click="validateBankAccount($event, editorSaveCallback, data)"></i></button>
+                                            <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
+                                                    @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
+                                        </div>
+                                    </template>
+                                </Column>
+                            </DataTable>
                         </template>
                     </template>
                 </DataTable>

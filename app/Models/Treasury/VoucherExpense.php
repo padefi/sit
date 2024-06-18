@@ -25,4 +25,13 @@ class VoucherExpense extends Model {
     public function userUpdated() {
         return $this->belongsTo(User::class, 'idUserUpdated');
     }
+
+    public function userRelated() {
+        return $this->belongsTo(User::class, 'idUserRelated');
+    }
+
+    public function subtypes() {
+        return $this->belongsToMany(VoucherSubtype::class, 'subtype_expense_relationship', 'idExpense', 'idSubtype')
+            ->withPivot('idUserRelated', 'related_at');
+    }
 }
