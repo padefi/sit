@@ -204,6 +204,17 @@ onMounted(() => {
             value: role.name
         }
     })
+
+    Echo.channel('users')
+        .listen('UserEvent', (e) => {
+            e.user.role = props.roles.find(role => role.id === e.user.roles[0].id).name;
+            e.user.is_active = e.user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
+
+            if (!usersArray.value.some(user => user.id === e.userId)) {
+            // usersArray.value = [...props.users, e.user];
+                usersArray.value.unshift(e.user);
+            }
+        });
 });
 
 /*  */

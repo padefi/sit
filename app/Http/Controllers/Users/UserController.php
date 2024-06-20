@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Users;
 
+use App\Events\UserEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserRequest;
 use App\Http\Resources\Users\RoleResource;
@@ -27,7 +28,7 @@ class UserController extends Controller {
         $this->middleware('check.permission:edit users')->only('update');
         $this->middleware('check.permission:permission users')->only('updatePermission');
     }
-    
+
     public function index(): Response {
         $userPermissions = User::with('permissions')->get();
         $roles = Role::with('permissions')->get();
@@ -57,6 +58,10 @@ class UserController extends Controller {
         ])->assignRole($request->role);
 
         User::assignDefaultPermissions($user, $request->role);
+
+        $user->load('roles');
+        $tempUUID = $request->keys()[5];
+        event(new UserEvent($user, $tempUUID, 'create'));
 
         return Redirect::back()->with([
             'info' => [
@@ -90,6 +95,9 @@ class UserController extends Controller {
         if ($userRole->roles->first()->name !== $request->role) {
             User::assignDefaultPermissions($user, $request->role);
         }
+
+        $user->load('roles');
+        event(new UserEvent($user, $request->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [
