@@ -210,9 +210,16 @@ onMounted(() => {
             e.user.role = props.roles.find(role => role.id === e.user.roles[0].id).name;
             e.user.is_active = e.user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
 
-            if (!usersArray.value.some(user => user.id === e.userId)) {
-            // usersArray.value = [...props.users, e.user];
-                usersArray.value.unshift(e.user);
+            if (e.type === 'create') {
+                if (!usersArray.value.some(user => user.id === e.userId)) {
+                    usersArray.value.unshift(e.user);
+                }
+            } else if (e.type === 'update') {
+                const index = usersArray.value.findIndex(user => user.id === e.user.id);
+
+                if (index !== -1) {                    
+                    usersArray.value[index] = e.user;
+                }
             }
         });
 });
