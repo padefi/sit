@@ -58,7 +58,7 @@ const input = ref(null)
 
 <template>
     <input :id="name" :name="inputName" :type="type" placeholder=" " v-model="model" ref="input"
-        :autocomplete="inputName" :maxlength="maxlength" @blur="blurFunction" @keyup="blurFunction"
+        autocomplete="off" :maxlength="maxlength" @blur="blurFunction" @keyup="blurFunction"
         :class="colorInput, uppercase"
         class="block py-2.5 px-0 w-full text-base text-gray-900 bg-transparent border-0 border-b appearance-none focus:outline-none focus:ring-0 peer" />
     <label :for="name" :class="colorLabel"

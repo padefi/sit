@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Treasury;
 
+use App\Events\Treasury\Voucher\VoucherSubtypeEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\VoucherSubtypeRequest;
 use App\Http\Resources\Treasury\VoucherExpenseResource;
@@ -55,6 +56,10 @@ class VoucherSubtypeController extends Controller {
             'status' => ($request->status) ? 1 : 0,
         ]);
 
+        $tempUUID = $request->keys()[2];
+        $voucherSubtype->load('userCreated', 'userUpdated', 'expenses.userRelated');
+        event(new VoucherSubtypeEvent($voucherSubtype, $tempUUID, 'create'));
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -83,6 +88,9 @@ class VoucherSubtypeController extends Controller {
             'updated_at' => now(),
             'status' => ($request->status) ? 1 : 0,
         ]);
+
+        $voucherSubtype->load('userCreated', 'userUpdated', 'expenses.userRelated');
+        event(new VoucherSubtypeEvent($voucherSubtype, $voucherSubtype->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [

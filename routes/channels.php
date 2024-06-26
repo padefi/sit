@@ -16,3 +16,15 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('users', function () {
     return true;
 });
+
+Broadcast::channel('banks', function () {
+    return true;
+});
+
+Broadcast::channel('subtypes', function () {
+    return true;
+});
+
+Broadcast::channel('expenses', function () {
+    return true;
+});

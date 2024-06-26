@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Treasury;
 
+use App\Events\Treasury\Voucher\VoucherExpenseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\VoucherExpenseRequest;
 use App\Http\Resources\Treasury\VoucherExpenseResource;
@@ -51,6 +52,10 @@ class VoucherExpenseController extends Controller {
             'status' => ($request->status) ? 1 : 0,
         ]);
 
+        $tempUUID = $request->keys()[2];
+        $voucherExpense->load('userCreated', 'userUpdated');
+        event(new VoucherExpenseEvent($voucherExpense, $tempUUID, 'create'));
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -79,6 +84,9 @@ class VoucherExpenseController extends Controller {
             'updated_at' => now(),
             'status' => ($request->status) ? 1 : 0,
         ]);
+
+        $voucherExpense->load('userCreated', 'userUpdated');
+        event(new VoucherExpenseEvent($voucherExpense, $voucherExpense->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [

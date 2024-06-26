@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Users;
 
-use App\Events\UserEvent;
+use App\Events\Users\UserEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Users\UserRequest;
 use App\Http\Resources\Users\RoleResource;

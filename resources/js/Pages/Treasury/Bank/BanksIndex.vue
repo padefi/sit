@@ -36,8 +36,8 @@ const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
 
-const dataArray = ref([]);
-const originalDataArray = ref([]);
+const banksArray = ref([]);
+const originalBanksArray = ref([]);
 props.banks.map((bank, index) => {
     const bankAccount = props.bankAccounts
         .filter(account => account.bank.id === bank.id)
@@ -64,7 +64,7 @@ props.banks.map((bank, index) => {
         accounts: bankAccount,
     };
 
-    dataArray.value.push(data);
+    banksArray.value.push(data);
 });
 
 bankAccountTypesSelect.value = props.bankAccountTypes.map((type) => {
@@ -94,7 +94,7 @@ const getStatusLabel = (status) => {
 
 const onRowExpand = (event) => {
     const originalExpandedRows = { ...expandedRows.value };
-    const newExpandedRows = dataArray.value.reduce((acc) => (acc[event.data.id] = true) && acc, {});
+    const newExpandedRows = banksArray.value.reduce((acc) => (acc[event.data.id] = true) && acc, {});
     expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
 }
 
@@ -127,7 +127,7 @@ const enabledEditButtons = (callback, event) => {
 
 /* Bank validations */
 const onRowEditInitBank = (event) => {
-    originalDataArray.value = [...dataArray.value];
+    originalBanksArray.value = [...banksArray.value];
     editingRows.value = [event.data];
 }
 
@@ -142,7 +142,7 @@ const addNewBank = () => {
         return;
     }
 
-    originalDataArray.value = [...dataArray.value];
+    originalBanksArray.value = [...banksArray.value];
 
     const newBank = {
         id: crypto.randomUUID(),
@@ -153,7 +153,7 @@ const addNewBank = () => {
         condition: 'newBank',
     };
 
-    dataArray.value.unshift(newBank);
+    banksArray.value.unshift(newBank);
     editing.value = true;
     editingRows.value = [newBank];
 };
@@ -218,7 +218,7 @@ const onRowEditSaveBank = (event) => {
                 newRow.value = [];
             },
             onError: () => {
-                dataArray.value = [...originalDataArray.value];
+                banksArray.value = [...originalBanksArray.value];
                 editing.value = false;
                 addNewBank();
             }
@@ -230,7 +230,7 @@ const onRowEditSaveBank = (event) => {
     form.put(route("banks.update", newData.id), {
         onSuccess: () => {
             editing.value = false;
-            dataArray.value[index] = newData;
+            banksArray.value[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -240,7 +240,7 @@ const onRowEditSaveBank = (event) => {
 };
 
 const onRowEditCancelBank = () => {
-    dataArray.value = [...originalDataArray.value];
+    banksArray.value = [...originalBanksArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
@@ -249,7 +249,7 @@ const onRowEditCancelBank = () => {
 
 /* Bank Account validations */
 const onRowEditInitBankAccount = (event) => {
-    originalDataArray.value = [...dataArray.value[event.data.bankIndex].accounts];
+    originalBanksArray.value = [...banksArray.value[event.data.bankIndex].accounts];
     editingRows.value = [event.data];
 }
 
@@ -265,10 +265,10 @@ const addNewBankAccount = (data) => {
     }
 
     const originalExpandedRows = { ...expandedRows.value };
-    const newExpandedRows = dataArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
+    const newExpandedRows = banksArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
     expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
 
-    originalDataArray.value = [...dataArray.value[data.bankIndex].accounts];
+    originalBanksArray.value = [...banksArray.value[data.bankIndex].accounts];
 
     const newBankAccount = {
         id: crypto.randomUUID(),
@@ -282,7 +282,7 @@ const addNewBankAccount = (data) => {
         condition: 'newBankAccount',
     };
 
-    dataArray.value[data.bankIndex].accounts.unshift(newBankAccount);
+    banksArray.value[data.bankIndex].accounts.unshift(newBankAccount);
     editing.value = true;
     editingRows.value = [newBankAccount];
 };
@@ -353,7 +353,7 @@ const onRowEditSaveBankAccount = (event) => {
                 newRow.value = [];
             },
             onError: () => {
-                dataArray.value = [...originalDataArray.value];
+                banksArray.value = [...originalBanksArray.value];
                 editing.value = false;
                 addNewBankAccount();
             }
@@ -365,7 +365,7 @@ const onRowEditSaveBankAccount = (event) => {
     form.put(route("bankAccounts.update", newData.idBankAccount), {
         onSuccess: () => {
             editing.value = false;
-            dataArray.value[newData.bankIndex].accounts[index] = newData;
+            banksArray.value[newData.bankIndex].accounts[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -375,12 +375,29 @@ const onRowEditSaveBankAccount = (event) => {
 };
 
 const onRowEditCancelBankAccount = (event) => {
-    dataArray.value[event.data.bankIndex].accounts = [...originalDataArray.value];
+    banksArray.value[event.data.bankIndex].accounts = [...originalBanksArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
 };
 /* Bank Account validations */
+
+onMounted(() => {
+    Echo.channel('banks')
+        .listen('Treasury\\Bank\\BankEvent', (e) => {
+            if (e.type === 'create') {
+                if (!banksArray.value.some(bank => bank.id === e.bankId)) {
+                    banksArray.value.unshift(e.bank);
+                }
+            } else if (e.type === 'update') {
+                const index = banksArray.value.findIndex(bank => bank.id === e.bank.id);
+
+                if (index !== -1) {
+                    banksArray.value[index] = e.bank;
+                }
+            }
+        });
+});
 
 /*  */
 import infoModal from '@/Components/InfoModal.vue';
@@ -436,7 +453,7 @@ const info = (route, data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="dataArray" scrollable
+                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="banksArray" scrollable
                     scrollHeight="70vh" :emptyMessage="'Sin bancos ingresados'" editMode="row" dataKey="id"
                     @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank"
                     @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
@@ -452,7 +469,7 @@ const info = (route, data) => {
                     <Column expander style="width: 1%" />
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre"
                                 style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
@@ -460,7 +477,7 @@ const info = (route, data) => {
                     </Column>
                     <Column field="address" header="Dirección" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="address" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección"
                                 style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
@@ -468,7 +485,7 @@ const info = (route, data) => {
                     </Column>
                     <Column field="phone" header="Teléfono" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="phone" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])"
                                 placeholder="Teléfono" style="width: 100%;" maxlength="15"
                                 onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
@@ -478,7 +495,7 @@ const info = (route, data) => {
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
                                 placeholder="Email" style="width: 100%;" maxlength="100" />
                             <InputError
@@ -528,7 +545,7 @@ const info = (route, data) => {
                                 </template>
                                 <Column field="accountNumber" header="Nº Cta.">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]"
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="accountNumber" autocomplete="off"
                                             :invalid="!data[field] || !validateAccountNumber(data[field])"
                                             placeholder="Nº Cta." style="width: 100%;" maxlength="10"
                                             onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
@@ -555,7 +572,7 @@ const info = (route, data) => {
                                 </Column>
                                 <Column field="cbu" header="CBU">
                                     <template #editor="{ data, field }">
-                                        <InputText v-model="data[field]"
+                                        <InputText v-model="data[field]" name="cbu" autocomplete="off"
                                             :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU"
                                             style="width: 100%;" :minlength="22" :maxlength="22"
                                             onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
@@ -565,7 +582,7 @@ const info = (route, data) => {
                                 </Column>
                                 <Column field="alias" header="ALIAS">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]"
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="alias" autocomplete="off"
                                             :invalid="!data[field] || !validateAlias(data[field])" placeholder="Alias"
                                             style="width: 100%;" minlength="6" maxlength="20" />
                                         <InputError

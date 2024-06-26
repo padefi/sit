@@ -183,6 +183,23 @@ onMounted(() => {
     props.voucherExpenses.map((voucherExpense) => {
         voucherExpense.status = voucherExpense.status === 1 ? 'ACTIVO' : 'INACTIVO';
     });
+
+    Echo.channel('expenses')
+        .listen('Treasury\\Voucher\\VoucherExpenseEvent', (e) => {
+            e.voucherExpense.status = e.voucherExpense.status === 1 ? 'ACTIVO' : 'INACTIVO';
+
+            if (e.type === 'create') {
+                if (!voucherExpensesArray.value.some(voucherExpense => voucherExpense.id === e.voucherExpenseId)) {
+                    voucherExpensesArray.value.unshift(e.voucherExpense);
+                }
+            } else if (e.type === 'update') {
+                const index = voucherExpensesArray.value.findIndex(voucherExpense => voucherExpense.id === e.voucherExpense.id);
+
+                if (index !== -1) {
+                    voucherExpensesArray.value[index] = e.voucherExpense;
+                }
+            }
+        });
 });
 
 /*  */
@@ -250,7 +267,7 @@ const info = (data) => {
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="name" header="Descripción" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion"
                                 style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />

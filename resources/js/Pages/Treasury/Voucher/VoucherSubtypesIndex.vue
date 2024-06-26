@@ -219,6 +219,23 @@ onMounted(() => {
     props.voucherSubtypes.map((voucherSubtype) => {
         voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
     });
+
+    Echo.channel('subtypes')
+        .listen('Treasury\\Voucher\\VoucherSubtypeEvent', (e) => {
+            e.voucherSubtype.status = e.voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
+
+            if (e.type === 'create') {
+                if (!voucherSubtypesArray.value.some(voucherSubtype => voucherSubtype.id === e.voucherSubtypeId)) {
+                    voucherSubtypesArray.value.unshift(e.voucherSubtype);
+                }
+            } else if (e.type === 'update') {
+                const index = voucherSubtypesArray.value.findIndex(voucherSubtype => voucherSubtype.id === e.voucherSubtype.id);
+
+                if (index !== -1) {
+                    voucherSubtypesArray.value[index] = e.voucherSubtype;
+                }
+            }
+        });
 });
 
 /*  */
@@ -286,7 +303,7 @@ const info = (data) => {
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="name" header="Descripción" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion"
                                 style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
@@ -349,7 +366,8 @@ const info = (data) => {
                             </template>
                             <template #filter="{ filterModel, filterCallback }">
                                 <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
-                                    class="p-column-filter uppercase" placeholder="Buscar por gasto" />
+                                    name="expenseName" autocomplete="off" class="p-column-filter uppercase"
+                                    placeholder="Buscar por gasto" />
                             </template>
                         </Column>
                         <Column header="Relacionado" style="width: 5%; min-width: 8rem;">

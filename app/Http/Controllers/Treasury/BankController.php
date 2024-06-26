@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Treasury;
 
+use App\Events\Treasury\Bank\BankEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\BankRequest;
 use App\Http\Resources\Treasury\BankAccountResource;
@@ -58,6 +59,10 @@ class BankController extends Controller {
             'updated_at' => null,
         ]);
 
+        $tempUUID = $request->keys()[4];
+        $bank->load('userCreated', 'userUpdated');
+        event(new BankEvent($bank, $tempUUID, 'create'));
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -88,6 +93,9 @@ class BankController extends Controller {
             'idUserUpdated' => auth()->user()->id,
             'updated_at' => now(),
         ]);
+
+        $bank->load('userCreated', 'userUpdated');
+        event(new BankEvent($bank, $bank->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [

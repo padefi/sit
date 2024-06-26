@@ -18,6 +18,11 @@ class VoucherSubtype extends Model {
         'status',
     ];
 
+    protected $hidden = [
+        'idUserCreated',
+        'idUserUpdated'
+    ];
+
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }

@@ -206,7 +206,7 @@ onMounted(() => {
     })
 
     Echo.channel('users')
-        .listen('UserEvent', (e) => {
+        .listen('Users\\UserEvent', (e) => {
             e.user.role = props.roles.find(role => role.id === e.user.roles[0].id).name;
             e.user.is_active = e.user.is_active === 1 ? 'ACTIVO' : 'INACTIVO';
 
@@ -217,7 +217,7 @@ onMounted(() => {
             } else if (e.type === 'update') {
                 const index = usersArray.value.findIndex(user => user.id === e.user.id);
 
-                if (index !== -1) {                    
+                if (index !== -1) {
                     usersArray.value[index] = e.user;
                 }
             }
@@ -305,21 +305,21 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="surname" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Apellido" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="name" header="Nombre" style="width: 10%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;">
                         <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]"
+                            <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
                                 placeholder="Email" />
                             <InputError
