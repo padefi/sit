@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Treasury;
 
+use App\Events\Treasury\Bank\BankAccountEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\BankAccountRequest;
 use App\Http\Resources\Treasury\BankAccountResource;
 use App\Models\Treasury\BankAccount;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -38,6 +38,10 @@ class BankAccountController extends Controller {
             'created_at' => now(),
             'updated_at' => null,
         ]);
+
+        $tempUUID = $request->keys()[6];
+        $bankAccount->load('bank', 'accountType', 'userCreated', 'userUpdated');
+        event(new BankAccountEvent($bankAccount, $tempUUID, 'create'));
 
         return Redirect::back()->with([
             'info' => [
@@ -73,6 +77,9 @@ class BankAccountController extends Controller {
             'idUserUpdated' => auth()->user()->id,
             'updated_at' => now(),
         ]);
+
+        $bankAccount->load('bank', 'accountType', 'userCreated', 'userUpdated');
+        event(new BankAccountEvent($bankAccount, $bankAccount->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [

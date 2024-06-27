@@ -38,35 +38,6 @@ const confirm = useConfirm();
 
 const banksArray = ref([]);
 const originalBanksArray = ref([]);
-props.banks.map((bank, index) => {
-    const bankAccount = props.bankAccounts
-        .filter(account => account.bank.id === bank.id)
-        .map(account => ({
-            id: bank.id + '-' + account.id,
-            idBankAccount: account.id,
-            idBank: account.bank.id,
-            idAT: account.accountType.id,
-            bankIndex: index,
-            accountNumber: account.accountNumber,
-            accountType: account.accountType.name,
-            cbu: account.cbu,
-            alias: account.alias,
-            status: account.status === 1 ? 'ACTIVA' : 'INACTIVA',
-        }));
-
-    const data = {
-        id: bank.id,
-        bankIndex: index,
-        name: bank.name,
-        address: bank.address,
-        phone: bank.phone,
-        email: bank.email,
-        accounts: bankAccount,
-    };
-
-    banksArray.value.push(data);
-});
-
 bankAccountTypesSelect.value = props.bankAccountTypes.map((type) => {
     return {
         label: type.name,
@@ -78,6 +49,43 @@ const statuses = ref([
     { label: 'ACTIVA', value: 'ACTIVA' },
     { label: 'INACTIVA', value: 'INACTIVA' }
 ]);
+
+const setBankAccount = (bankData, accountData) => {
+    bankData.map((bank, index) => {
+        const bankAccount = accountData
+            .filter(account => account.bank.id === bank.id)
+            .map(account =>
+                accountDataStructure(index, account),
+            );
+
+        const data = {
+            id: bank.id,
+            bankIndex: index,
+            name: bank.name,
+            address: bank.address,
+            phone: bank.phone,
+            email: bank.email,
+            accounts: bankAccount,
+        };
+
+        banksArray.value.push(data);
+    });
+}
+
+const accountDataStructure = (index, accountData) => {
+    return {
+        id: accountData.bank.id + '-' + accountData.id,
+        idBankAccount: accountData.id,
+        idBank: accountData.bank.id,
+        idAT: accountData.accountType.id,
+        bankIndex: index,
+        accountNumber: accountData.accountNumber,
+        accountType: accountData.accountType.name,
+        cbu: accountData.cbu,
+        alias: accountData.alias,
+        status: accountData.status === 1 ? 'ACTIVA' : 'INACTIVA',
+    };
+}
 
 const getStatusLabel = (status) => {
     switch (status) {
@@ -336,7 +344,7 @@ const onRowEditSaveBankAccount = (event) => {
     });
 
     if (newData.condition === 'newBankAccount') {
-        form.post(route("bankAccounts.store"), {
+        form.post(route("bankAccounts.store", newData.id), {
             onSuccess: (result) => {
                 const data = result.props.flash.info.bankAccount;
                 editing.value = false;
@@ -365,6 +373,7 @@ const onRowEditSaveBankAccount = (event) => {
     form.put(route("bankAccounts.update", newData.idBankAccount), {
         onSuccess: () => {
             editing.value = false;
+            newData.accountType = bankAccountTypesSelect.value.filter(a => a.value === newData.idAT)[0].label;
             banksArray.value[newData.bankIndex].accounts[index] = newData;
         },
         onError: () => {
@@ -383,6 +392,8 @@ const onRowEditCancelBankAccount = (event) => {
 /* Bank Account validations */
 
 onMounted(() => {
+    setBankAccount(props.banks, props.bankAccounts);
+
     Echo.channel('banks')
         .listen('Treasury\\Bank\\BankEvent', (e) => {
             if (e.type === 'create') {
@@ -397,6 +408,41 @@ onMounted(() => {
                 }
             }
         });
+
+    Echo.channel('bankAccounts')
+        .listen('Treasury\\Bank\\BankAccountEvent', (e) => {
+            const indexBank = banksArray.value.findIndex(bank => bank.id === e.bankAccount.idBank);
+
+            const accountEventDataStructure = (index, accountData) => {
+                return {
+                    id: accountData.bank.id + '-' + accountData.id,
+                    idBankAccount: accountData.id,
+                    idBank: accountData.bank.id,
+                    idAT: accountData.account_type.id,
+                    bankIndex: index,
+                    accountNumber: accountData.accountNumber,
+                    accountType: accountData.account_type.name,
+                    cbu: accountData.cbu,
+                    alias: accountData.alias,
+                    status: accountData.status === 1 ? 'ACTIVA' : 'INACTIVA',
+                }
+            }
+
+            if (indexBank !== -1) {
+                if (e.type === 'create') {
+                    if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
+                        banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
+                    }
+                } else if (e.type === 'update') {
+                    const indexBank = banksArray.value.findIndex(bank => bank.id === e.bankAccount.idBank);
+                    const indexAccount = banksArray.value[indexBank].accounts.findIndex(account => account.idBankAccount === e.bankAccount.id);
+
+                    if (indexAccount !== -1) {
+                        banksArray.value[indexBank].accounts[indexAccount] = accountEventDataStructure(indexBank, e.bankAccount);
+                    }
+                }
+            }
+        });
 });
 
 /*  */
@@ -405,8 +451,8 @@ import { useDialog } from 'primevue/usedialog';
 
 const dialog = useDialog();
 
-const info = (route, data) => {
-    axios.get(`/${route}/${data.id}/info`)
+const info = (route, data, id) => {
+    axios.get(`/${route}/${id}/info`)
         .then((response) => {
             const header = (route === 'banks') ? `Información del banco ${data.name.toUpperCase()}` : `Información de la cta. ${data.accountNumber.toUpperCase()}`;
 
@@ -512,7 +558,7 @@ const info = (route, data) => {
                                 </template>
                                 <template v-if="hasPermission('view users')">
                                     <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
-                                            @click="info('banks', data)"></i></button>
+                                            @click="info('banks', data, data.id)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('create bank accounts')">
                                     <button v-tooltip="'Agregar cuenta'"><i
@@ -545,7 +591,8 @@ const info = (route, data) => {
                                 </template>
                                 <Column field="accountNumber" header="Nº Cta.">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" name="accountNumber" autocomplete="off"
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="accountNumber"
+                                            autocomplete="off"
                                             :invalid="!data[field] || !validateAccountNumber(data[field])"
                                             placeholder="Nº Cta." style="width: 100%;" maxlength="10"
                                             onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
@@ -582,9 +629,9 @@ const info = (route, data) => {
                                 </Column>
                                 <Column field="alias" header="ALIAS">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" name="alias" autocomplete="off"
-                                            :invalid="!data[field] || !validateAlias(data[field])" placeholder="Alias"
-                                            style="width: 100%;" minlength="6" maxlength="20" />
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="alias"
+                                            autocomplete="off" :invalid="!data[field] || !validateAlias(data[field])"
+                                            placeholder="Alias" style="width: 100%;" minlength="6" maxlength="20" />
                                         <InputError
                                             :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
                                     </template>
@@ -617,7 +664,7 @@ const info = (route, data) => {
                                             <template v-if="hasPermission('view users')">
                                                 <button v-tooltip="'+Info'"><i
                                                         class="pi pi-id-card text-cyan-500 text-2xl"
-                                                        @click="info('bankAccounts', data)"></i></button>
+                                                        @click="info('bankAccounts', data, data.idBankAccount)"></i></button>
                                             </template>
                                         </div>
                                     </template>
