@@ -34,6 +34,11 @@ const statuses = ref([
     { label: 'INACTIVO', value: 'INACTIVO' }
 ]);
 
+const filters = ref({
+    name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    status: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+});
+
 const getStatusLabel = (status) => {
     switch (status) {
         case 'ACTIVO':
@@ -205,6 +210,7 @@ onMounted(() => {
 /*  */
 import infoModal from '@/Components/InfoModal.vue';
 import { useDialog } from 'primevue/usedialog';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 
 const dialog = useDialog();
 
@@ -254,8 +260,9 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="voucherExpensesArray" scrollable
-                    scrollHeight="70vh" editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="filters"
+                    :value="voucherExpensesArray" scrollable scrollHeight="70vh" editMode="row" dataKey="id"
+                    filterDisplay="menu" :globalFilterFields="['name', 'status']" @row-edit-init="onRowEditInit($event)"
                     @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -265,7 +272,19 @@ const info = (data) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
-                    <Column field="name" header="Descripción" style="width: 10%;">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin gastos cargados
+                        </div>
+                    </template>
+                    <Column field="name" header="Descripción" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.name }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por descripción" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion"
@@ -275,10 +294,20 @@ const info = (data) => {
                     </Column>
                     <Column field="expenseExpenseRelationship" header="Subtipos relacionados" style="width: 10%;">
                     </Column>
-                    <Column field="status" header="Estado" style="width: 10%;">
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.status" class="!text-sm uppercase"
-                                :severity="getStatusLabel(slotProps.data.status)" />
+                    <Column field="status" header="Estado" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            <Tag :value="data.status" class="!text-sm uppercase"
+                                :severity="getStatusLabel(data.status)" />
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses"
+                                placeholder="Estado" class="p-column-filter" optionLabel="label" optionValue="value"
+                                style="min-width: 12rem" :showClear="true">
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.value" name="is_active"
+                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                </template>
+                            </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
                             <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"

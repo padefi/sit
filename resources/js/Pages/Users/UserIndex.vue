@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import { useForm } from '@inertiajs/vue3';
@@ -53,6 +54,15 @@ const getStatusLabel = (status) => {
             return null;
     }
 };
+
+const filters = ref({
+    surname: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    email: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    username: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    role: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    is_active: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+});
 
 const addNewUser = () => {
     if (editing.value) {
@@ -292,8 +302,10 @@ const modalPermissions = (name, surname, userId, userRole) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :value="usersArray" scrollable scrollHeight="70vh"
-                    editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="usersArray" scrollable
+                    scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
+                    :globalFilterFields="['name', 'surname', 'email', 'username', 'role', 'is_active']"
+                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
                     @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -303,21 +315,47 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
-                    <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin usuarios cargados
+                        </div>
+                    </template>
+                    <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg" sortable>
+                        <template #body="{ data }">
+                            {{ data.surname }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="surname"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por apellido" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="surname" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Apellido" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="name" header="Nombre" style="width: 10%;">
+                    <Column field="name" header="Nombre" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.name }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por nombre" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email" style="width: 15%;">
+                    <Column field="email" header="Email" style="width: 15%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.email }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por email" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
@@ -326,12 +364,29 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
-                    <Column field="username" header="Usuario" style="width: 10%;">
+                    <Column field="username" header="Usuario" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.username }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="username"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por usuario" />
+                        </template>
                     </Column>
                     <Column field="role" header="Rol" style="width: 10%;">
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.role"
+                        <template #body="{ data }">
+                            <Tag :value="data.role"
                                 class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="rolesSelect"
+                                placeholder="Rol" class="p-column-filter" optionLabel="label" optionValue="value"
+                                style="min-width: 12rem" :showClear="true">
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.value" name="role"
+                                        class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
+                                </template>
+                            </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
                             <Dropdown v-model="data[field]" :invalid="!data[field]" :options="rolesSelect" filter
@@ -345,9 +400,19 @@ const modalPermissions = (name, surname, userId, userRole) => {
                         </template>
                     </Column>
                     <Column field="is_active" header="Estado" style="width: 10%;">
-                        <template #body="slotProps">
-                            <Tag :value="slotProps.data.is_active" class="!text-sm uppercase"
-                                :severity="getStatusLabel(slotProps.data.is_active)" />
+                        <template #body="{ data }">
+                            <Tag :value="data.is_active" class="!text-sm uppercase"
+                                :severity="getStatusLabel(data.is_active)" />
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses"
+                                placeholder="Estado" class="p-column-filter" optionLabel="label" optionValue="value"
+                                style="min-width: 12rem" :showClear="true">
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.value" name="is_active"
+                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                </template>
+                            </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
                             <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"

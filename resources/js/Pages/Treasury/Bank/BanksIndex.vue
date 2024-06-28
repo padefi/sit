@@ -50,6 +50,13 @@ const statuses = ref([
     { label: 'INACTIVA', value: 'INACTIVA' }
 ]);
 
+const banksFilters = ref({
+    name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    address: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    phone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    email: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+});
+
 const setBankAccount = (bankData, accountData) => {
     bankData.map((bank, index) => {
         const bankAccount = accountData
@@ -159,6 +166,7 @@ const addNewBank = () => {
         phone: newRow.value?.phone,
         email: newRow.value?.email,
         condition: 'newBank',
+        accounts: [],
     };
 
     banksArray.value.unshift(newBank);
@@ -280,6 +288,7 @@ const addNewBankAccount = (data) => {
 
     const newBankAccount = {
         id: crypto.randomUUID(),
+        idBankAccount: crypto.randomUUID(),
         idBank: data.id,
         idAT: newRow.value?.idAT,
         bankIndex: data.bankIndex,
@@ -398,6 +407,7 @@ onMounted(() => {
         .listen('Treasury\\Bank\\BankEvent', (e) => {
             if (e.type === 'create') {
                 if (!banksArray.value.some(bank => bank.id === e.bankId)) {
+                    e.bank.accounts = [];
                     banksArray.value.unshift(e.bank);
                 }
             } else if (e.type === 'update') {
@@ -430,9 +440,11 @@ onMounted(() => {
 
             if (indexBank !== -1) {
                 if (e.type === 'create') {
-                    if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
-                        banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
-                    }
+                    setTimeout(() => {
+                        if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
+                            banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
+                        }
+                    }, 500);
                 } else if (e.type === 'update') {
                     const indexBank = banksArray.value.findIndex(bank => bank.id === e.bankAccount.idBank);
                     const indexAccount = banksArray.value[indexBank].accounts.findIndex(account => account.idBankAccount === e.bankAccount.id);
@@ -448,6 +460,7 @@ onMounted(() => {
 /*  */
 import infoModal from '@/Components/InfoModal.vue';
 import { useDialog } from 'primevue/usedialog';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 
 const dialog = useDialog();
 
@@ -499,8 +512,9 @@ const info = (route, data, id) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" :expandedRows="expandedRows" :value="banksArray" scrollable
-                    scrollHeight="70vh" :emptyMessage="'Sin bancos ingresados'" editMode="row" dataKey="id"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="banksFilters" :expandedRows="expandedRows"
+                    :value="banksArray" scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
+                    :globalFilterFields="['name', 'address', 'phone', 'email']"
                     @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank"
                     @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
                     @row-toggle="onRowToggle($event)" @row-collapse="onRowCollapse($event)" :pt="{
@@ -512,8 +526,20 @@ const info = (route, data, id) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin bancos cargados
+                        </div>
+                    </template>
                     <Column expander style="width: 1%" />
-                    <Column field="name" header="Nombre" style="width: 10%;">
+                    <Column field="name" header="Nombre" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.name }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por nombre" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre"
@@ -521,7 +547,14 @@ const info = (route, data, id) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="address" header="Dirección" style="width: 10%;">
+                    <Column field="address" header="Dirección" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.address }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="address"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por dirección" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="address" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección"
@@ -529,7 +562,14 @@ const info = (route, data, id) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="phone" header="Teléfono" style="width: 10%;">
+                    <Column field="phone" header="Teléfono" style="width: 10%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.phone }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="phone"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por teléfono" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="phone" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])"
@@ -539,7 +579,14 @@ const info = (route, data, id) => {
                                 :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email" style="width: 15%;">
+                    <Column field="email" header="Email" style="width: 15%;" sortable>
+                        <template #body="{ data }">
+                            {{ data.email }}
+                        </template>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email"
+                                autocomplete="off" class="p-column-filter" placeholder="Buscar por email" />
+                        </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
                                 :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
@@ -580,7 +627,7 @@ const info = (route, data, id) => {
                     <template #expansion="{ data }">
                         <template v-if="data.accounts">
                             <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row"
-                                dataKey="id" class="data-table-expanded" emptyMessage
+                                dataKey="id" class="data-table-expanded"
                                 @row-edit-init="onRowEditInitBankAccount($event)"
                                 @row-edit-save="onRowEditSaveBankAccount"
                                 @row-edit-cancel="onRowEditCancelBankAccount($event)">
