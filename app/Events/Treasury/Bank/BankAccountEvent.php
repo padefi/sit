@@ -2,7 +2,7 @@
 
 namespace App\Events\Treasury\Bank;
 
-use App\Models\Treasury\BankAccount;
+use App\Models\Treasury\Bank\BankAccount;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -18,7 +18,7 @@ class BankAccountEvent implements ShouldBroadcast {
     /**
      * Create a new event instance.
      *
-     * @param \App\Models\Treasury\BankAccount $bankAccount
+     * @param \App\Models\Treasury\Bank\BankAccount $bankAccount
      * @return void
      */
     public function __construct(BankAccount $bankAccount, $bankAccountId, $type) {

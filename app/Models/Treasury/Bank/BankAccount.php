@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Models\Treasury;
+namespace App\Models\Treasury\Bank;
 
-use App\Models\Treasury\Bank;
-use App\Models\Treasury\BankAccountType;
+use App\Models\Treasury\Bank\Bank;
+use App\Models\Treasury\Bank\BankAccountType;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

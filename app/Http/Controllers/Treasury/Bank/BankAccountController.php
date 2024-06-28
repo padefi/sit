@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Treasury;
+namespace App\Http\Controllers\Treasury\Bank;
 
 use App\Events\Treasury\Bank\BankAccountEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Treasury\BankAccountRequest;
-use App\Http\Resources\Treasury\BankAccountResource;
-use App\Models\Treasury\BankAccount;
+use App\Http\Requests\Treasury\Bank\BankAccountRequest;
+use App\Http\Resources\Treasury\Bank\BankAccountResource;
+use App\Models\Treasury\Bank\BankAccount;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Treasury;
+namespace App\Models\Treasury\Bank;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

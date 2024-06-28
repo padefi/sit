@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(BankSeeder::class);
         $this->call(BankAccountTypeSeeder::class);
         $this->call(BankAccountSeeder::class);
+        $this->call(VoucherTypeSeeder::class);
         $this->call(VoucherSubtypeSeeder::class);
         $this->call(VoucherExpenseSeeder::class);
     }

@@ -226,6 +226,7 @@ const onRowEditSaveBank = (event) => {
                 editing.value = false;
                 newData.condition = 'editBank';
                 newData.id = result.props.flash.info.bank.id;
+                newData.bankIndex = 0;
                 newData.name = result.props.flash.info.bank.name;
                 newData.address = result.props.flash.info.bank.address;
                 newData.phone = result.props.flash.info.bank.phone;
@@ -283,7 +284,6 @@ const addNewBankAccount = (data) => {
     const originalExpandedRows = { ...expandedRows.value };
     const newExpandedRows = banksArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
     expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
-
     originalBanksArray.value = [...banksArray.value[data.bankIndex].accounts];
 
     const newBankAccount = {
@@ -407,6 +407,7 @@ onMounted(() => {
         .listen('Treasury\\Bank\\BankEvent', (e) => {
             if (e.type === 'create') {
                 if (!banksArray.value.some(bank => bank.id === e.bankId)) {
+                    e.bank.bankIndex = 0;
                     e.bank.accounts = [];
                     banksArray.value.unshift(e.bank);
                 }

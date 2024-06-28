@@ -27,6 +27,7 @@ const { hasPermission } = usePermissions();
 const voucherSubtypesArray = ref([]);
 const originalVoucherSubtypesArray = ref([]);
 const voucherExpensesArray = ref([]);
+const dataVoucherExpensesArray = ref([]);
 const expensesPanel = ref();
 const toast = useToast();
 const newRow = ref([]);
@@ -36,11 +37,12 @@ const editing = ref(false);
 const confirm = useConfirm();
 
 voucherSubtypesArray.value = props.voucherSubtypes;
+dataVoucherExpensesArray.value = props.voucherExpenses;
 
 const related = (data, event) => {
     voucherExpensesArray.value = [];
 
-    props.voucherExpenses.map((voucherExpense) => {
+    dataVoucherExpensesArray.value.map((voucherExpense) => {
         const matchingExpense = data.expenses.find(expense => expense.id === voucherExpense.id);
         if (matchingExpense) {
             voucherExpense.related = {
@@ -242,6 +244,29 @@ onMounted(() => {
                 }
             }
         });
+
+    Echo.channel('expenses')
+        .listen('Treasury\\Voucher\\VoucherExpenseEvent', (e) => {
+            e.voucherExpense.status = e.voucherExpense.status === 1 ? 'ACTIVO' : 'INACTIVO';
+
+            if (e.type === 'create') {
+                if (!dataVoucherExpensesArray.value.some(voucherExpense => voucherExpense.id === e.voucherExpenseId)) {
+                    dataVoucherExpensesArray.value.unshift(e.voucherExpense);
+                }
+
+                if (!voucherExpensesArray.value.some(voucherExpense => voucherExpense.id === e.voucherExpenseId)) {
+                    voucherExpensesArray.value.unshift(e.voucherExpense);
+                }
+            } else if (e.type === 'update') {
+                const dataIndex = dataVoucherExpensesArray.value.findIndex(voucherExpense => voucherExpense.id === e.voucherExpense.id);
+                const index = voucherExpensesArray.value.findIndex(voucherExpense => voucherExpense.id === e.voucherExpense.id);
+
+                if (dataIndex !== -1) {
+                    dataVoucherExpensesArray.value[dataIndex] = e.voucherExpense;
+                    voucherExpensesArray.value[index] = e.voucherExpense;
+                }
+            }
+        });
 });
 
 /*  */
@@ -394,7 +419,7 @@ const info = (data) => {
                                 Sin gastos cargados
                             </div>
                         </template>
-                        <Column field="name" header="Gasto" style="min-width: 12rem">
+                        <Column field="name" header="Gasto" style="min-width: 12rem" class="uppercase" sortable>
                             <template #body="{ data }">
                                 {{ data.name }}
                             </template>
@@ -404,7 +429,7 @@ const info = (data) => {
                                     placeholder="Buscar por gasto" />
                             </template>
                         </Column>
-                        <Column header="Relacionado" style="width: 5%; min-width: 8rem;">
+                        <Column field="related" header="Relacionado" style="width: 5%; min-width: 8rem;">
                             <template #body="{ data }">
                                 <i class="pi"
                                     :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Treasury;
+namespace App\Models\Treasury\Voucher;
 
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

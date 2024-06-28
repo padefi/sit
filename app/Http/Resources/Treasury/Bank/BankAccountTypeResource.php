@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Treasury;
+namespace App\Http\Resources\Treasury\Bank;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

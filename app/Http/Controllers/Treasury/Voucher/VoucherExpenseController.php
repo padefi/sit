@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Treasury;
+namespace App\Http\Controllers\Treasury\Voucher;
 
 use App\Events\Treasury\Voucher\VoucherExpenseEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Treasury\VoucherExpenseRequest;
-use App\Http\Resources\Treasury\VoucherExpenseResource;
-use App\Models\Treasury\VoucherExpense;
+use App\Http\Requests\Treasury\Voucher\VoucherExpenseRequest;
+use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
+use App\Models\Treasury\Voucher\VoucherExpense;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;

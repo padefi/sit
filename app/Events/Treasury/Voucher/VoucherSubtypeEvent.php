@@ -2,7 +2,7 @@
 
 namespace App\Events\Treasury\Voucher;
 
-use App\Models\Treasury\VoucherSubtype;
+use App\Models\Treasury\Voucher\VoucherSubtype;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -18,7 +18,7 @@ class VoucherSubtypeEvent implements ShouldBroadcast {
     /**
      * Create a new event instance.
      *
-     * @param \App\Models\Treasury\VoucherSubtype $voucherSubtype
+     * @param \App\Models\Treasury\Voucher\VoucherSubtype $voucherSubtype
      * @return void
      */
     public function __construct(VoucherSubtype $voucherSubtype, $voucherSubtypeId, $type) {

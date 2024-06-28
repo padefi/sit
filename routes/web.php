@@ -3,10 +3,10 @@
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Users\UserController;
-use App\Http\Controllers\Treasury\VoucherSubtypeController;
-use App\Http\Controllers\Treasury\VoucherExpenseController;
-use App\Http\Controllers\Treasury\BankController;
-use App\Http\Controllers\Treasury\BankAccountController;
+use App\Http\Controllers\Treasury\Voucher\VoucherSubtypeController;
+use App\Http\Controllers\Treasury\Voucher\VoucherExpenseController;
+use App\Http\Controllers\Treasury\Bank\BankController;
+use App\Http\Controllers\Treasury\Bank\BankAccountController;
 
 /*
 |--------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 namespace App\Events\Treasury\Voucher;
 
-use App\Models\Treasury\VoucherExpense;
+use App\Models\Treasury\Voucher\VoucherExpense;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -18,7 +18,7 @@ class VoucherExpenseEvent implements ShouldBroadcast {
     /**
      * Create a new event instance.
      *
-     * @param \App\Models\Treasury\VoucherExpense $voucherExpense
+     * @param \App\Models\Treasury\Voucher\VoucherExpense $voucherExpense
      * @return void
      */
     public function __construct(VoucherExpense $voucherExpense, $voucherExpenseId, $type) {

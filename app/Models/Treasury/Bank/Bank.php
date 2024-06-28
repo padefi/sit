@@ -1,21 +1,24 @@
 <?php
 
-namespace App\Models\Treasury;
+namespace App\Models\Treasury\Bank;
 
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VoucherExpense extends Model {
+class Bank extends Model {
     use HasFactory;
 
     protected $fillable = [
         'name',
+        'address',
+        'phone',
+        'email',
+        'notes',
         'idUserCreated',
         'created_at',
         'idUserUpdated',
         'updated_at',
-        'status',
     ];
 
     public function userCreated() {
@@ -24,14 +27,5 @@ class VoucherExpense extends Model {
 
     public function userUpdated() {
         return $this->belongsTo(User::class, 'idUserUpdated');
-    }
-
-    public function userRelated() {
-        return $this->belongsTo(User::class, 'idUserRelated');
-    }
-
-    public function subtypes() {
-        return $this->belongsToMany(VoucherSubtype::class, 'subtype_expense_relationship', 'idExpense', 'idSubtype')
-            ->withPivot('idUserRelated', 'related_at');
     }
 }

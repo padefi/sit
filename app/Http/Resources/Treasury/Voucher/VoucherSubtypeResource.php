@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\Treasury;
+namespace App\Http\Resources\Treasury\Voucher;
 
 use App\Models\Users\User;
 use Illuminate\Http\Request;

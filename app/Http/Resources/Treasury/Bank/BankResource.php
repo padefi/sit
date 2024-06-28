@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Resources\Treasury;
+namespace App\Http\Resources\Treasury\Bank;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class VoucherExpenseResource extends JsonResource {
+class BankResource extends JsonResource
+{
     /**
      * Transform the resource into an array.
      *
@@ -15,6 +16,10 @@ class VoucherExpenseResource extends JsonResource {
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'address' => $this->address,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'notes' => $this->notes,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,
@@ -25,7 +30,6 @@ class VoucherExpenseResource extends JsonResource {
             ] : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'status' => $this->status,
         ];
     }
 }

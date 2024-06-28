@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Treasury;
+namespace App\Http\Requests\Treasury\Voucher;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VoucherExpenseRequest extends FormRequest {
+class VoucherSubtypeRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */
