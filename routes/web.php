@@ -7,6 +7,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherSubtypeController;
 use App\Http\Controllers\Treasury\Voucher\VoucherExpenseController;
 use App\Http\Controllers\Treasury\Bank\BankController;
 use App\Http\Controllers\Treasury\Bank\BankAccountController;
+use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,10 @@ Route::get('/home', function () {
 Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
     Route::resource('users', UserController::class);
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view voucher types']], function () {
+    Route::resource('voucher-types', VoucherTypeController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {

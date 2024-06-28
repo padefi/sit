@@ -21,6 +21,12 @@ const items = ref([
                 icon: 'pi pi-dollar',
                 method: 'get',
                 route: 'voucher-subtypes.index',
+            },            
+            {
+                label: 'Tipos',
+                icon: 'pi pi-list',
+                method: 'get',
+                route: 'voucher-types.index',
             },
             {
                 label: 'Subtipos',
