@@ -532,7 +532,7 @@ const info = (route, data, id) => {
                             Sin bancos cargados
                         </div>
                     </template>
-                    <Column expander style="width: 1%" />
+                    <Column expander style="width: 1%" v-if="hasPermission('view bank accounts')" />
                     <Column field="name" header="Nombre" style="width: 10%;" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
@@ -608,7 +608,7 @@ const info = (route, data, id) => {
                                     <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                             @click="info('banks', data, data.id)"></i></button>
                                 </template>
-                                <template v-if="hasPermission('create bank accounts')">
+                                <template v-if="hasPermission('view bank accounts') && hasPermission('create bank accounts')">
                                     <button v-tooltip="'Agregar cuenta'"><i
                                             class="pi pi-plus-circle text-green-500 text-2xl"
                                             @click="addNewBankAccount(data)"></i></button>

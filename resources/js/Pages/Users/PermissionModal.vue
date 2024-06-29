@@ -5,28 +5,58 @@ import { ref, onMounted, inject, watch } from "vue";
 const userId = ref([]);
 const permissions = ref([]);
 const dialogRef = inject("dialogRef");
+const isProcessing = ref(false);
 
 onMounted(() => {
     permissions.value = dialogRef.value.data.permissions;
     userId.value = dialogRef.value.data.userId;
 });
 
-
 watch(() => dialogRef.value.data, (newData) => {
     permissions.value = newData.permissions;
     userId.value = newData.userId;
 });
 
-const updateUserPermission = (permissionId) => {
-    const form = useForm({
-        permission: permissionId,
-    });
+const isViewSelected = (category) => {
+    return category.some(permission => permission.name.startsWith('view') && permission.hasPermission);
+}
 
-    form.put(route("users.updatePermission", userId.value), {
-        onSuccess: () => {
-        },
-        onError: () => {
+const updateUserPermission = async (category, permission) => {
+    permission.hasPermission = !permission.hasPermission;
+
+    await updatePermissionOnServer(permission);
+
+    if (!isViewSelected(category) && permission.name.startsWith('view')) {
+        isProcessing.value = true;
+        for (const perm of category) {
+            if (!perm.name.startsWith('view') && perm.hasPermission) {
+                await removePermission(perm);
+            }
         }
+
+        isProcessing.value = false;
+    }
+};
+
+const removePermission = async (permission) => {
+    permission.hasPermission = false;
+    await updatePermissionOnServer(permission);
+};
+
+const updatePermissionOnServer = (permission) => {
+    return new Promise((resolve, reject) => {
+        const form = useForm({
+            permission: permission.id,
+        });
+
+        form.put(route("users.updatePermission", userId.value), {
+            onSuccess: () => {
+                resolve();
+            },
+            onError: () => {
+                reject();
+            }
+        });
     });
 };
 </script>
@@ -50,13 +80,16 @@ const updateUserPermission = (permissionId) => {
                                 <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
                                     {{ index }}
                                 </td>
-                                <template v-for="(permission, index, key) in category" :key="permission.id">
+                                <template v-for="(permission) in category" :key="permission.id">
                                     <td class="text-base items-center text-center text-gray-900 font-light px-6 py-4 whitespace-nowrap"
                                         v-if="permission.show === 1">
                                         <input :name="'permission_' + permission.id" type="checkbox"
                                             :checked="permission.hasPermission" :value="permission.name"
-                                            @click="updateUserPermission(permission.id)"
-                                            class="w-6 h-6 cursor-pointer text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                            :disabled="isProcessing || !isViewSelected(category) && !permission.name.startsWith('view')"
+                                            @click="updateUserPermission(category, permission)" :class="[
+                                'w-6 h-6 cursor-pointer text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600',
+                                (isProcessing || (!isViewSelected(category) && !permission.name.startsWith('view'))) ? 'cursor-not-allowed' : 'cursor-pointer'
+                            ]" />
                                     </td>
                                 </template>
                             </tr>

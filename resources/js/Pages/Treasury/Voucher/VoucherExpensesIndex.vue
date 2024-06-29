@@ -260,9 +260,9 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" v-model:filters="filters"
-                    :value="voucherExpensesArray" scrollable scrollHeight="70vh" editMode="row" dataKey="id"
-                    filterDisplay="menu" :globalFilterFields="['name', 'status']" @row-edit-init="onRowEditInit($event)"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="voucherExpensesArray"
+                    scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
+                    :globalFilterFields="['name', 'status']" @row-edit-init="onRowEditInit($event)"
                     @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -291,8 +291,6 @@ const info = (data) => {
                                 style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
-                    </Column>
-                    <Column field="expenseExpenseRelationship" header="Subtipos relacionados" style="width: 10%;">
                     </Column>
                     <Column field="status" header="Estado" style="width: 10%;" sortable>
                         <template #body="{ data }">

@@ -81,7 +81,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'view banks', 'description' => 'Bancos', 'show' => true],
             ['name' => 'create banks', 'description' => 'Bancos', 'show' => true],
             ['name' => 'edit banks', 'description' => 'Bancos', 'show' => true],
-            // ['name' => 'view bank accounts', 'description' => 'Cta. bancarias', 'show' => true],
+            ['name' => 'view bank accounts', 'description' => 'Cta. bancarias', 'show' => true],
             ['name' => 'create bank accounts', 'description' => 'Cta. bancarias', 'show' => true],
             ['name' => 'edit bank accounts', 'description' => 'Cta. bancarias', 'show' => true],
             ['name' => 'view providers', 'description' => 'Proveedores', 'show' => true],
