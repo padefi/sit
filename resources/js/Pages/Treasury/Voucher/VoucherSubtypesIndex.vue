@@ -245,7 +245,7 @@ const relateButton = (event, data) => {
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             const form = useForm({
-                voucherExpenses: data.id
+                voucherExpense: data.id
             })
 
             form.post(route("voucher-subtypes.relate", voucherSubtypeRelated.value.id), {
@@ -272,7 +272,6 @@ onMounted(() => {
                     voucherSubtypesArray.value.unshift(e.voucherSubtype);
                 }
             } else if (e.type === 'update') {
-                console.log(e.voucherSubtype);
                 const index = voucherSubtypesArray.value.findIndex(voucherSubtype => voucherSubtype.id === e.voucherSubtype.id);
 
                 if (index !== -1) {
@@ -322,7 +321,9 @@ onMounted(() => {
 
                 if (dataIndex !== -1) {
                     dataVoucherExpensesArray.value[dataIndex].name = e.voucherExpense.name;
+                    dataVoucherExpensesArray.value[dataIndex].status = e.voucherExpense.status;
                     voucherExpensesArray.value[index].name = e.voucherExpense.name;
+                    voucherExpensesArray.value[index].status = e.voucherExpense.status;
                 }
             }
         });
@@ -473,7 +474,7 @@ const info = (data) => {
                 <OverlayPanel ref="expensesPanel" appendTo="body" :dismissable="false" @hide="handleHide">
                     <div @mousedown.stop="onContentMouseDown">
                         <DataTable v-model:filters="expensesFilters" :value="voucherExpensesArray" paginator :rows="5"
-                            dataKey="id" filterDisplay="menu" :globalFilterFields="['name', 'related']">
+                            dataKey="id" filterDisplay="menu" :globalFilterFields="['name']">
                             <template #empty>
                                 <div class="text-center text-lg text-red-500">
                                     Sin gastos cargados
@@ -481,7 +482,9 @@ const info = (data) => {
                             </template>
                             <Column field="name" header="Gasto" style="min-width: 12rem" class="uppercase" sortable>
                                 <template #body="{ data }">
-                                    {{ data.name }}
+                                    <span :class="{ 'text-red-500': data.status === 'INACTIVO' || data.status === 0 }">
+                                        {{ data.name }}
+                                    </span>
                                 </template>
                                 <template #filter="{ filterModel, filterCallback }">
                                     <InputText v-model="filterModel.value" type="text" @input="filterCallback()"

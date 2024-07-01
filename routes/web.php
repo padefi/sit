@@ -42,6 +42,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view users']], function
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher types']], function () {
     Route::resource('voucher-types', VoucherTypeController::class);
+    Route::post('/voucher-types/{voucher_type}/relate', [VoucherTypeController::class, 'relate'])->name('voucher-types.relate');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {

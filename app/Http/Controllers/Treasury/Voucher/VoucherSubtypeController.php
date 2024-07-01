@@ -115,7 +115,7 @@ class VoucherSubtypeController extends Controller {
     }
 
     public function relate(Request $request, VoucherSubtype $voucherSubtype) {
-        $voucherExpense = VoucherExpense::where('id', $request->voucherExpenses)->first();
+        $voucherExpense = VoucherExpense::where('id', $request->voucherExpense)->first();
 
         if (!$voucherExpense) {
             throw ValidationException::withMessages([

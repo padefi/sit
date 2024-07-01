@@ -25,6 +25,10 @@ Broadcast::channel('bankAccounts', function () {
     return true;
 });
 
+Broadcast::channel('types', function () {
+    return true;
+});
+
 Broadcast::channel('subtypes', function () {
     return true;
 });
