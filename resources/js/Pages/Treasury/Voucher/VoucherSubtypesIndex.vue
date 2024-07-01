@@ -285,16 +285,22 @@ onMounted(() => {
                     voucherSubtypesArray.value[index] = e.voucherSubtype;
                 }
 
-                console.log(e.voucherSubtype);
-
                 voucherExpensesArray.value.map((voucherExpense) => {
                     const data = e.voucherSubtype.expenses.find(expenseRelated => expenseRelated.id === voucherExpense.id);
 
                     if (data) {
-                        // console.log(data);
+                        voucherExpense.related = true;
+                        voucherExpense.relatedData = {
+                            related_at: data.related_at ? format(data.related_at, "DD/MM/YYYY HH:mm:ss", "es") : '00/00/0000 00:00:00',
+                            userRelated: {
+                                name: data.userRelated.name,
+                                surname: data.userRelated.surname
+                            }
+                        }
+                    } else {
+                        voucherExpense.related = false;
                     }
-
-                })
+                });
             }
         });
 
@@ -315,8 +321,8 @@ onMounted(() => {
                 const index = voucherExpensesArray.value.findIndex(voucherExpense => voucherExpense.id === e.voucherExpense.id);
 
                 if (dataIndex !== -1) {
-                    dataVoucherExpensesArray.value[dataIndex] = e.voucherExpense;
-                    voucherExpensesArray.value[index] = e.voucherExpense;
+                    dataVoucherExpensesArray.value[dataIndex].name = e.voucherExpense.name;
+                    voucherExpensesArray.value[index].name = e.voucherExpense.name;
                 }
             }
         });

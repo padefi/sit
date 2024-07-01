@@ -53,7 +53,7 @@ class VoucherExpenseController extends Controller {
         ]);
 
         $tempUUID = $request->keys()[2];
-        $voucherExpense->load('userCreated', 'userUpdated');
+        $voucherExpense->load('userCreated', 'userUpdated', 'subtypes.userRelated');
         event(new VoucherExpenseEvent($voucherExpense, $tempUUID, 'create'));
 
         return Redirect::back()->with([
@@ -85,7 +85,7 @@ class VoucherExpenseController extends Controller {
             'status' => ($request->status) ? 1 : 0,
         ]);
 
-        $voucherExpense->load('userCreated', 'userUpdated');
+        $voucherExpense->load('userCreated', 'userUpdated', 'subtypes.userRelated');
         event(new VoucherExpenseEvent($voucherExpense, $voucherExpense->id, 'update'));
 
         return Redirect::back()->with([

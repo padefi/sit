@@ -22,6 +22,7 @@ const isViewSelected = (category) => {
 }
 
 const updateUserPermission = async (category, permission) => {
+    isProcessing.value = true;
     permission.hasPermission = !permission.hasPermission;
 
     await updatePermissionOnServer(permission);
@@ -33,9 +34,9 @@ const updateUserPermission = async (category, permission) => {
                 await removePermission(perm);
             }
         }
-
-        isProcessing.value = false;
     }
+
+    isProcessing.value = false;
 };
 
 const removePermission = async (permission) => {
@@ -88,7 +89,7 @@ const updatePermissionOnServer = (permission) => {
                                             :disabled="isProcessing || !isViewSelected(category) && !permission.name.startsWith('view')"
                                             @click="updateUserPermission(category, permission)" :class="[
                                 'w-6 h-6 cursor-pointer text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600',
-                                (isProcessing || (!isViewSelected(category) && !permission.name.startsWith('view'))) ? 'cursor-not-allowed' : 'cursor-pointer'
+                                (isProcessing || (!isViewSelected(category) && !permission.name.startsWith('view'))) ? '!cursor-not-allowed' : 'cursor-pointer'
                             ]" />
                                     </td>
                                 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Events\Treasury\Voucher;
 
+use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -38,7 +39,7 @@ class VoucherExpenseEvent implements ShouldBroadcast {
 
     public function broadcastWith() {
         return [
-            'voucherExpense' => $this->voucherExpense,
+            'voucherExpense' => new VoucherExpenseResource($this->voucherExpense),
             'voucherExpenseId' => $this->voucherExpenseId,
             'type' => $this->type,
         ];

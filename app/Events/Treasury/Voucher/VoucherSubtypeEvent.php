@@ -2,6 +2,7 @@
 
 namespace App\Events\Treasury\Voucher;
 
+use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -38,9 +39,9 @@ class VoucherSubtypeEvent implements ShouldBroadcast {
 
     public function broadcastWith() {
         return [
-            'voucherSubtype' => $this->voucherSubtype,
+            'voucherSubtype' => new VoucherSubtypeResource($this->voucherSubtype),
             'voucherSubtypeId' => $this->voucherSubtypeId,
-            'type' => $this->type,
+            'type' => $this->type, 
         ];
     }
 }
