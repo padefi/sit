@@ -21,30 +21,36 @@ const items = ref([
                 icon: 'pi pi-dollar',
                 method: 'get',
                 route: 'voucher-subtypes.index',
-            },            
-            {
-                label: 'Tipos',
-                icon: 'pi pi-list',
-                method: 'get',
-                route: 'voucher-types.index',
-            },
-            {
-                label: 'Subtipos',
-                icon: 'pi pi-list',
-                method: 'get',
-                route: 'voucher-subtypes.index',
-            },
-            {
-                label: 'Gastos',
-                icon: 'pi pi-list',
-                method: 'get',
-                route: 'voucher-expenses.index',
             },
             {
                 label: 'Bancos',
                 icon: 'pi pi-building-columns',
                 method: 'get',
                 route: 'banks.index',
+            },
+            {
+                label: 'Relaciones',
+                icon: 'pi pi-database',
+                items: [
+                    {
+                        label: 'Tipos',
+                        icon: 'pi pi-list',
+                        method: 'get',
+                        route: 'voucher-types.index',
+                    },
+                    {
+                        label: 'Subtipos',
+                        icon: 'pi pi-list',
+                        method: 'get',
+                        route: 'voucher-subtypes.index',
+                    },
+                    {
+                        label: 'Gastos',
+                        icon: 'pi pi-list',
+                        method: 'get',
+                        route: 'voucher-expenses.index',
+                    },
+                ]
             },
         ]
     },
@@ -82,13 +88,13 @@ const userItems = ref([
     <Menubar :model="items" class="menubar">
         <template #item="{ item, props, hasSubmenu, root }">
             <Link v-if="item.route" v-ripple :href="route(item.route)" :method="item.method" as="button"
-                class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400 hover:rounded-md">
+                class="px-4 py-2 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400 hover:rounded-md">
             <span :class="item.icon"></span>
             <span class="ml-2">{{ item.label }}</span>
             </Link>
-            <a v-else v-ripple class="flex items-center" v-bind="props.action">
+            <a v-else v-ripple class="!px-4 !py-3 flex items-center" v-bind="props.action">
                 <span :class="item.icon" />
-                <span class="ml-2">{{ item.label }}</span>
+                <span class="ml-4">{{ item.label }}</span>
                 <Badge v-if="item.badge" :class="{ 'ml-auto': !root, 'ml-2': root }" :value="item.badge" />
                 <span v-if="item.shortcut"
                     class="ml-auto border border-surface-200 dark:border-surface-500 rounded-md bg-surface-100 dark:bg-surface-800 text-xs p-1">

@@ -18,6 +18,11 @@ class VoucherExpense extends Model {
         'status',
     ];
 
+    protected $hidden = [
+        'idUserCreated',
+        'idUserUpdated'
+    ];
+
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }
@@ -31,7 +36,8 @@ class VoucherExpense extends Model {
     }
 
     public function subtypes() {
-        return $this->belongsToMany(VoucherSubtype::class, 'subtype_expense_relationship', 'idExpense', 'idSubtype')
-            ->withPivot('idUserRelated', 'related_at');
+        return $this->belongsToMany(VoucherSubtype::class, 'subtype_expense_relationship', 'idSubtype', 'idExpense')
+            ->withPivot('idUserRelated', 'related_at')
+            ->with('userRelated');
     }
 }

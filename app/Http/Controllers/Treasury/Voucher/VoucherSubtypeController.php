@@ -9,6 +9,7 @@ use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -29,7 +30,7 @@ class VoucherSubtypeController extends Controller {
     public function index(): Response {
         $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses.userRelated'])->orderBy('name', 'asc')->get();
         $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
-        
+
         return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [
             'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
             'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
@@ -111,5 +112,37 @@ class VoucherSubtypeController extends Controller {
         }
 
         return new VoucherSubtypeResource($voucherSubtype);
+    }
+
+    public function relate(Request $request, VoucherSubtype $voucherSubtype) {
+        $voucherExpense = VoucherExpense::where('id', $request->voucherExpenses)->first();
+
+        if (!$voucherExpense) {
+            throw ValidationException::withMessages([
+                'message' => trans('El gasto no existe.')
+            ]);
+        }
+
+        $existingRelationship = $voucherSubtype->expenses()->where('id', $voucherExpense->id)->exists();
+
+        if ($existingRelationship) {
+            $voucherSubtype->expenses()->detach($voucherExpense->id);
+        } else {
+            $voucherSubtype->expenses()->attach($voucherExpense->id, [
+                'idUserRelated' => auth()->user()->id,
+                'related_at' => now(),
+            ]);
+        }
+
+        $voucherSubtype->load('userCreated', 'userUpdated', 'expenses.userRelated');
+        event(new VoucherSubtypeEvent($voucherSubtype, $voucherSubtype->id, 'relate'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Relación actualizada exitosamente.'
+            ],
+            'success' => true,
+        ]);
     }
 }

@@ -37,7 +37,7 @@ class VoucherSubtype extends Model {
 
     public function expenses() {
         return $this->belongsToMany(VoucherExpense::class, 'subtype_expense_relationship', 'idSubtype', 'idExpense')
-        ->withPivot('idUserRelated', 'related_at')
-        ->with('userRelated');
+            ->withPivot('idUserRelated', 'related_at')
+            ->with('userRelated');
     }
 }

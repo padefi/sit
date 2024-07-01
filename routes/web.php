@@ -47,6 +47,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher types']], 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {
     Route::resource('voucher-subtypes', VoucherSubtypeController::class);
     Route::get('/voucher-subtypes/{voucher_subtype}/info', [VoucherSubtypeController::class, 'info'])->name('voucher-subtypes.info');
+    Route::post('/voucher-subtypes/{voucher_subtype}/relate', [VoucherSubtypeController::class, 'relate'])->name('voucher-subtypes.relate');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']], function () {

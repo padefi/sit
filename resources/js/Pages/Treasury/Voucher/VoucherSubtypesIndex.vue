@@ -35,17 +35,21 @@ const editingRows = ref([]);
 const rules = 'Debe completar el campo'
 const editing = ref(false);
 const confirm = useConfirm();
+const voucherSubtypeRelated = ref();
 
 voucherSubtypesArray.value = props.voucherSubtypes;
 dataVoucherExpensesArray.value = props.voucherExpenses;
 
 const related = (data, event) => {
+    voucherSubtypeRelated.value = data;
+
     voucherExpensesArray.value = [];
 
     dataVoucherExpensesArray.value.map((voucherExpense) => {
         const matchingExpense = data.expenses.find(expense => expense.id === voucherExpense.id);
         if (matchingExpense) {
-            voucherExpense.related = {
+            voucherExpense.related = true;
+            voucherExpense.relatedData = {
                 related_at: matchingExpense.related_at ? format(matchingExpense.related_at, "DD/MM/YYYY HH:mm:ss", "es") : '00/00/0000 00:00:00',
                 userRelated: {
                     name: matchingExpense.userRelated.name,
@@ -86,8 +90,7 @@ const subtypesFilters = ref({
 });
 
 const expensesFilters = ref({
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    related: { value: null, matchMode: FilterMatchMode.EQUALS },
+    name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
 const addNewVoucherSubtype = () => {
@@ -223,6 +226,38 @@ const onRowEditCancel = () => {
     editingRows.value = [];
 };
 
+const allowHide = ref(true);
+
+const handleHide = (event) => {
+    if (!allowHide.value) {
+        allowHide.value = true;
+    }
+};
+
+const onContentMouseDown = () => {
+    allowHide.value = false;
+};
+
+const relateButton = (event, data) => {
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de relacionar el gasto al subtipo?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            const form = useForm({
+                voucherExpenses: data.id
+            })
+
+            form.post(route("voucher-subtypes.relate", voucherSubtypeRelated.value.id), {
+                onSuccess: () => {
+                },
+                onError: () => {
+                }
+            });
+        },
+    });
+}
+
 onMounted(() => {
     props.voucherSubtypes.map((voucherSubtype) => {
         voucherSubtype.status = voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
@@ -237,11 +272,29 @@ onMounted(() => {
                     voucherSubtypesArray.value.unshift(e.voucherSubtype);
                 }
             } else if (e.type === 'update') {
+                console.log(e.voucherSubtype);
                 const index = voucherSubtypesArray.value.findIndex(voucherSubtype => voucherSubtype.id === e.voucherSubtype.id);
 
                 if (index !== -1) {
                     voucherSubtypesArray.value[index] = e.voucherSubtype;
                 }
+            } else if (e.type === 'relate') {
+                const index = voucherSubtypesArray.value.findIndex(voucherSubtype => voucherSubtype.id === e.voucherSubtype.id);
+
+                if (index !== -1) {
+                    voucherSubtypesArray.value[index] = e.voucherSubtype;
+                }
+
+                console.log(e.voucherSubtype);
+
+                voucherExpensesArray.value.map((voucherExpense) => {
+                    const data = e.voucherSubtype.expenses.find(expenseRelated => expenseRelated.id === voucherExpense.id);
+
+                    if (data) {
+                        // console.log(data);
+                    }
+
+                })
             }
         });
 
@@ -411,33 +464,51 @@ const info = (data) => {
                     </Column>
                 </DataTable>
 
-                <OverlayPanel ref="expensesPanel" appendTo="body">
-                    <DataTable v-model:filters="expensesFilters" :value="voucherExpensesArray" paginator :rows="5"
-                        dataKey="id" filterDisplay="row" :globalFilterFields="['name']">
-                        <template #empty>
-                            <div class="text-center text-lg text-red-500">
-                                Sin gastos cargados
-                            </div>
-                        </template>
-                        <Column field="name" header="Gasto" style="min-width: 12rem" class="uppercase" sortable>
-                            <template #body="{ data }">
-                                {{ data.name }}
+                <OverlayPanel ref="expensesPanel" appendTo="body" :dismissable="false" @hide="handleHide">
+                    <div @mousedown.stop="onContentMouseDown">
+                        <DataTable v-model:filters="expensesFilters" :value="voucherExpensesArray" paginator :rows="5"
+                            dataKey="id" filterDisplay="menu" :globalFilterFields="['name', 'related']">
+                            <template #empty>
+                                <div class="text-center text-lg text-red-500">
+                                    Sin gastos cargados
+                                </div>
                             </template>
-                            <template #filter="{ filterModel, filterCallback }">
-                                <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
-                                    name="expenseName" autocomplete="off" class="p-column-filter"
-                                    placeholder="Buscar por gasto" />
-                            </template>
-                        </Column>
-                        <Column field="related" header="Relacionado" style="width: 5%; min-width: 8rem;">
-                            <template #body="{ data }">
-                                <i class="pi"
-                                    :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"
-                                    v-tooltip="data.related ? `Usuario: ${data.related.userRelated.surname} ${data.related.userRelated.name} \n Fecha: ${data.related.related_at}` : 'No relacionado'">
-                                </i>
-                            </template>
-                        </Column>
-                    </DataTable>
+                            <Column field="name" header="Gasto" style="min-width: 12rem" class="uppercase" sortable>
+                                <template #body="{ data }">
+                                    {{ data.name }}
+                                </template>
+                                <template #filter="{ filterModel, filterCallback }">
+                                    <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
+                                        name="expenseName" autocomplete="off" class="p-column-filter"
+                                        placeholder="Buscar por gasto" />
+                                </template>
+                            </Column>
+                            <Column field="related" header="Relacionado" dataType="boolean"
+                                style="width: 5%; min-width: 8rem;">
+                                <template #body="{ data }">
+                                    <div class="space-x-6 flex pl-6">
+                                        <template v-if="!hasPermission('relationship voucher subtypes')">
+                                            <i class="pi top-1 relative"
+                                                :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"
+                                                v-tooltip="data.related ? 'Relacionado' : 'No relacionado'">
+                                            </i>
+                                        </template>
+                                        <template v-if="hasPermission('relationship voucher subtypes')">
+                                            <ConfirmPopup></ConfirmPopup>
+                                            <button v-tooltip="data.related ? 'Quitar relación' : 'Relacionar'"><i
+                                                    class="pi text-blue-300"
+                                                    :class="{ 'pi-plus-circle text-green-500': !data.related, 'pi-minus-circle text-red-400': data.related }"
+                                                    @click="relateButton($event, data)"></i></button>
+                                        </template>
+                                        <template v-if="hasPermission('view users') && data.related">
+                                            <i class="pi pi-id-card text-cyan-500 text-2xl"
+                                                v-tooltip="`Usuario: ${data.relatedData.userRelated.surname} ${data.relatedData.userRelated.name} \n Fecha: ${data.relatedData.related_at}`"></i>
+                                        </template>
+                                    </div>
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </div>
                 </OverlayPanel>
             </template>
         </Card>

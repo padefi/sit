@@ -8,7 +8,7 @@ export default {
             'items-center',
 
             // Spacing
-            'p-2',
+            // 'p-2',
 
             // Shape
             'rounded-md',
@@ -121,7 +121,7 @@ export default {
             'w-full sm:w-48',
 
             // Spacing
-            'py-1',
+            // 'py-1',
             'm-0',
             'list-none',
 
