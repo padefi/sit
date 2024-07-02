@@ -42,7 +42,6 @@ dataVoucherExpensesArray.value = props.voucherExpenses;
 
 const related = (data, event) => {
     voucherSubtypeRelated.value = data;
-
     voucherExpensesArray.value = [];
 
     dataVoucherExpensesArray.value.map((voucherExpense) => {
@@ -284,6 +283,8 @@ onMounted(() => {
                     voucherSubtypesArray.value[index] = e.voucherSubtype;
                 }
 
+                if (voucherSubtypeRelated.value.id != e.voucherSubtype.id) return;
+
                 voucherExpensesArray.value.map((voucherExpense) => {
                     const data = e.voucherSubtype.expenses.find(expenseRelated => expenseRelated.id === voucherExpense.id);
 
@@ -322,8 +323,8 @@ onMounted(() => {
                 if (dataIndex !== -1) {
                     dataVoucherExpensesArray.value[dataIndex].name = e.voucherExpense.name;
                     dataVoucherExpensesArray.value[dataIndex].status = e.voucherExpense.status;
-                    voucherExpensesArray.value[index].name = e.voucherExpense.name;
-                    voucherExpensesArray.value[index].status = e.voucherExpense.status;
+                    /* voucherExpensesArray.value[index].name = e.voucherExpense.name;
+                    voucherExpensesArray.value[index].status = e.voucherExpense.status; */
                 }
             }
         });

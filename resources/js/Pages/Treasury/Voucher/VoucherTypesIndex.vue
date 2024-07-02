@@ -34,7 +34,6 @@ dataVoucherSubtypesArray.value = props.voucherSubtypes;
 
 const related = (data, event) => {
     voucherTypeRelated.value = data;
-
     voucherSubtypesArray.value = [];
 
     dataVoucherSubtypesArray.value.map((voucherSubtype) => {
@@ -105,6 +104,8 @@ onMounted(() => {
                     voucherTypesArray.value[index] = e.voucherType;
                 }
 
+                if (voucherTypeRelated.value.id != e.voucherType.id) return;
+
                 voucherSubtypesArray.value.map((voucherSubtype) => {
                     const data = e.voucherType.subtypes.find(subtypeRelated => subtypeRelated.id === voucherSubtype.id);
 
@@ -143,8 +144,8 @@ onMounted(() => {
                 if (dataIndex !== -1) {
                     dataVoucherSubtypesArray.value[dataIndex].name = e.voucherSubtype.name;
                     dataVoucherSubtypesArray.value[dataIndex].status = e.voucherSubtype.status;
-                    voucherSubtypesArray.value[index].name = e.voucherSubtype.name;
-                    voucherSubtypesArray.value[index].status = e.voucherSubtype.status;
+                    /* voucherSubtypesArray.value[index].name = e.voucherSubtype.name;
+                    voucherSubtypesArray.value[index].status = e.voucherSubtype.status; */
                 }
             }
         });
