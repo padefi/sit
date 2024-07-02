@@ -13,8 +13,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name', 100)->collation('utf8mb4_general_ci');
             $table->string('address', 100)->collation('utf8mb4_general_ci');
-            $table->string('phone', 100)->collation('utf8mb4_general_ci');
-            $table->string('email', 100)->collation('utf8mb4_general_ci');
+            $table->string('phone', 20)->collation('utf8mb4_general_ci')->nullable();
+            $table->string('email', 100)->collation('utf8mb4_general_ci')->nullable();
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
