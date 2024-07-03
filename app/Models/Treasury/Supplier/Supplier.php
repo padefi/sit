@@ -19,6 +19,7 @@ class Supplier extends Model {
         'streetNumber',
         'floor',
         'city',
+        'state',
         'phone',
         'email',
         'postalCode',

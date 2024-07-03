@@ -19,6 +19,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    taxConditions: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission } = usePermissions();
@@ -29,6 +33,7 @@ const confirm = useConfirm();
 
 const suppliersArray = ref([]);
 const originalSuppliersArray = ref([]);
+
 suppliersArray.value = props.suppliers;
 
 const filters = ref({
@@ -62,8 +67,6 @@ const addNewSupplier = () => {
     editing.value = true;
     editingRows.value = [newBank]; */
 
-    dialogModal
-
     dialog.open(dialogModal, {
         props: {
             header: 'Nuevo proveedor',
@@ -77,12 +80,12 @@ const addNewSupplier = () => {
             modal: true,
             contentStyle: {
                 padding: '1.25rem'
-            }
+            },
         },
+        data: props.taxConditions,
     });
 };
 
-console.log(suppliersArray)
 onMounted(() => {
 });
 

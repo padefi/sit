@@ -18,10 +18,13 @@ export default {
             // '[&>*:last-child]:has-[:focus]:-top-3',
             '[&>*:last-child]:has-[:focus]:top-0',
             '[&>*:last-child]:has-[:focus]:text-sm',
+            '[&>*:last-child]:has-[:focus]:z-50',
 
             // Filled Input Label Appearance
-            '[&>*:last-child]:has-[.filled]:-top-3',
-            '[&>*:last-child]:has-[.filled]:text-sm'
+            // '[&>*:last-child]:has-[.filled]:-top-3',
+            '[&>*:last-child]:has-[.filled]:-top-0',
+            '[&>*:last-child]:has-[.filled]:text-sm',
+            '[&>*:last-child]:has-[.filled]:z-50'
         ]
     }
 };

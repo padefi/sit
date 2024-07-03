@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Treasury\Supplier;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Treasury\Supplier\SupplierResource;
+use App\Http\Resources\Treasury\Taxes\TaxConditionResource;
 use App\Models\Treasury\Supplier\Supplier;
+use App\Models\Treasury\Taxes\TaxCondition;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,9 +21,11 @@ class SupplierController extends Controller {
 
     public function index(): Response {
         $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
+        $taxCondition = TaxCondition::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
+            'taxConditions' => TaxConditionResource::collection($taxCondition),
         ]);
     }
 
