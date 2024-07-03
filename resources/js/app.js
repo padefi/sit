@@ -48,6 +48,7 @@ import Dropdown from "primevue/dropdown";
 import DynamicDialog from "primevue/dynamicdialog";
 import Fieldset from "primevue/fieldset";
 import FileUpload from "primevue/fileupload";
+import FloatLabel from 'primevue/floatlabel';
 import FocusTrap from "primevue/focustrap";
 import Galleria from "primevue/galleria";
 import Image from "primevue/image";
@@ -90,6 +91,8 @@ import SpeedDial from "primevue/speeddial";
 import SplitButton from "primevue/splitbutton";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
+import Stepper from "primevue/stepper";
+import StepperPanel from "primevue/stepperpanel";
 import Steps from "primevue/steps";
 import StyleClass from "primevue/styleclass";
 import TabMenu from "primevue/tabmenu";
@@ -165,7 +168,7 @@ createInertiaApp({
                         matchAll: "Coincidir todo",
                         matchAny: "Coincidir cualquiera",
                         addRule: "Agregar regla",
-                        removeRule: "Eliminar regla",                        
+                        removeRule: "Eliminar regla",
                         lt: "Menor que",
                         lte: "Menor o igual que",
                         gt: "Mayor que",
@@ -176,12 +179,18 @@ createInertiaApp({
                         dateAfter: "Fecha despues de",
                         dateBeforeOrEqual: "Fecha antes o igual a",
                         dateAfterOrEqual: "Fecha despues o igual a",
-                        containsIgnoreCase: "Contiene (ignorando mayúsculas y minúsculas)",
-                        notContainsIgnoreCase: "No contiene (ignorando mayúsculas y minúsculas)",
-                        startsWithIgnoreCase: "Comienza con (ignorando mayúsculas y minúsculas)",
-                        endsWithIgnoreCase: "Termina con (ignorando mayúsculas y minúsculas)",
-                        equalsIgnoreCase: "Igual a (ignorando mayúsculas y minúsculas)",
-                        notEqualsIgnoreCase: "No igual a (ignorando mayúsculas y minúsculas)",
+                        containsIgnoreCase:
+                            "Contiene (ignorando mayúsculas y minúsculas)",
+                        notContainsIgnoreCase:
+                            "No contiene (ignorando mayúsculas y minúsculas)",
+                        startsWithIgnoreCase:
+                            "Comienza con (ignorando mayúsculas y minúsculas)",
+                        endsWithIgnoreCase:
+                            "Termina con (ignorando mayúsculas y minúsculas)",
+                        equalsIgnoreCase:
+                            "Igual a (ignorando mayúsculas y minúsculas)",
+                        notEqualsIgnoreCase:
+                            "No igual a (ignorando mayúsculas y minúsculas)",
                         in: "En",
                         notIn: "No en",
                         before: "Antes de",
@@ -323,6 +332,7 @@ createInertiaApp({
                 .component("Dropdown", Dropdown)
                 .component("DynamicDialog", DynamicDialog)
                 .component("Fieldset", Fieldset)
+                .component('FloatLabel', FloatLabel)
                 .component("FileUpload", FileUpload)
                 .component("Galleria", Galleria)
                 .component("Image", Image)
@@ -364,6 +374,8 @@ createInertiaApp({
                 .component("SplitButton", SplitButton)
                 .component("Splitter", Splitter)
                 .component("SplitterPanel", SplitterPanel)
+                .component("Stepper", Stepper)
+                .component("StepperPanel", StepperPanel)
                 .component("Steps", Steps)
                 .component("TabMenu", TabMenu)
                 .component("TabView", TabView)

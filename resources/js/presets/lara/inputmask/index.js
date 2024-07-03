@@ -4,6 +4,10 @@ export default {
             // Font
             'font-sans leading-none',
 
+            // Borders
+            'border-0 border-b appearance-none',
+            'focus:outline-none focus:ring-0 peer',
+
             // Spacing
             'm-0 p-3',
 
@@ -26,7 +30,7 @@ export default {
             },
 
             // Misc
-            'rounded-md',
+            // 'rounded-md',
             'appearance-none',
             'transition-colors duration-200'
         ]

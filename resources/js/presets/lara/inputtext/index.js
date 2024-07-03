@@ -48,6 +48,7 @@ export default {
             { filled: parent.instance?.$name == 'FloatLabel' && context.filled },
 
             // Misc
+            // 'rounded-md',
             'appearance-none',
             'transition-colors duration-200'
         ]

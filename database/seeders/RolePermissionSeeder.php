@@ -28,7 +28,7 @@ class RolePermissionSeeder extends Seeder {
 
         $administrativeRole = Role::findByName('administrativo');
         $AdministrativePermissions = Permission::where(function ($query) {
-            $query->where('name', 'like', '%providers%')
+            $query->where('name', 'like', '%suppliers%')
                 ->orWhere('name', 'like', '%vouchers%');
         })->get();
         $administrativeRole->syncPermissions($AdministrativePermissions);

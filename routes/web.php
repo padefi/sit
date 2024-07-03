@@ -8,6 +8,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherExpenseController;
 use App\Http\Controllers\Treasury\Bank\BankController;
 use App\Http\Controllers\Treasury\Bank\BankAccountController;
 use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
+use App\Http\Controllers\Treasury\supplier\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +55,10 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']
 Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']], function () {
     Route::resource('voucher-expenses', VoucherExpenseController::class);
     Route::get('/voucher-expenses/{voucher_expense}/info', [VoucherExpenseController::class, 'info'])->name('voucher-expenses.info');
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
+    Route::resource('suppliers', SupplierController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {

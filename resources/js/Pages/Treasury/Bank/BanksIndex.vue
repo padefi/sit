@@ -6,7 +6,8 @@ import { useForm } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
-import { toastService } from '@/composables/toastService'
+import { toastService } from '@/composables/toastService';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { validatePhoneNumber, validateEmail, validateAccountNumber, validateCBU, validateAlias } from '@/utils/validateFunctions';
 
 toastService();
@@ -461,7 +462,6 @@ onMounted(() => {
 /*  */
 import infoModal from '@/Components/InfoModal.vue';
 import { useDialog } from 'primevue/usedialog';
-import { FilterMatchMode, FilterOperator } from 'primevue/api';
 
 const dialog = useDialog();
 

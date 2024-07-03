@@ -29,6 +29,12 @@ const items = ref([
                 route: 'banks.index',
             },
             {
+                label: 'Proveedores',
+                icon: 'pi pi-shop',
+                method: 'get',
+                route: 'suppliers.index',
+            },
+            {
                 label: 'Relaciones',
                 icon: 'pi pi-database',
                 items: [

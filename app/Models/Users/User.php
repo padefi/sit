@@ -69,11 +69,11 @@ class User extends Authenticatable {
             'auxiliar' => Permission::where(function ($query) {
                 $query->where('name', 'not like', '%users%')
                     ->where('name', 'like', '%view%')
-                    ->orWhere('name', 'like', '%providers%')
+                    ->orWhere('name', 'like', '%suppliers%')
                     ->orWhere('name', 'like', '%vouchers%');
             })->get(),
             'administrativo' => Permission::where(function ($query) {
-                $query->where('name', 'like', '%view providers%')
+                $query->where('name', 'like', '%view suppliers%')
                     ->orWhere('name', 'like', '%view vouchers%');
             })->get(),
         ];

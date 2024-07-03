@@ -23,13 +23,13 @@ class UserPermissionSeeder extends Seeder {
         $jgonzalez->givePermissionTo(Permission::where(function ($query) {
             $query->where('name', 'not like', '%users%')
                 ->where('name', 'like', '%view%')
-                ->orWhere('name', 'like', '%providers%')
+                ->orWhere('name', 'like', '%suppliers%')
                 ->orWhere('name', 'like', '%vouchers%');
         })->get());
 
         $rgomez = User::where('username', 'rgomez')->first();
         $rgomez->givePermissionTo(Permission::where(function ($query) {
-            $query->where('name', 'like', '%view providers%')
+            $query->where('name', 'like', '%view suppliers%')
                 ->orWhere('name', 'like', '%view vouchers%');
         })->get());
     }
