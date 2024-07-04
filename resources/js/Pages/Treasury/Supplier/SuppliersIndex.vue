@@ -7,7 +7,7 @@ import { useForm } from '@inertiajs/vue3';
 import { format } from "@formkit/tempo"
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { useConfirm } from 'primevue/useconfirm';
-import dialogModal from '@/Components/DialogModal.vue';
+import stepperModal from '@/Components/StepperModal.vue';
 import infoModal from '@/Components/InfoModal.vue';
 import { useDialog } from 'primevue/usedialog';
 
@@ -67,11 +67,11 @@ const addNewSupplier = () => {
     editing.value = true;
     editingRows.value = [newBank]; */
 
-    dialog.open(dialogModal, {
+    dialog.open(stepperModal, {
         props: {
             header: 'Nuevo proveedor',
             style: {
-                width: '80vw',
+                width: '50vw',
             },
             breakpoints: {
                 '960px': '75vw',
