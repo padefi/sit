@@ -3,6 +3,10 @@ export default {
         class: [
             'relative',
 
+            // Borders
+            'border-0 appearance-none',
+            'focus:outline-none focus:ring-0 peer',
+
             // Flex
             'inline-flex',
 
@@ -53,6 +57,7 @@ export default {
             'focus:outline-none focus:outline-offset-0',
             { 'ring ring-primary-400/50 dark:ring-primary-300/50': state.focused },
             { 'ring ring-primary-400/50 dark:ring-primary-300/50': state.hovered },
+            
             // Transition
             'transition duration-200 ease-in-out',
 
@@ -67,9 +72,14 @@ export default {
         class: [
             // Font
             'font-sans text-base leading-none',
+            'w-full',
+
+            // Borders
+            'border-0 border-b appearance-none',
+            'focus:outline-none focus:ring-0 peer',
 
             // Shape
-            'appearance-none rounded-md',
+            // 'appearance-none rounded-md',
             { 'rounded-tr-none rounded-br-none': props.dropdown },
             { 'outline-none shadow-none rounded-none': props.multiple },
 
@@ -80,19 +90,27 @@ export default {
             'm-0',
             { 'p-3': !props.multiple, 'p-0': props.multiple },
 
-            // Colors
+            /* // Colors
             'text-surface-700 dark:text-white/80',
             'border',
             {
                 'bg-surface-0 dark:bg-surface-900': !props.multiple,
                 ' border-surface-300 dark:border-surface-700': !props.multiple && !props.invalid,
                 'border-0 bg-transparent': props.multiple
-            },
+            }, */
+
+            // Colors
+            'text-surface-600 dark:text-surface-200',
+            'placeholder:text-surface-400 dark:placeholder:text-surface-500',
+            'bg-surface-0 dark:bg-surface-900',
+            'border',
+            { 'border-surface-300 dark:border-surface-600': !props.invalid },
 
             // Invalid State
             { 'border-red-500 dark:border-red-400': props.invalid },
 
             // States
+            { 'hover:border-primary-500 dark:hover:border-primary-400': !props.invalid},
             { 'focus:outline-none focus:outline-offset-0 focus:ring focus:ring-primary-400/50 dark:focus:ring-primary-300/50': !props.multiple },
 
             // Transition

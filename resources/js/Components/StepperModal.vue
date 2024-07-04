@@ -1,50 +1,44 @@
 <script setup>
 import { useForm } from "@inertiajs/vue3";
-import { computed, inject, onMounted, ref } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { dropdownClasses, dropdownLabelClasses } from '@/utils/cssUtils';
-import { states } from '@/utils/apis';
-import { watch } from "vue";
+import { nominatim } from '@/utils/apis';
 
 const form = useForm({
     cuit: '',
     name: '',
     bussinessName: '',
-    state: '',
-    street: '',
-    streetNumber: '',
+    address: {},
+    phone: '',
     email: '',
     taxCondition: '',
 });
 
-const statesArray = ref([]);
 const taxCondition = ref([]);
+const addressArray = ref([]);
+
+const search = async (event) => {
+    addressArray.value = await nominatim(event.query);
+    console.log(addressArray.value.map(result => ({
+        address: result.display_name,
+        street: result.address?.road || '',
+        number: result.address?.house_number || '',
+        city: result.address?.city || result.address?.town || '',
+        state: result.address?.state || '',
+        postal_code: result.address?.postcode || '',
+        latitude: result.lat,
+        longitude: result.lon,
+        osm_ids: result.osm_id,
+    })));
+}
 
 const dialogRef = inject("dialogRef");
 
 onMounted(async () => {
     taxCondition.value = dialogRef.value.data;
-    try {
-        statesArray.value = await states();
-    } catch (error) {
-        console.error(error);
-    }
 });
 </script>
 <template>
-    <!-- <div class="flex flex-column gap-3">
-        <div class="flex align-items-center gap-3 mb-2 w-1/8">
-            <FloatLabel class="w-full">
-                <InputMask id="username" mask="99-99999999-9" />
-                <label for="username">CUIT</label>
-            </FloatLabel>
-        </div>
-        <div class="flex align-items-center gap-3 mb-2 w-1/8">
-            <FloatLabel class="w-full">
-                <InputText id="username" />
-                <label for="username">Razón social</label>
-            </FloatLabel>
-        </div>
-    </div> -->
     <div class="card flex justify-center">
         <Stepper linear>
             <StepperPanel header="Header I">
@@ -73,36 +67,28 @@ onMounted(async () => {
                             </div>
 
                             <div class="flex w-5/5 gap-3 m-3">
-                                <FloatLabel class="w-full md:w-2/6">
-                                    <Dropdown inputId="state" v-model="form.state" :options="statesArray" filter
-                                        class="w-full uppercase" :class="dropdownClasses(form.state)" optionLabel="nombre"
-                                        optionValue="id" />
-                                    <label for="state" :class="dropdownLabelClasses(form.state)">
-                                        Provincia</label>
-                                </FloatLabel>
-                            </div>
-                            <!-- <FloatLabel class="w-2/6">
-                                    <InputMask id="phone" v-model="form.phone" mask="(999) 9999-9999" autocomplete="off"
-                                        class="w-full" />
-                                    <label for="phone">Telefono</label>
-                                </FloatLabel> -->
+                                <div class="w-full md:w-2/6">
+                                    <AutoComplete v-model="form.address" :suggestions="addressArray" @complete="search"
+                                        class="w-full uppercase" placeholder="Buscar dirección">
+                                        <template #option="slotProps">
+                                            <div class="flex items-center country-item">
+                                                <div>{{ slotProps.option.display_name }}</div>
+                                            </div>
+                                        </template>
+                                    </AutoComplete>
+                                </div>
 
-                            <!-- <FloatLabel class="w-2/6">
-                                    <InputText id="email" v-model="form.email" autocomplete="off"
-                                        class="w-full uppercase" />
-                                    <label for="email">Email</label>
-                                </FloatLabel> -->
-
-                            <!-- <FloatLabel class="w-2/6 !top-[1px]">
+                                <FloatLabel class="w-2/6 !top-[1px]">
                                     <Dropdown inputId="taxCondition" v-model="form.taxCondition" :options="taxCondition"
-                                        filter class="w-full" :class="dropdownClasses(form.taxCondition)"
+                                        filter class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.taxCondition)"
                                         optionLabel="name" optionValue="id" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                                     </template>
-<label for="taxCondition" :class="dropdownLabelClasses(form.taxCondition)">Condición
-    tributaria</label>
-</FloatLabel> -->
+                                    <label for="taxCondition" :class="dropdownLabelClasses(form.taxCondition)">Condición
+                                        tributaria</label>
+                                </FloatLabel>
+                            </div>
                         </div>
                     </div>
                     <div class="flex pt-4 justify-end">

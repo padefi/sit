@@ -1,9 +1,31 @@
-import axios from "axios";
+export async function nominatim(data) {
+    try {
+        const endpoint = 'https://nominatim.openstreetmap.org/search';
+        const params = {
+            q: data,
+            format: 'json',
+            addressdetails: 1,
+            limit: 50,
+            type: 'address',
+            countrycodes: 'ar'
+        };
+        const response = await fetch(`${endpoint}?${new URLSearchParams(params)}`);
 
-export async function states() {
+        if (!response.ok) {
+            throw new Error("Error fetching data: " + response.statusText);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+/* export async function states() {
     try {
         const response = await fetch(
-            "https://apis.datos.gob.ar/georef/api/provincias"
+            "https://apis.datos.gob.ar/georef/api/provincias?&orden=nombre"
         );
         if (!response.ok) {
             throw new Error("Error fetching data: " + response.statusText);
@@ -15,7 +37,24 @@ export async function states() {
         return [];
     }
 }
-/* 
+
+export async function districts(state) {
+    try {
+        const response = await fetch(
+            "https://apis.datos.gob.ar/georef/api/localidades?provincia=" + state + "&orden=nombre&aplanar=true&campos=basico&max=100&inicio=0&exacto=true&formato=json"
+        );
+        if (!response.ok) {
+            throw new Error("Error fetching data: " + response.statusText);
+        }
+
+        const json = await response.json();
+        return json.localidades;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
 export function municipio(provincia) {
     fetch(
         `https://apis.datos.gob.ar/georef/api/municipios?provincia=${provincia}&max=5`
