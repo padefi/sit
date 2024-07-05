@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('street', 100)->collation('utf8mb4_general_ci');
             $table->integer('streetNumber');
             $table->tinyText('floor')->collation('utf8mb4_general_ci')->nullable();
+            $table->tinyText('apartment')->collation('utf8mb4_general_ci')->nullable();
             $table->integer('city');
             $table->integer('state');
             $table->tinyText('postalCode')->collation('utf8mb4_general_ci');

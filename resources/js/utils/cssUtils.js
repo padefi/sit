@@ -1,6 +1,6 @@
 export function dropdownClasses(value)  {
     return {
-        'filled': value !== '',
+        'filled': value !== '' && value,
     }
 };
 
