@@ -19,7 +19,11 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
-    taxConditions: {
+    vatConditions: {
+        type: Object,
+        default: () => ({}),
+    },
+    categories: {
         type: Object,
         default: () => ({}),
     },
@@ -82,7 +86,10 @@ const addNewSupplier = () => {
                 padding: '1.25rem'
             },
         },
-        data: props.taxConditions,
+        data: {
+            vatConditions: props.vatConditions,
+            categories : props.categories,
+        }
     });
 };
 

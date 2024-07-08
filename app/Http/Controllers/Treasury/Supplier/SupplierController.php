@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Treasury\Supplier;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Treasury\Supplier\SupplierResource;
-use App\Http\Resources\Treasury\Taxes\TaxConditionResource;
+use App\Http\Resources\Treasury\Taxes\CategoryResource;
+use App\Http\Resources\Treasury\Taxes\VatConditionResource;
 use App\Models\Treasury\Supplier\Supplier;
-use App\Models\Treasury\Taxes\TaxCondition;
+use App\Models\Treasury\Taxes\Category;
+use App\Models\Treasury\Taxes\VatCondition;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,11 +23,13 @@ class SupplierController extends Controller {
 
     public function index(): Response {
         $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
-        $taxCondition = TaxCondition::orderBy('name', 'asc')->get();
+        $vatCondition = VatCondition::orderBy('name', 'asc')->get();
+        $category = Category::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
-            'taxConditions' => TaxConditionResource::collection($taxCondition),
+            'vatConditions' => VatConditionResource::collection($vatCondition),
+            'categories' => CategoryResource::collection($category),
         ]);
     }
 

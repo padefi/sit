@@ -15,7 +15,12 @@ const form = useForm({
     apartment: null,
     phone: null,
     email: null,
-    taxCondition: null,
+    vatCondition: null,
+    category: null,
+    incomeTax: null,
+    socialTax: null,
+    vatTax: null,
+    notes: null,
 });
 
 const rules = 'Debe completar el campo'
@@ -23,7 +28,8 @@ const addressArray = ref([]);
 const selectedAddress = ref(null);
 const invalidAddress = ref(false);
 const autoCompleteAddress = ref(null);
-const taxCondition = ref([]);
+const vatConditions = ref([]);
+const categories = ref([]);
 
 const search = async (event) => {
     addressArray.value = await nominatim(event.query);
@@ -60,7 +66,8 @@ const cleanIfEmpty = () => {
 const dialogRef = inject("dialogRef");
 
 onMounted(async () => {
-    taxCondition.value = dialogRef.value.data;
+    vatConditions.value = dialogRef.value.data.vatConditions;
+    categories.value = dialogRef.value.data.categories;
 });
 </script>
 <template>
@@ -111,7 +118,8 @@ onMounted(async () => {
                                         <AutoComplete v-model="form.address.display_name" inputId="address"
                                             ref="autoCompleteAddress" :suggestions="addressArray" @complete="search"
                                             @item-select="selectData" @blur="cleanIfEmpty()" class="w-full uppercase"
-                                            :invalid="invalidAddress" :class="dropdownClasses(form.address.display_name)">
+                                            :invalid="invalidAddress"
+                                            :class="dropdownClasses(form.address.display_name)">
                                             <template #option="slotProps">
                                                 <div class="flex items-center">
                                                     <div>{{ slotProps.option.display_name }}</div>
@@ -184,16 +192,48 @@ onMounted(async () => {
                             justify-center font-medium">
                             <div class="flex w-5/5 gap-3 m-3">
                                 <FloatLabel class="w-2/6 !top-[1px]">
-                                    <Dropdown inputId="taxCondition" v-model="form.taxCondition" :options="taxCondition"
-                                        filter class="!focus:border-primary-500 w-full"
-                                        :class="dropdownClasses(form.taxCondition)" optionLabel="name"
+                                    <Dropdown inputId="vatCondition" v-model="form.vatCondition"
+                                        :options="vatConditions" filter class="!focus:border-primary-500 w-full"
+                                        :class="dropdownClasses(form.vatCondition)" optionLabel="name"
                                         optionValue="id" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                                     </template>
-                                    <label for="taxCondition">Condición
-                                        tributaria</label>
+                                    <label for="vatCondition">Condición de I.V.A.</label>
                                 </FloatLabel>
+
+                                <FloatLabel class="w-2/6 !top-[1px]">
+                                    <Dropdown inputId="category" v-model="form.category" :options="categories" filter
+                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.category)"
+                                        optionLabel="name" optionValue="id" />
+                                    <template #option="slotProps">
+                                        <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                    </template>
+                                    <label for="category">Rubro</label>
+                                </FloatLabel>
+
+                                <div class="flex flex-col align-items-center w-2/6">
+                                    <div class="w-full text-center font-bold">Retenciones</div>
+                                    <div class="flex w-full">
+                                        <div class="flex align-items-center w-1/3">
+                                            <Checkbox v-model="form.incomTax" inputId="incomTax" name="tax"
+                                                value="income_tax" />
+                                            <label for="incomTax" class="ml-2">Gcias.</label>
+                                        </div>
+
+                                        <div class="flex align-items-center w-1/3">
+                                            <Checkbox v-model="form.socialSecurityTax" inputId="socialSecurityTax"
+                                                name="tax" value="social_security_tax" />
+                                            <label for="socialSecurityTax" class="ml-2">Suss</label>
+                                        </div>
+
+                                        <div class="flex align-items-center w-1/3">
+                                            <Checkbox v-model="form.vatTax" inputId="vatTax"
+                                                name="tax" value="vat_tax" />
+                                            <label for="vatTax" class="ml-2">I.V.A.</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

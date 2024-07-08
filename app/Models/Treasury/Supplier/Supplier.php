@@ -2,7 +2,8 @@
 
 namespace App\Models\Treasury\Supplier;
 
-use App\Models\Treasury\Taxes\TaxCondition;
+use App\Models\Treasury\Taxes\Category;
+use App\Models\Treasury\Taxes\VatCondition;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,8 @@ class Supplier extends Model {
         'name',
         'businessName',
         'cuit',
-        'idTC',        
+        'idVC',
+        'idCat',
         'street',
         'streetNumber',
         'floor',
@@ -30,10 +32,14 @@ class Supplier extends Model {
         'idUserUpdated',
     ];
 
-    public function taxCondition() {
-        return $this->belongsTo(TaxCondition::class, 'idTC');
+    public function vatCondition() {
+        return $this->belongsTo(VatCondition::class, 'idVC');
     }
 
+    public function category() {
+        return $this->belongsTo(Category::class, 'idCat');
+    }
+    
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }

@@ -2,16 +2,16 @@
 
 namespace Database\Seeders;
 
-use App\Models\Treasury\Taxes\TaxCondition;
+use App\Models\Treasury\Taxes\VatCondition;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class TaxConditionSeeder extends Seeder {
+class VatConditionSeeder extends Seeder {
     /**
      * Run the database seeds.
      */
     public function run(): void {
-        $taxCondition = [
+        $vatCondition = [
             ['name' => 'IVA RESPONSABLE INSCRIPTO'],
             ['name' => 'IVA SUJETO EXENTO'],
             ['name' => 'CONSUMIDOR FINAL'],
@@ -20,9 +20,9 @@ class TaxConditionSeeder extends Seeder {
             ['name' => 'IVA NO ALCANZADO'],
         ];
 
-        TaxCondition::withoutTimestamps(function () use ($taxCondition) {
-            foreach ($taxCondition as $condition) {
-                TaxCondition::create($condition);
+        VatCondition::withoutTimestamps(function () use ($vatCondition) {
+            foreach ($vatCondition as $condition) {
+                VatCondition::create($condition);
             }
         });
     }

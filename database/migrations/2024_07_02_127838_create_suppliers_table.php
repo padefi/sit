@@ -14,7 +14,8 @@ return new class extends Migration {
             $table->string('name', 100)->collation('utf8mb4_general_ci');
             $table->string('businessName', 100)->collation('utf8mb4_general_ci');
             $table->unsignedBigInteger('cuit')->unique();
-            $table->unsignedBigInteger('idTC');            
+            $table->unsignedBigInteger('idVC');
+            $table->unsignedBigInteger('idCat');
             $table->string('street', 100)->collation('utf8mb4_general_ci');
             $table->integer('streetNumber');
             $table->tinyText('floor')->collation('utf8mb4_general_ci')->nullable();
@@ -31,13 +32,20 @@ return new class extends Migration {
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
 
-            $table->index('idTC');
+            $table->index('idVC');
+            $table->index('idCat');
             $table->index('idUserCreated');
             $table->index('idUserUpdated');
 
-            $table->foreign('idTC')
+            $table->foreign('idVC')
                 ->references('id')
-                ->on('tax_conditions')
+                ->on('vat_conditions')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
+
+            $table->foreign('idCat')
+                ->references('id')
+                ->on('categories')
                 ->onUpdate('restrict')
                 ->onDelete('restrict');
 
@@ -60,7 +68,8 @@ return new class extends Migration {
      */
     public function down(): void {
         Schema::table('suppliers', function (Blueprint $table) {
-            $table->dropForeign(['idTC']);
+            $table->dropForeign(['idVC']);
+            $table->dropForeign(['idCat']);
             $table->dropForeign(['idUserCreated']);
             $table->dropForeign(['idUserUpdated']);
         });
