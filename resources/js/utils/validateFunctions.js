@@ -3,7 +3,7 @@ export const validateEmail = (value) => {
 };
 
 export const validatePhoneNumber = (value) => {
-    return /^[0-9]+(-[0-9]+)*$/.test(value) && /^[0-9-]{8,11}$/.test(value);
+    return /^[0-9]+(-[0-9]+)*$/.test(value) && /^[0-9-]{8,13}$/.test(value);
 };
 
 export const validateAccountNumber = (value) => {

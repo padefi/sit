@@ -1,21 +1,45 @@
 export async function nominatim(data) {
     try {
-        const endpoint = 'https://nominatim.openstreetmap.org/search';
+        const endpoint = "https://nominatim.openstreetmap.org/search";
         const params = {
             q: data,
-            format: 'json',
+            format: "json",
             addressdetails: 1,
             limit: 50,
-            type: 'address',
-            countrycodes: 'ar'
+            type: "address",
+            countrycodes: "ar",
         };
-        const response = await fetch(`${endpoint}?${new URLSearchParams(params)}`);
+
+        const response = await fetch(
+            `${endpoint}?${new URLSearchParams(params)}`
+        );
 
         if (!response.ok) {
             throw new Error("Error fetching data: " + response.statusText);
         }
 
-        return await response.json();
+        /* if(response.address.state === 'Ciudad Autónoma de Buenos Aires'){
+            response.address.state = 'CABA';
+            response.address.city = 'CABA';
+        } */
+
+        const json = await response.json();
+        json.map((data) => {
+            if (data.address.state === "Ciudad Autónoma de Buenos Aires") {
+                data.display_name = data.display_name.replace(
+                    "Ciudad Autónoma de Buenos Aires",
+                    "CABA"
+                );
+                data.display_name = data.display_name.replace(
+                    "Buenos Aires",
+                    "CABA"
+                );
+                data.address.state = "CABA";
+                data.address.city = "CABA";
+            }
+        });
+
+        return json;
     } catch (error) {
         console.error(error);
         return [];
