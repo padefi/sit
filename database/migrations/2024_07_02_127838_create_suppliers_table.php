@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->integer('city');
             $table->integer('state');
             $table->tinyText('postalCode')->collation('utf8mb4_general_ci');
+            $table->unsignedBigInteger('osm_id');
             $table->string('phone', 20)->collation('utf8mb4_general_ci')->nullable();
             $table->string('email', 255)->collation('utf8mb4_general_ci')->nullable();
             $table->string('cbu', 22)->collation('utf8mb4_general_ci');

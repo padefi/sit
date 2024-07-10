@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Treasury\Supplier;
 
+use App\Events\Treasury\Supplier\SupplierEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Treasury\Supplier\SupplierRequest;
 use App\Http\Resources\Treasury\Supplier\SupplierResource;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\VatConditionResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,44 +37,52 @@ class SupplierController extends Controller {
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
-        //
-    }
+    public function store(SupplierRequest $request) {
+        $cuit = str_replace('-', '', $request->cuit);
+        $SupplierCuit = Supplier::where('cuit', $cuit)->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Supplier $supplier) {
-        //
-    }
+        if ($SupplierCuit) {
+            throw ValidationException::withMessages([
+                'message' => trans('El proveedor ya se encuentra ingresado.')
+            ]);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Supplier $supplier) {
-        //
-    }
+        $supplier = Supplier::create([
+            'name' => $request->name,
+            'businessName' => $request->businessName,
+            'cuit' => $cuit,
+            'idVC' => $request->idVC,
+            'idCat' => $request->idCat,
+            'street' => $request->address->street,
+            'streetNumber' => $request->address->streetNumber,
+            'floor' => $request->address->floor,
+            'apartment' => $request->address->apartment,
+            'city' => $request->address->city,
+            'state' => $request->address->state,
+            'postalCode' => $request->address->postalCode,
+            'osm_id' => $request->address->osm_id,
+            'phone' => $request->phone,
+            'email' => $request->email,
+            'cbu' => $request->cbu,
+            'incomeTax' => $request->incomeTax ? 1 : 0,
+            'socialTax' => $request->socialTax ? 1 : 0,
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Supplier $supplier) {
-        //
-    }
+        $supplier->load('supplierCreated', 'supplierUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, 'create'));
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Supplier $supplier) {
-        //
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Proveedor agregado exitosamente.',
+                'bank' => $supplier,
+            ],
+            'success' => true,
+        ]);
     }
 }

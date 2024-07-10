@@ -36,3 +36,7 @@ Broadcast::channel('subtypes', function () {
 Broadcast::channel('expenses', function () {
     return true;
 });
+
+Broadcast::channel('suppliers', function () {
+    return true;
+});

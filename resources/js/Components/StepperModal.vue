@@ -8,16 +8,15 @@ import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
     cuit: null,
+    cuitDisplay: null,
     name: null,
-    bussinessName: null,
+    businessName: null,
     address: {},
-    floor: null,
-    apartment: null,
     phone: null,
     email: null,
     cbu: null,
-    vatCondition: null,
-    category: null,
+    idVC: null,
+    idCat: null,
     incomeTax: null,
     socialTax: null,
     vatTax: null,
@@ -42,11 +41,13 @@ const selectData = (e) => {
     form.address = {
         display_name: e.value.display_name,
         street: e.value.address?.road || '',
-        number: e.value.address?.house_number || '',
+        streetNumber: e.value.address?.house_number || '',
+        floor: e.value.address?.floor || '',
+        apartment: e.value.address?.apartment || '',
         city: e.value.address?.city || e.value.address?.town || '',
         state: e.value.address?.state || '',
         country: e.value.address?.country || '',
-        postal_code: e.value.address?.postcode || '',
+        postalCode: e.value.address?.postcode || '',
         latitude: e.value.lat,
         longitude: e.value.lon,
         osm_ids: e.value.osm_id,
@@ -66,13 +67,15 @@ const cleanIfEmpty = () => {
 }
 
 const isFirstInvalid = computed(() => {
-    if (!form.cuit || !cuitValidator(form.cuit)) return true;
+    if (!form.cuitDisplay || !cuitValidator(form.cuitDisplay)) return true;
     if (!form.name || form.name.trim() === '') return true;
-    if (!form.bussinessName || form.bussinessName.trim() === '') return true;
+    if (!form.businessName || form.businessName.trim() === '') return true;
     if (!form.address.display_name && !selectedAddress.value) return true;
     if (form.email && !validateEmail(form.email)) return true;
     if (form.phone && !validatePhoneNumber(form.phone)) return true;
     if (form.cbu && !validateCBU(form.cbu)) return true;
+
+    form.cuit = parseInt(form.cuitDisplay.replace(/-/g, ''));
 
     return false;
 });
@@ -84,8 +87,8 @@ const handleFirst = (nextCallback) => {
 };
 
 const isSecondInvalid = computed(() => {
-    if (!form.vatCondition) return true;
-    if (!form.category) return true;
+    if (!form.idVC) return true;
+    if (!form.idCat) return true;
 
     return false;
 });
@@ -94,6 +97,18 @@ const handleSecond = (nextCallback) => {
     if (!isSecondInvalid.value) {
         nextCallback();
     }
+};
+
+const saveSupplier = (nextCallback) => {
+    console.log(form);
+    
+    form.post(route("suppliers.store"), {
+        // preserveScroll: true,
+        onSuccess: (result) => {
+            console.log(result);
+            nextCallback();
+        },
+    });
 };
 
 const dialogRef = inject("dialogRef");
@@ -114,12 +129,12 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-1/5">
                                     <FloatLabel>
-                                        <InputMask id="cuit" v-model="form.cuit" mask="99-99999999-9" autocomplete="off"
-                                            class="w-full" :invalid="form.cuit && !cuitValidator(form.cuit)" />
+                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off"
+                                            class="w-full" :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
                                         <label for="cuit">CUIT</label>
                                     </FloatLabel>
                                     <InputError
-                                        :message="form.cuit === '' ? rules : form.cuit && !cuitValidator(form.cuit) ? 'Cuit invalido' : ''" />
+                                        :message="form.cuitDisplay === '' ? rules : form.cuitDisplay && !cuitValidator(form.cuitDisplay) ? 'Cuit invalido' : ''" />
                                 </div>
 
                                 <div class="w-full md:w-2/5">
@@ -135,13 +150,13 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-2/5">
                                     <FloatLabel>
-                                        <InputText id="bussinessName" v-model="form.bussinessName" autocomplete="off"
+                                        <InputText id="businessName" v-model="form.businessName" autocomplete="off"
                                             class="w-full uppercase"
-                                            :invalid="form.bussinessName && (form.bussinessName.trim() === '' || form.bussinessName === '')" />
-                                        <label for="bussinessName">Nombre de fantasía</label>
+                                            :invalid="form.businessName && (form.businessName.trim() === '' || form.businessName === '')" />
+                                        <label for="businessName">Nombre de fantasía</label>
                                     </FloatLabel>
                                     <InputError
-                                        :message="form.bussinessName && form.bussinessName.trim() === '' || form.bussinessName === '' ? rules : ''" />
+                                        :message="form.businessName && form.businessName.trim() === '' || form.businessName === '' ? rules : ''" />
                                 </div>
                             </div>
 
@@ -166,24 +181,18 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-[6%]">
                                     <FloatLabel>
-                                        <InputText id="floor" v-model="form.floor" autocomplete="off"
-                                            class="w-full uppercase" maxlength="2"
-                                            :invalid="form.floor && (form.floor.trim() === '' || form.floor === '')" />
+                                        <InputText id="floor" v-model="form.address.floor" autocomplete="off"
+                                            class="w-full uppercase" maxlength="2" />
                                         <label for="floor">Piso</label>
                                     </FloatLabel>
-                                    <InputError
-                                        :message="form.floor && form.floor.trim() === '' || form.floor === '' ? rules : ''" />
                                 </div>
 
                                 <div class="w-full md:w-[6%]">
                                     <FloatLabel>
-                                        <InputText id="apartment" v-model="form.apartment" autocomplete="off"
-                                            class="w-full uppercase" maxlength="2"
-                                            :invalid="form.apartment && (form.apartment.trim() === '' || form.apartment === '')" />
+                                        <InputText id="apartment" v-model="form.address.apartment" autocomplete="off"
+                                            class="w-full uppercase" maxlength="2" />
                                         <label for="apartment">Dto</label>
                                     </FloatLabel>
-                                    <InputError
-                                        :message="form.apartment && form.apartment.trim() === '' || form.apartment === '' ? rules : ''" />
                                 </div>
                             </div>
 
@@ -238,10 +247,9 @@ onMounted(async () => {
                             justify-center font-medium">
                             <div class="flex w-5/5 gap-3 m-3">
                                 <FloatLabel class="w-3/6 !top-[1px]">
-                                    <Dropdown inputId="vatCondition" v-model="form.vatCondition"
-                                        :options="vatConditions" filter class="!focus:border-primary-500 w-full"
-                                        :class="dropdownClasses(form.vatCondition)" optionLabel="name"
-                                        optionValue="id" />
+                                    <Dropdown inputId="vatCondition" v-model="form.idVC" :options="vatConditions" filter
+                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idVC)"
+                                        optionLabel="name" optionValue="id" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                                     </template>
@@ -249,11 +257,10 @@ onMounted(async () => {
                                 </FloatLabel>
 
                                 <FloatLabel class="w-3/6 !top-[1px]">
-                                    <Dropdown inputId="category" v-model="form.category" :options="categories" filter
-                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.category)"
+                                    <Dropdown inputId="category" v-model="form.idCat" :options="categories" filter
+                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idCat)"
                                         optionLabel="name" optionValue="id" />
                                     <template #option="slotProps">
-                                        <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                                     </template>
                                     <label for="category">Rubro</label>
                                 </FloatLabel>
@@ -305,7 +312,7 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 mx-3 my-0">
                                 <div class="w-full md:w-1/5">
                                     <div class="w-full text-sm text-left text-surface-900/60 font-bold">Cuit</div>
-                                    <div>{{ form.cuit }}</div>
+                                    <div>{{ form.cuitDisplay }}</div>
                                 </div>
 
                                 <div class="w-full md:w-2/5">
@@ -317,7 +324,7 @@ onMounted(async () => {
                                 <div class="w-full md:w-2/5">
                                     <div class="w-full text-sm text-left text-surface-900/60 font-bold">Nombre de
                                         fantasía</div>
-                                    <div class="uppercase">{{ form.bussinessName }}</div>
+                                    <div class="uppercase">{{ form.businessName }}</div>
                                 </div>
                             </div>
 
@@ -343,8 +350,8 @@ onMounted(async () => {
                                     <div class="w-full text-sm text-left text-surface-900/60 font-bold">Calle</div>
                                     <div class="uppercase">
                                         {{ form.address.street }}
-                                        {{ form.address.number }} -
-                                        {{ form.address.postal_code }}
+                                        {{ form.address.streetNumber }} -
+                                        {{ form.address.postalCode }}
                                     </div>
                                 </div>
                             </div>
@@ -384,14 +391,14 @@ onMounted(async () => {
                                         Condición de I.V.A.
                                     </div>
                                     <div class="uppercase">
-                                        {{ vatConditions.filter(v => v.id === form.vatCondition)[0].name }}
+                                        {{ (form.idVC) && vatConditions.filter(v => v.id === form.idVC)[0].name }}
                                     </div>
                                 </div>
 
                                 <div class="w-full md:w-3/6">
                                     <div class="w-full text-sm text-left text-surface-900/60 font-bold">Rubro</div>
                                     <div class="uppercase">
-                                        {{ categories.filter(c => c.id === form.category)[0].name }}
+                                        {{ (form.idCat) && categories.filter(c => c.id === form.idCat)[0].name }}
                                     </div>
                                 </div>
                             </div>
@@ -443,7 +450,7 @@ onMounted(async () => {
                     <div class="flex pt-4 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
                         <Button label="Finalizar" icon="pi pi-save" iconPos="right"
-                            :disabled="isFirstInvalid || isSecondInvalid" @click="() => handleFinish(nextCallback)" />
+                            :disabled="isFirstInvalid || isSecondInvalid" @click="() => saveSupplier(nextCallback)" />
                     </div>
                 </template>
             </StepperPanel>

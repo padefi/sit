@@ -94,6 +94,22 @@ const addNewSupplier = () => {
 };
 
 onMounted(() => {
+    Echo.channel('suppliers')
+        .listen('Treasury\\Supplier\\SupplierEvent', (e) => {
+            if (e.type === 'create') {
+                if (!suppliersArray.value.some(supplier => supplier.id === e.supplierId)) {
+                    e.supplier.supplierIndex = 0;
+                    e.supplier.accounts = [];
+                    suppliersArray.value.unshift(e.supplier);
+                }
+            } else if (e.type === 'update') {
+                const index = suppliersArray.value.findIndex(supplier => supplier.id === e.supplier.id);
+
+                if (index !== -1) {
+                    suppliersArray.value[index] = e.supplier;
+                }
+            }
+        });
 });
 
 /*  */

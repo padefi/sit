@@ -7,13 +7,25 @@ export function toastService() {
 
     watch(
         () => usePage().props,
-        (next) => {           
+        (next) => {
             if(next.errors.message) {
                 toast.add({
                     severity: 'error',
                     detail: next.errors.message,
                     life: 3000,
                 })
+
+                return;
+            }
+
+            if(next.errors) {
+                Object.keys(next.errors).map((key) => {
+                    toast.add({
+                        severity: 'error',
+                        detail: next.errors[key],
+                        life: 3000,
+                    })
+                });
 
                 return;
             }

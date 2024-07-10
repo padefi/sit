@@ -41,6 +41,13 @@ Route::group(['middleware' => ['auth', 'check.permission:view users']], function
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
 });
 
+Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {
+    Route::resource('banks', BankController::class);
+    Route::get('/banks/{bank}/info', [BankController::class, 'info'])->name('banks.info');
+    Route::resource('bankAccounts', BankAccountController::class);
+    Route::get('/bankAccounts/{bankAccount}/info', [BankAccountController::class, 'info'])->name('bankAccounts.info');
+});
+
 Route::group(['middleware' => ['auth', 'check.permission:view voucher types']], function () {
     Route::resource('voucher-types', VoucherTypeController::class);
     Route::post('/voucher-types/{voucher_type}/relate', [VoucherTypeController::class, 'relate'])->name('voucher-types.relate');
@@ -59,13 +66,6 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
     Route::resource('suppliers', SupplierController::class);
-});
-
-Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {
-    Route::resource('banks', BankController::class);
-    Route::get('/banks/{bank}/info', [BankController::class, 'info'])->name('banks.info');
-    Route::resource('bankAccounts', BankAccountController::class);
-    Route::get('/bankAccounts/{bankAccount}/info', [BankAccountController::class, 'info'])->name('bankAccounts.info');
 });
 
 Route::middleware('auth')->group(function () {

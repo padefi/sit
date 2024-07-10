@@ -33,7 +33,7 @@ class BankAccountController extends Controller {
             'accountNumber' => $request->accountNumber,
             'cbu' => $request->cbu,
             'alias' => $request->alias,
-            'status' => ($request->status) ? 1 : 0,
+            'status' => $request->status ? 1 : 0,
             'idUserCreated' => auth()->user()->id,
             'created_at' => now(),
             'updated_at' => null,

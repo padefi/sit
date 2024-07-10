@@ -26,6 +26,7 @@ class SupplierResource extends JsonResource {
             'floor' => $this->floor,
             'city' => $this->city,
             'state' => $this->state,
+            'osm_id' => $this->osm_id,
             'postalCode' => $this->postalCode,
             'phone' => $this->phone,
             'email' => $this->email,
