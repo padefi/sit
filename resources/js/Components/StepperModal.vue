@@ -17,9 +17,9 @@ const form = useForm({
     cbu: null,
     idVC: null,
     idCat: null,
-    incomeTax: null,
-    socialTax: null,
-    vatTax: null,
+    incomeTax: false,
+    socialTax: false,
+    vatTax: false,
     notes: null,
 });
 
@@ -41,7 +41,7 @@ const selectData = (e) => {
     form.address = {
         display_name: e.value.display_name,
         street: e.value.address?.road || '',
-        streetNumber: e.value.address?.house_number || '',
+        streetNumber: parseInt(e.value.address?.house_number) || '',
         floor: e.value.address?.floor || '',
         apartment: e.value.address?.apartment || '',
         city: e.value.address?.city || e.value.address?.town || '',
@@ -50,7 +50,7 @@ const selectData = (e) => {
         postalCode: e.value.address?.postcode || '',
         latitude: e.value.lat,
         longitude: e.value.lon,
-        osm_ids: e.value.osm_id,
+        osm_id: e.value.osm_id,
     }
 }
 
@@ -99,14 +99,11 @@ const handleSecond = (nextCallback) => {
     }
 };
 
-const saveSupplier = (nextCallback) => {
-    console.log(form);
-    
+const saveSupplier = () => {
     form.post(route("suppliers.store"), {
         // preserveScroll: true,
-        onSuccess: (result) => {
-            console.log(result);
-            nextCallback();
+        onSuccess: () => {
+            dialogRef.value.close();
         },
     });
 };
@@ -129,8 +126,9 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-1/5">
                                     <FloatLabel>
-                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off"
-                                            class="w-full" :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
+                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9"
+                                            autocomplete="off" class="w-full"
+                                            :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
                                         <label for="cuit">CUIT</label>
                                     </FloatLabel>
                                     <InputError
@@ -272,19 +270,19 @@ onMounted(async () => {
                                     <div class="flex w-full">
                                         <div class="flex align-items-center w-1/3">
                                             <Checkbox v-model="form.incomeTax" inputId="incomeTax" name="tax"
-                                                value="income_tax" />
+                                                :binary="true" />
                                             <label for="incomeTax" class="ml-2">Gcias.</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
                                             <Checkbox v-model="form.socialSecurityTax" inputId="socialSecurityTax"
-                                                name="tax" value="social_security_tax" />
+                                                name="tax" :binary="true" />
                                             <label for="socialSecurityTax" class="ml-2">Suss</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
                                             <Checkbox v-model="form.vatTax" inputId="vatTax" name="tax"
-                                                value="vat_tax" />
+                                                :binary="true" />
                                             <label for="vatTax" class="ml-2">I.V.A.</label>
                                         </div>
                                     </div>
@@ -450,7 +448,7 @@ onMounted(async () => {
                     <div class="flex pt-4 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
                         <Button label="Finalizar" icon="pi pi-save" iconPos="right"
-                            :disabled="isFirstInvalid || isSecondInvalid" @click="() => saveSupplier(nextCallback)" />
+                            :disabled="isFirstInvalid || isSecondInvalid" @click="() => saveSupplier()" />
                     </div>
                 </template>
             </StepperPanel>

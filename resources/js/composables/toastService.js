@@ -18,7 +18,7 @@ export function toastService() {
                 return;
             }
 
-            if(next.errors) {
+            if(Object.keys(next.errors).length > 0) {
                 Object.keys(next.errors).map((key) => {
                     toast.add({
                         severity: 'error',

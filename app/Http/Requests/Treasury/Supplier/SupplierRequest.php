@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Treasury\Supplier;
 
+use App\Address;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SupplierRequest extends FormRequest {
@@ -21,17 +22,19 @@ class SupplierRequest extends FormRequest {
         return [
             'name' => ['required', 'string', 'max:100'],
             'businessName' => ['required', 'string', 'max:100'],
-            'cuit' => ['required', 'integer', 'max:11'],
+            'cuit' => ['required', 'integer', 'min:11111111111', 'max:99999999999'],
             'idVC' => ['required', 'integer', 'exists:vat_conditions,id'],
             'idCat' => ['required', 'integer', 'exists:categories,id'],
-            'street' => ['required', 'string', 'max:100'],
-            'streetNumber' => ['required', 'integer', 'max:5'],
-            'city' => ['required', 'integer'],
-            'state' => ['required', 'integer'],
-            'osm_id' => ['required', 'integer'],
-            'postalCode' => ['required', 'string', 'max:7'],
+            'address' => ['required', 'array'],
+            'address.street' => ['required', 'string', 'max:100'],
+            'address.streetNumber' => ['required', 'integer', 'max:99999'],
+            'address.city' => ['required', 'string'],
+            'address.state' => ['required', 'string'],
+            'address.osm_id' => ['required', 'integer'],
+            'address.postalCode' => ['required', 'string', 'max:8'],
             'incomeTax' => ['boolean'],
             'socialTax' => ['boolean'],
+            'vatTax' => ['boolean'],
         ];
     }
 
@@ -47,16 +50,24 @@ class SupplierRequest extends FormRequest {
             'idVC.exists' => 'La condición de I.V.A. es obligatoria.',
             'idCat.required' => 'El rubro es obligatorio.',
             'idCat.exists' => 'El rubro es obligatoria.',
-            'street.required' => 'El domicilio es obligatorio.',
-            'street.max' => 'El domicilio no puede exceder los :max caracteres.',
-            'streetNumber.required' => 'La altura del domicilio es obligatoria.',
-            'streetNumber.max' => 'La altura del domicilio no puede exceder los :max caracteres.',
-            'city.required' => 'La ciudad es obligatoria.',
-            'state.required' => 'La provincia es obligatoria.',
-            'postalCode.required' => 'El código postal es obligatorio.',
-            'postalCode.max' => 'El código postal no puede exceder los :max caracteres.',
-            'incomeTax.required' => 'La condición de ganancias es obligatoria.',
-            'socialTax.required' => 'La condición de suss es obligatoria.',
+            'address.required' => 'La dirección es obligatoria.',
+            'address.array' => 'La dirección debe ser un array.',
+            'address.street.required' => 'El domicilio es obligatorio.',
+            'address.street.max' => 'El domicilio no puede exceder los :max caracteres.',
+            'address.streetNumber.required' => 'La altura del domicilio es obligatoria.',
+            'address.streetNumber.max' => 'La altura del domicilio no puede exceder los :max caracteres.',
+            'address.city.required' => 'La ciudad es obligatoria.',
+            'address.state.required' => 'La provincia es obligatoria.',
+            'address.address.osm_id.required' => 'El id osm es obligatorio.',
+            'address.postalCode.required' => 'El código postal es obligatorio.',
+            'address.postalCode.max' => 'El código postal no puede exceder los :max caracteres.',
+            'incomeTax.required' => 'La condición de retención de ganancias es obligatoria.',
+            'socialTax.required' => 'La condición de retención de suss es obligatoria.',
+            'vatTax.required' => 'La condición de retención de I.V.A es obligatoria.',
         ];
+    }
+
+    public function address(): Address {
+        return new Address($this->input('address'));
     }
 }

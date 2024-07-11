@@ -49,31 +49,33 @@ class SupplierController extends Controller {
             ]);
         }
 
+        $address = $request->address();
         $supplier = Supplier::create([
             'name' => $request->name,
             'businessName' => $request->businessName,
             'cuit' => $cuit,
             'idVC' => $request->idVC,
             'idCat' => $request->idCat,
-            'street' => $request->address->street,
-            'streetNumber' => $request->address->streetNumber,
-            'floor' => $request->address->floor,
-            'apartment' => $request->address->apartment,
-            'city' => $request->address->city,
-            'state' => $request->address->state,
-            'postalCode' => $request->address->postalCode,
-            'osm_id' => $request->address->osm_id,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'cbu' => $request->cbu,
+            'street' => $address->street,
+            'streetNumber' => $address->streetNumber,
+            'floor' => $address->floor ?? '',
+            'apartment' => $address->apartment ?? '',
+            'city' => $address->city,
+            'state' => $address->state,
+            'postalCode' => $address->postalCode,
+            'osm_id' => $address->osm_id,
+            'phone' => $request->phone ?? '',
+            'email' => $request->email ?? '',
+            'cbu' => $request->cbu ?? '',
             'incomeTax' => $request->incomeTax ? 1 : 0,
             'socialTax' => $request->socialTax ? 1 : 0,
+            'vatTax' => $request->vatTax ? 1 : 0,
             'idUserCreated' => auth()->user()->id,
             'created_at' => now(),
             'updated_at' => null,
         ]);
 
-        $supplier->load('supplierCreated', 'supplierUpdated');
+        $supplier->load('userCreated', 'userUpdated');
         event(new SupplierEvent($supplier, $supplier->id, 'create'));
 
         return Redirect::back()->with([

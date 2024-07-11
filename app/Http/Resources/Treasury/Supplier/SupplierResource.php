@@ -34,6 +34,7 @@ class SupplierResource extends JsonResource {
             'notes' => $this->notes,
             'incomeTax' => $this->incomeTax,
             'socialTax' => $this->socialTax,
+            'vatTax' => $this->vatTax,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,
