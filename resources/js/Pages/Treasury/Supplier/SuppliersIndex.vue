@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { usePermissions } from '@/composables/permissions';
 import { toastService } from '@/composables/toastService'
@@ -10,6 +10,7 @@ import { useConfirm } from 'primevue/useconfirm';
 import stepperModal from '@/Components/StepperModal.vue';
 import infoModal from '@/Components/InfoModal.vue';
 import { useDialog } from 'primevue/usedialog';
+import L from 'leaflet';
 
 toastService();
 const dialog = useDialog();
@@ -30,6 +31,7 @@ const props = defineProps({
 });
 
 const { hasPermission } = usePermissions();
+const OverlayPanelMap = ref();
 const editingRows = ref([]);
 const rules = 'Debe completar el campo'
 const editing = ref(false);
@@ -37,8 +39,6 @@ const confirm = useConfirm();
 
 const suppliersArray = ref([]);
 const originalSuppliersArray = ref([]);
-
-suppliersArray.value = props.suppliers;
 
 const filters = ref({
     name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -88,12 +88,26 @@ const addNewSupplier = () => {
         },
         data: {
             vatConditions: props.vatConditions,
-            categories : props.categories,
+            categories: props.categories,
         }
     });
 };
 
-onMounted(() => {
+const viewOnMap = async (data, event) => {
+    OverlayPanelMap.value.toggle(event);
+
+    await nextTick();
+
+    const map = L.map('map').setView([data.latitude, data.longitude], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    L.marker([data.latitude, data.longitude]).addTo(map).openPopup();
+}
+
+onMounted(async () => {
+    suppliersArray.value = props.suppliers;
+
     Echo.channel('suppliers')
         .listen('Treasury\\Supplier\\SupplierEvent', (e) => {
             if (e.type === 'create') {
@@ -141,39 +155,50 @@ const info = (data, id) => {
                             Sin proveedores cargados
                         </div>
                     </template>
-                    <Column field="name" header="Razón social" style="width: 10%;">
-                        <template #body="{ data }">
-                            {{ data.name }}
-                        </template>
-                    </Column>
-                    <Column field="businessName" header="Nombre fantasía" style="width: 10%;">
-                        <template #body="{ data }">
-                            {{ data.businessName }}
-                        </template>
-                    </Column>
-                    <Column field="cuit" header="Cuit" style="width: 10%;">
+                    <Column field="cuit" header="Cuit">
                         <template #body="{ data }">
                             {{ data.cuit }}
                         </template>
                     </Column>
-                    <Column header="Dirección" style="width: 10%;">
+                    <Column field="name" header="Razón social">
                         <template #body="{ data }">
-                            {{ data.street }} {{ data.streetNumber }}
+                            {{ data.name }}
                         </template>
                     </Column>
-                    <Column field="city" header="Ciudad" style="width: 10%;">
+                    <Column field="businessName" header="Nombre fantasía">
                         <template #body="{ data }">
-                            {{ data.city }}
+                            {{ data.businessName }}
                         </template>
                     </Column>
-                    <Column field="postalCode" header="C.P." style="width: 10%;">
+                    <Column header="Dirección">
                         <template #body="{ data }">
-                            {{ data.postalCode }}
+                            {{ data.street }} {{ data.streetNumber }} {{ data.floor }} {{ data.apartment }}
+                            - {{ data.postalCode }},
+                            {{ data.city }}, {{ data.state }} - {{ data.country }}
+                            <Button icon="pi pi-map-marker"
+                                class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent"
+                                text rounded v-tooltip="'Ver en mapa'" @click="viewOnMap(data, $event)" />
                         </template>
                     </Column>
-                    <Column header="Datos contacto" style="width: 10%;">
+                    <Column header="Datos contacto">
                         <template #body="{ data }">
-                            {{ data.phone }} {{ data.email }}
+                            <div class="flex flex-col gap-2">
+                                <div class="flex">
+                                    <i class="pi pi-at text-amber-500"></i>
+                                    <span class="ml-2 bottom-0.5 relative text-sm"
+                                        :class="{ 'text-red-500': data.email === '' }">{{ data.email !== '' ? data.email
+                        :
+                        'Sin email' }}</span>
+                                </div>
+
+                                <div class="flex">
+                                    <i class="pi pi-phone text-emerald-500"></i>
+                                    <span class="ml-2 bottom-0.5 relative text-sm"
+                                        :class="{ 'text-red-500': data.phone === '' }">{{ data.phone !== '' ? data.phone
+                        :
+                        'Sin telefono' }}</span>
+                                </div>
+                            </div>
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
@@ -192,6 +217,12 @@ const info = (data, id) => {
                         </template>
                     </Column>
                 </DataTable>
+
+                <OverlayPanel ref="OverlayPanelMap">
+                    <div class="flex flex-col gap-3 w-[25rem]">
+                        <div id="map" style="height: 400px;"></div>
+                    </div>
+                </OverlayPanel>
             </template>
         </Card>
 

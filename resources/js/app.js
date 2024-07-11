@@ -3,6 +3,7 @@ import "primeicons/primeicons.css";
 import "../css/app.css";
 import "../css/flags.css";
 import "../css/styles.scss";
+import 'leaflet/dist/leaflet.css';
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";

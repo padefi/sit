@@ -2,7 +2,7 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed } from "vue";
 import { dropdownClasses, dropdownLabelClasses } from '@/utils/cssUtils';
-import { nominatim } from '@/utils/apis';
+import { nominatim, nominatimOsmId } from '@/utils/apis';
 import { validatePhoneNumber, validateEmail, cuitValidator, validateCBU } from '@/utils/validateFunctions';
 import InputError from '@/Components/InputError.vue';
 
@@ -35,7 +35,7 @@ const search = async (event) => {
     addressArray.value = await nominatim(event.query);
 }
 
-const selectData = (e) => {
+const selectData = async (e) => {
     selectedAddress.value = e.value.display_name;
 
     form.address = {
@@ -302,7 +302,6 @@ onMounted(async () => {
                     <div class="flex flex-col">
                         <div class="flex flex-col border-2 border-dashed border-surface-200 dark:border-surface-700 rounded-md bg-surface-0 dark:bg-surface-950 
                             justify-center font-medium">
-                            <!-- <div class="w-full text-center text-lg text-extrabold text-primary-700 m-3 mb-0">Datos del proveedor</div> -->
                             <Divider align="center" type="solid" class="text-lg text-primary-700 !mt-2 mb-0">
                                 <b>Datos del proveedor</b>
                             </Divider>

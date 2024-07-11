@@ -18,24 +18,62 @@ export async function nominatim(data) {
             throw new Error("Error fetching data: " + response.statusText);
         }
 
-        /* if(response.address.state === 'Ciudad Autónoma de Buenos Aires'){
-            response.address.state = 'CABA';
-            response.address.city = 'CABA';
-        } */
+        const json = await response.json();
+        json.map((data) => {
+            if (data.address.state === "Ciudad Autónoma de Buenos Aires") {
+                data.display_name = data.display_name.replace(
+                    "Ciudad de Buenos Aires",
+                    "CABA"
+                );
+                data.display_name = data.display_name.replace(
+                    "Buenos Aires",
+                    "Capital Federal"
+                );
+                data.address.state = "Capital Federal";
+                data.address.city = "Ciudad de Buenos Aires";
+            }
+        });
+
+        return json;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export async function nominatimOsmId(data) {
+    try {
+        const endpoint = "https://nominatim.openstreetmap.org/lookup";
+        const params = {
+            osm_ids: `N${data},W${data},R${data}`,
+            format: "json",
+            addressdetails: 1,
+            limit: 1,
+            type: "address",
+            countrycodes: "ar",
+        };
+
+        const response = await fetch(
+            `${endpoint}?${new URLSearchParams(params)}`
+        );
+
+        if (!response.ok) {
+            throw new Error("Error fetching data: " + response.statusText);
+        }
 
         const json = await response.json();
         json.map((data) => {
             if (data.address.state === "Ciudad Autónoma de Buenos Aires") {
                 data.display_name = data.display_name.replace(
-                    "Ciudad Autónoma de Buenos Aires",
+                    "Ciudad de Buenos Aires",
                     "CABA"
                 );
                 data.display_name = data.display_name.replace(
                     "Buenos Aires",
-                    "CABA"
+                    "Capital Federal"
                 );
-                data.address.state = "CABA";
-                data.address.city = "CABA";
+                data.address.state = "Capital Federal";
+                data.address.city = "Ciudad de Buenos Aires";
             }
         });
 
