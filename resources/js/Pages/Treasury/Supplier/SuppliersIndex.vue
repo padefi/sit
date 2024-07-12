@@ -6,7 +6,6 @@ import { toastService } from '@/composables/toastService'
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import stepperModal from './StepperModal.vue';
-import supplierDataModal from './SupplierDataModal.vue';
 import { useDialog } from 'primevue/usedialog';
 import L from 'leaflet';
 
@@ -31,6 +30,7 @@ const props = defineProps({
 const { hasPermission } = usePermissions();
 const toast = useToast();
 const suppliersArray = ref([]);
+const expandedRows = ref([]);
 const OverlayPanelMap = ref();
 
 const filters = ref({
@@ -68,30 +68,6 @@ const editSupplier = (data) => {
             header: `Editar proveedor ${data.name.toUpperCase()}`,
             style: {
                 width: '60vw',
-            },
-            breakpoints: {
-                '960px': '75vw',
-                '640px': '90vw'
-            },
-            modal: true,
-            contentStyle: {
-                padding: '1.25rem'
-            },
-        },
-        data: {
-            vatConditions: props.vatConditions,
-            categories: props.categories,
-            supplierData: data,
-        }
-    });
-};
-
-const infoSupplier = (data) => {
-    dialog.open(supplierDataModal, {
-        props: {
-            header: `${data.name.toUpperCase()}`,
-            style: {
-                width: '50vw',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -196,13 +172,22 @@ const info = (data, id) => {
                 </div>
             </template>
             <template #content>
-                <DataTable :value="suppliersArray" v-model:filters="filters" scrollable scrollHeight="70vh" dataKey="id" class="data-table"
-                    filterDisplay="menu">
+                <DataTable :value="suppliersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
+                    dataKey="id" filterDisplay="menu" :pt="{
+                        table: { style: 'min-width: 50rem' },
+                        paginator: {
+                            root: { class: 'p-paginator-custom' },
+                            current: { class: 'p-paginator-current' },
+                        }
+                    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                     <template #empty>
                         <div class="text-center text-lg text-red-500">
                             Sin proveedores cargados
                         </div>
                     </template>
+                    <Column expander style="width: 1%" v-if="hasPermission('view bank accounts')" />
                     <Column field="cuit" header="Cuit">
                         <template #body="{ data }">
                             {{ data.cuit }}
@@ -260,15 +245,80 @@ const info = (data, id) => {
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;">
                         <template #body="{ data }">
                             <div class="space-x-4 flex pl-6">
-                                <button v-tooltip="'+Info'"><i class="pi pi-search-plus text-green-500 text-xl font-extrabold"
-                                        @click="infoSupplier(data)"></i></button>
+                                <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                        @click="editSupplier(data)"></i></button>
                                 <template v-if="hasPermission('view users')">
-                                    <button v-tooltip="'Info usuarios'"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                    <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                             @click="info(data, data.id)"></i></button>
                                 </template>
                             </div>
                         </template>
                     </Column>
+                    <template #expansion="{ data }">
+                        <div class="data-table-expanded">
+                            <div class="flex w-5/5 gap-3 mx-3 my-0">
+                                <div class="w-full md:w-1/5">
+                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">CBU</div>
+                                    <div class="uppercase" :class="{ 'text-red-500': !data.cbu }">
+                                        {{ (data.cbu) ? data.cbu : 'Sin CBU' }}
+                                    </div>
+                                </div>
+
+                                <div class="w-full md:w-1/5">
+                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">Condición de I.V.A.</div>
+                                    <div class="uppercase">
+                                        {{ (data.idVC) && vatConditions.filter(v => v.id === data.idVC)[0].name }}
+                                    </div>
+                                </div>
+
+                                <div class="w-full md:w-1/5">
+                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">Rubro</div>
+                                    <div class="uppercase">
+                                        {{ (data.idCat) && categories.filter(c => c.id === data.idCat)[0].name }}
+                                    </div>
+                                </div>
+
+                                <div class="w-full md:w-1/5">
+                                    <div class="flex w-full flex-col align-items-center">
+                                        <div class="flex w-full">
+                                            <div class="flex align-items-center w-1/3">
+                                                <div class="w-full">
+                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                        Gcias.
+                                                    </div>
+                                                    <div class="uppercase" :class="{ 'text-red-500': !data.incomeTax }">
+                                                        {{ (data.incomeTax) ? 'SI' : 'NO' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex align-items-center w-1/3">
+                                                <div class="w-full">
+                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                        Suss
+                                                    </div>
+                                                    <div class="uppercase" :class="{ 'text-red-500': !data.socialSecurityTax }">
+                                                        {{ (data.socialSecurityTax) ? 'SI' : 'NO' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex align-items-center w-1/3">
+                                                <div class="w-full">
+                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                        I.V.A.
+                                                    </div>
+                                                    <div class="uppercase" :class="{ 'text-red-500': !data.vatTax }">
+                                                        {{ (data.vatTax) ? 'SI' : 'NO' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </DataTable>
 
                 <OverlayPanel ref="OverlayPanelMap">

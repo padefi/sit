@@ -4,6 +4,7 @@ import { inject, onMounted, ref, computed } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
 import { nominatim, nominatimOsmId } from '@/utils/apis';
 import { validatePhoneNumber, validateEmail, cuitValidator, validateCBU } from '@/utils/validateFunctions';
+import { cuitDisplay } from '@/utils/formatterFunctions';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
@@ -116,12 +117,14 @@ onMounted(async () => {
 
     console.log(dialogRef.value.data.supplierData);
     if(dialogRef.value.data.supplierData) {
-        /* form.cuit = dialogRef.value.data.supplierData.cuit;
-        form.cuitDisplay = dialogRef.value.data.supplierData.cuitDisplay;
+        cuitDisplay(dialogRef.value.data.supplierData.cuit);
+        form.cuit = dialogRef.value.data.supplierData.cuit;
+        form.cuitDisplay = cuitDisplay(dialogRef.value.data.supplierData.cuit);
         form.name = dialogRef.value.data.supplierData.name;
         form.businessName = dialogRef.value.data.supplierData.businessName;
-        form.address = dialogRef.value.data.supplierData.address;
-        form.phone = dialogRef.value.data.supplierData.phone;
+        console.log(await nominatimOsmId(dialogRef.value.data.supplierData.osm_id));
+        /* form.address = dialogRef.value.data.supplierData.address;*/
+        form.phone = dialogRef.value.data.supplierData.phone !== '' ? dialogRef.value.data.supplierData.phone : null;
         form.email = dialogRef.value.data.supplierData.email;
         form.cbu = dialogRef.value.data.supplierData.cbu;
         form.idVC = dialogRef.value.data.supplierData.idVC;
@@ -129,7 +132,7 @@ onMounted(async () => {
         form.incomeTax = dialogRef.value.data.supplierData.incomeTax;
         form.socialTax = dialogRef.value.data.supplierData.socialTax;
         form.vatTax = dialogRef.value.data.supplierData.vatTax;
-        form.notes = dialogRef.value.data.supplierData.notes; */
+        form.notes = dialogRef.value.data.supplierData.notes;
     }
 });
 </script>
