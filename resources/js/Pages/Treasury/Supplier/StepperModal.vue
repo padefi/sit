@@ -31,27 +31,29 @@ const invalidAddress = ref(false);
 const autoCompleteAddress = ref(null);
 const vatConditions = ref([]);
 const categories = ref([]);
+const editing = ref(false);
 
 const search = async (event) => {
     addressArray.value = await nominatim(event.query);
 }
 
 const selectData = async (e) => {
-    selectedAddress.value = e.value.display_name;
+    const data = e.value ?? e;
+    selectedAddress.value = data.display_name;
 
     form.address = {
-        display_name: e.value.display_name,
-        street: e.value.address?.road || '',
-        streetNumber: parseInt(e.value.address?.house_number) || '',
-        floor: e.value.address?.floor || '',
-        apartment: e.value.address?.apartment || '',
-        city: e.value.address?.city || e.value.address?.town || '',
-        state: e.value.address?.state || '',
-        country: e.value.address?.country || '',
-        postalCode: e.value.address?.postcode || '',
-        latitude: e.value.lat,
-        longitude: e.value.lon,
-        osm_id: e.value.osm_id,
+        display_name: data.display_name,
+        street: data.address?.road || '',
+        streetNumber: parseInt(data.address?.house_number) || '',
+        floor: data.address?.floor || '',
+        apartment: data.address?.apartment || '',
+        city: data.address?.city || data.address?.town || '',
+        state: data.address?.state || '',
+        country: data.address?.country || '',
+        postalCode: data.address?.postcode || '',
+        latitude: data.lat,
+        longitude: data.lon,
+        osm_id: data.osm_id,
     }
 }
 
@@ -101,12 +103,22 @@ const handleSecond = (nextCallback) => {
 };
 
 const saveSupplier = () => {
-    form.post(route("suppliers.store"), {
-        // preserveScroll: true,
-        onSuccess: () => {
-            dialogRef.value.close();
-        },
-    });
+    if (!editing.value) {
+        form.post(route("suppliers.store"), {
+            // preserveScroll: true,
+            onSuccess: () => {
+                dialogRef.value.close();
+            },
+        });
+    } else {
+        form.put(route("suppliers.update", dialogRef.value.data.supplierData.id), {
+            // preserveScroll: true,
+            onSuccess: () => {
+                dialogRef.value.close();
+            },
+        });
+    }
+
 };
 
 const dialogRef = inject("dialogRef");
@@ -115,24 +127,26 @@ onMounted(async () => {
     vatConditions.value = dialogRef.value.data.vatConditions;
     categories.value = dialogRef.value.data.categories;
 
-    console.log(dialogRef.value.data.supplierData);
-    if(dialogRef.value.data.supplierData) {
-        cuitDisplay(dialogRef.value.data.supplierData.cuit);
+    if (dialogRef.value.data.supplierData) {
+        const address = await nominatimOsmId(dialogRef.value.data.supplierData.osm_id);
+        selectData(address[0]);
+
         form.cuit = dialogRef.value.data.supplierData.cuit;
         form.cuitDisplay = cuitDisplay(dialogRef.value.data.supplierData.cuit);
         form.name = dialogRef.value.data.supplierData.name;
         form.businessName = dialogRef.value.data.supplierData.businessName;
-        console.log(await nominatimOsmId(dialogRef.value.data.supplierData.osm_id));
-        /* form.address = dialogRef.value.data.supplierData.address;*/
+        form.address.display_name = address[0].display_name;
         form.phone = dialogRef.value.data.supplierData.phone !== '' ? dialogRef.value.data.supplierData.phone : null;
         form.email = dialogRef.value.data.supplierData.email;
         form.cbu = dialogRef.value.data.supplierData.cbu;
         form.idVC = dialogRef.value.data.supplierData.idVC;
         form.idCat = dialogRef.value.data.supplierData.idCat;
-        form.incomeTax = dialogRef.value.data.supplierData.incomeTax;
-        form.socialTax = dialogRef.value.data.supplierData.socialTax;
-        form.vatTax = dialogRef.value.data.supplierData.vatTax;
+        form.incomeTax = dialogRef.value.data.supplierData.incomeTax === 1 ? true: false;
+        form.socialTax = dialogRef.value.data.supplierData.socialTax === 1 ? true: false;
+        form.vatTax = dialogRef.value.data.supplierData.vatTax === 1 ? true: false;
         form.notes = dialogRef.value.data.supplierData.notes;
+
+        editing.value = true;
     }
 });
 </script>
@@ -147,8 +161,7 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-1/5">
                                     <FloatLabel>
-                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9"
-                                            autocomplete="off" class="w-full"
+                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off" class="w-full"
                                             :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
                                         <label for="cuit">CUIT</label>
                                     </FloatLabel>
@@ -158,19 +171,16 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-2/5">
                                     <FloatLabel>
-                                        <InputText id="name" v-model="form.name" autocomplete="off"
-                                            class="w-full uppercase"
+                                        <InputText id="name" v-model="form.name" autocomplete="off" class="w-full uppercase"
                                             :invalid="form.name && (form.name.trim() === '' || form.name === '')" />
                                         <label for="name">Razón Social</label>
                                     </FloatLabel>
-                                    <InputError
-                                        :message="form.name && form.name.trim() === '' || form.name === '' ? rules : ''" />
+                                    <InputError :message="form.name && form.name.trim() === '' || form.name === '' ? rules : ''" />
                                 </div>
 
                                 <div class="w-full md:w-2/5">
                                     <FloatLabel>
-                                        <InputText id="businessName" v-model="form.businessName" autocomplete="off"
-                                            class="w-full uppercase"
+                                        <InputText id="businessName" v-model="form.businessName" autocomplete="off" class="w-full uppercase"
                                             :invalid="form.businessName && (form.businessName.trim() === '' || form.businessName === '')" />
                                         <label for="businessName">Nombre de fantasía</label>
                                     </FloatLabel>
@@ -182,11 +192,9 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-[88%]">
                                     <FloatLabel>
-                                        <AutoComplete v-model="form.address.display_name" inputId="address"
-                                            ref="autoCompleteAddress" :suggestions="addressArray" @complete="search"
-                                            @item-select="selectData" @blur="cleanIfEmpty()" class="w-full uppercase"
-                                            :invalid="invalidAddress"
-                                            :class="dropdownClasses(form.address.display_name)">
+                                        <AutoComplete v-model="form.address.display_name" inputId="address" ref="autoCompleteAddress"
+                                            :suggestions="addressArray" @complete="search" @item-select="selectData" @blur="cleanIfEmpty()"
+                                            class="w-full uppercase" :invalid="invalidAddress" :class="dropdownClasses(form.address.display_name)">
                                             <template #option="slotProps">
                                                 <div class="flex items-center">
                                                     <div>{{ slotProps.option.display_name }}</div>
@@ -200,16 +208,16 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-[6%]">
                                     <FloatLabel>
-                                        <InputText id="floor" v-model="form.address.floor" autocomplete="off"
-                                            class="w-full uppercase" maxlength="2" />
+                                        <InputText id="floor" v-model="form.address.floor" autocomplete="off" class="w-full uppercase"
+                                            maxlength="2" />
                                         <label for="floor">Piso</label>
                                     </FloatLabel>
                                 </div>
 
                                 <div class="w-full md:w-[6%]">
                                     <FloatLabel>
-                                        <InputText id="apartment" v-model="form.address.apartment" autocomplete="off"
-                                            class="w-full uppercase" maxlength="2" />
+                                        <InputText id="apartment" v-model="form.address.apartment" autocomplete="off" class="w-full uppercase"
+                                            maxlength="2" />
                                         <label for="apartment">Dto</label>
                                     </FloatLabel>
                                 </div>
@@ -218,8 +226,8 @@ onMounted(async () => {
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-2/5">
                                     <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.email" id="email"
-                                            autocomplete="off" maxlength="100" class="w-full"
+                                        <InputText :class="'uppercase'" v-model="form.email" id="email" autocomplete="off" maxlength="100"
+                                            class="w-full"
                                             :invalid="form.email && (form.email.trim() === '' || form.email === '') || form.email && !validateEmail(form.email)" />
                                         <label for="email">Email</label>
                                     </FloatLabel>
@@ -229,8 +237,8 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-1/5">
                                     <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.phone" id="phone"
-                                            autocomplete="off" maxlength="13" class="w-full"
+                                        <InputText :class="'uppercase'" v-model="form.phone" id="phone" autocomplete="off" maxlength="13"
+                                            class="w-full"
                                             :invalid="form.phone && (form.phone.trim() === '' || form.phone === '') || form.phone && !validatePhoneNumber(form.phone)"
                                             onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
                                         <label for="phone">Teléfono</label>
@@ -241,8 +249,8 @@ onMounted(async () => {
 
                                 <div class="w-full md:w-2/5">
                                     <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.cbu" id="cbu" autocomplete="off"
-                                            :minlength="22" :maxlength="22" class="w-full"
+                                        <InputText :class="'uppercase'" v-model="form.cbu" id="cbu" autocomplete="off" :minlength="22" :maxlength="22"
+                                            class="w-full"
                                             :invalid="form.cbu && (form.cbu.trim() === '' || form.cbu === '') || form.cbu && !validateCBU(form.cbu)"
                                             onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
                                         <label for="cbu">CBU</label>
@@ -266,9 +274,9 @@ onMounted(async () => {
                             justify-center font-medium">
                             <div class="flex w-5/5 gap-3 m-3">
                                 <FloatLabel class="w-3/6 !top-[1px]">
-                                    <Dropdown inputId="vatCondition" v-model="form.idVC" :options="vatConditions" filter
-                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idVC)"
-                                        optionLabel="name" optionValue="id" />
+                                    <Dropdown inputId="vatCondition" v-model="form.idVC" :options="vatConditions" filter showClear resetFilterOnHide
+                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idVC)" optionLabel="name"
+                                        optionValue="id" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                                     </template>
@@ -276,9 +284,9 @@ onMounted(async () => {
                                 </FloatLabel>
 
                                 <FloatLabel class="w-3/6 !top-[1px]">
-                                    <Dropdown inputId="category" v-model="form.idCat" :options="categories" filter
-                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idCat)"
-                                        optionLabel="name" optionValue="id" />
+                                    <Dropdown inputId="category" v-model="form.idCat" :options="categories" filter showClear resetFilterOnHide
+                                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.idCat)" optionLabel="name"
+                                        optionValue="id" />
                                     <template #option="slotProps">
                                     </template>
                                     <label for="category">Rubro</label>
@@ -290,20 +298,17 @@ onMounted(async () => {
                                     <div class="w-full text-center font-bold bottom-2 relative">Retenciones</div>
                                     <div class="flex w-full">
                                         <div class="flex align-items-center w-1/3">
-                                            <Checkbox v-model="form.incomeTax" inputId="incomeTax" name="tax"
-                                                :binary="true" />
+                                            <Checkbox v-model="form.incomeTax" inputId="incomeTax" name="tax" :binary="true" />
                                             <label for="incomeTax" class="ml-2">Gcias.</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
-                                            <Checkbox v-model="form.socialSecurityTax" inputId="socialSecurityTax"
-                                                name="tax" :binary="true" />
+                                            <Checkbox v-model="form.socialSecurityTax" inputId="socialSecurityTax" name="tax" :binary="true" />
                                             <label for="socialSecurityTax" class="ml-2">Suss</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
-                                            <Checkbox v-model="form.vatTax" inputId="vatTax" name="tax"
-                                                :binary="true" />
+                                            <Checkbox v-model="form.vatTax" inputId="vatTax" name="tax" :binary="true" />
                                             <label for="vatTax" class="ml-2">I.V.A.</label>
                                         </div>
                                     </div>
@@ -443,8 +448,7 @@ onMounted(async () => {
                                                 <div class="w-full text-sm text-surface-900/60 font-bold">
                                                     Suss
                                                 </div>
-                                                <div class="uppercase"
-                                                    :class="{ 'text-red-500': !form.socialSecurityTax }">
+                                                <div class="uppercase" :class="{ 'text-red-500': !form.socialSecurityTax }">
                                                     {{ (form.socialSecurityTax) ? 'SI' : 'NO' }}
                                                 </div>
                                             </div>
@@ -467,8 +471,8 @@ onMounted(async () => {
                     </div>
                     <div class="flex pt-4 justify-between">
                         <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
-                        <Button label="Finalizar" icon="pi pi-save" iconPos="right"
-                            :disabled="isFirstInvalid || isSecondInvalid" @click="() => saveSupplier()" />
+                        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="isFirstInvalid || isSecondInvalid"
+                            @click="() => saveSupplier()" />
                     </div>
                 </template>
             </StepperPanel>

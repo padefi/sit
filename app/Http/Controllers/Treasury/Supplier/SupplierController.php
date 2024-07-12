@@ -85,7 +85,60 @@ class SupplierController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Proveedor agregado exitosamente.',
-                'bank' => $supplier,
+                'supplier' => $supplier,
+            ],
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(SupplierRequest $request, Supplier $supplier) {
+        $cuit = str_replace('-', '', $request->cuit);
+        $supplierCuit = Supplier::where('cuit', $cuit)->whereNot('id', $supplier->id)->first();
+
+        if ($supplierCuit) {
+            throw ValidationException::withMessages([
+                'message' => trans('El banco ya se encuentra ingresado.')
+            ]);
+        }
+
+        $address = $request->address();
+        $supplier->update([
+            'name' => $request->name,
+            'businessName' => $request->businessName,
+            'cuit' => $cuit,
+            'idVC' => $request->idVC,
+            'idCat' => $request->idCat,
+            'street' => $address->street,
+            'streetNumber' => $address->streetNumber,
+            'floor' => $address->floor ?? '',
+            'apartment' => $address->apartment ?? '',
+            'city' => $address->city,
+            'state' => $address->state,
+            'country' => $address->country,
+            'postalCode' => $address->postalCode,
+            'osm_id' => $address->osm_id,
+            'latitude' => $address->latitude,
+            'longitude' => $address->longitude,
+            'phone' => $request->phone ?? '',
+            'email' => $request->email ?? '',
+            'cbu' => $request->cbu ?? '',
+            'incomeTax' => $request->incomeTax ? 1 : 0,
+            'socialTax' => $request->socialTax ? 1 : 0,
+            'vatTax' => $request->vatTax ? 1 : 0,
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Proveedor modificado exitosamente.',
             ],
             'success' => true,
         ]);
