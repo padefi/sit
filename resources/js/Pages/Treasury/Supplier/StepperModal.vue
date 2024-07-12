@@ -1,7 +1,7 @@
 <script setup>
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed } from "vue";
-import { dropdownClasses, dropdownLabelClasses } from '@/utils/cssUtils';
+import { dropdownClasses } from '@/utils/cssUtils';
 import { nominatim, nominatimOsmId } from '@/utils/apis';
 import { validatePhoneNumber, validateEmail, cuitValidator, validateCBU } from '@/utils/validateFunctions';
 import InputError from '@/Components/InputError.vue';
@@ -113,6 +113,24 @@ const dialogRef = inject("dialogRef");
 onMounted(async () => {
     vatConditions.value = dialogRef.value.data.vatConditions;
     categories.value = dialogRef.value.data.categories;
+
+    console.log(dialogRef.value.data.supplierData);
+    if(dialogRef.value.data.supplierData) {
+        /* form.cuit = dialogRef.value.data.supplierData.cuit;
+        form.cuitDisplay = dialogRef.value.data.supplierData.cuitDisplay;
+        form.name = dialogRef.value.data.supplierData.name;
+        form.businessName = dialogRef.value.data.supplierData.businessName;
+        form.address = dialogRef.value.data.supplierData.address;
+        form.phone = dialogRef.value.data.supplierData.phone;
+        form.email = dialogRef.value.data.supplierData.email;
+        form.cbu = dialogRef.value.data.supplierData.cbu;
+        form.idVC = dialogRef.value.data.supplierData.idVC;
+        form.idCat = dialogRef.value.data.supplierData.idCat;
+        form.incomeTax = dialogRef.value.data.supplierData.incomeTax;
+        form.socialTax = dialogRef.value.data.supplierData.socialTax;
+        form.vatTax = dialogRef.value.data.supplierData.vatTax;
+        form.notes = dialogRef.value.data.supplierData.notes; */
+    }
 });
 </script>
 <template>

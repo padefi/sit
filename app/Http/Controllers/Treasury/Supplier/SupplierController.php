@@ -90,4 +90,16 @@ class SupplierController extends Controller {
             'success' => true,
         ]);
     }
+
+    public function info(Supplier $supplier) {
+        $supplier = Supplier::with(['userCreated', 'userUpdated'])->where('id', $supplier->id)->first();
+
+        if (!$supplier) {
+            throw ValidationException::withMessages([
+                'message' => trans('Proveedor no encontrado.')
+            ]);
+        }
+
+        return new SupplierResource($supplier);
+    }
 }

@@ -66,6 +66,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
     Route::resource('suppliers', SupplierController::class);
+    Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
 });
 
 Route::middleware('auth')->group(function () {
