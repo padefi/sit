@@ -18,7 +18,7 @@ const form = useForm({
     cbu: null,
     idVC: null,
     idCat: null,
-    incomeTax: false,
+    incomeTaxWithholding: false,
     socialTax: false,
     vatTax: false,
     notes: null,
@@ -135,13 +135,16 @@ onMounted(async () => {
         form.cuitDisplay = cuitDisplay(dialogRef.value.data.supplierData.cuit);
         form.name = dialogRef.value.data.supplierData.name;
         form.businessName = dialogRef.value.data.supplierData.businessName;
-        form.address.display_name = address[0].display_name;
+        form.address.display_name = dialogRef.value.data.supplierData.streetNumber + ', ' + address[0].display_name;
+        form.address.streetNumber = dialogRef.value.data.supplierData.streetNumber;
+        form.address.floor = dialogRef.value.data.supplierData.floor;
+        form.address.apartment = dialogRef.value.data.supplierData.apartment;
         form.phone = dialogRef.value.data.supplierData.phone !== '' ? dialogRef.value.data.supplierData.phone : null;
         form.email = dialogRef.value.data.supplierData.email;
         form.cbu = dialogRef.value.data.supplierData.cbu;
         form.idVC = dialogRef.value.data.supplierData.idVC;
         form.idCat = dialogRef.value.data.supplierData.idCat;
-        form.incomeTax = dialogRef.value.data.supplierData.incomeTax === 1 ? true: false;
+        form.incomeTaxWithholding = dialogRef.value.data.supplierData.incomeTaxWithholding === 1 ? true: false;
         form.socialTax = dialogRef.value.data.supplierData.socialTax === 1 ? true: false;
         form.vatTax = dialogRef.value.data.supplierData.vatTax === 1 ? true: false;
         form.notes = dialogRef.value.data.supplierData.notes;
@@ -298,8 +301,8 @@ onMounted(async () => {
                                     <div class="w-full text-center font-bold bottom-2 relative">Retenciones</div>
                                     <div class="flex w-full">
                                         <div class="flex align-items-center w-1/3">
-                                            <Checkbox v-model="form.incomeTax" inputId="incomeTax" name="tax" :binary="true" />
-                                            <label for="incomeTax" class="ml-2">Gcias.</label>
+                                            <Checkbox v-model="form.incomeTaxWithholding" inputId="incomeTaxWithholding" name="tax" :binary="true" />
+                                            <label for="incomeTaxWithholding" class="ml-2">Gcias.</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
@@ -437,8 +440,8 @@ onMounted(async () => {
                                                 <div class="w-full text-sm text-surface-900/60 font-bold">
                                                     Gcias.
                                                 </div>
-                                                <div class="uppercase" :class="{ 'text-red-500': !form.incomeTax }">
-                                                    {{ (form.incomeTax) ? 'SI' : 'NO' }}
+                                                <div class="uppercase" :class="{ 'text-red-500': !form.incomeTaxWithholding }">
+                                                    {{ (form.incomeTaxWithholding) ? 'SI' : 'NO' }}
                                                 </div>
                                             </div>
                                         </div>

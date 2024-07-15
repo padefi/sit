@@ -31,7 +31,7 @@ return new class extends Migration {
             $table->string('email', 255)->collation('utf8mb4_general_ci')->nullable();
             $table->string('cbu', 22)->collation('utf8mb4_general_ci')->nullable();
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
-            $table->boolean('incomeTax')->default(false);
+            $table->boolean('incomeTaxWithholding')->default(false);
             $table->boolean('socialTax')->default(false);
             $table->boolean('vatTax')->default(false);
             $table->unsignedBigInteger('idUserCreated');

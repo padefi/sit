@@ -98,7 +98,7 @@ const viewOnMap = async (data, event) => {
     L.marker([data.latitude, data.longitude]).addTo(map).openPopup();
 }
 
-onMounted(async () => {
+onMounted(() => {
     suppliersArray.value = props.suppliers;
 
     Echo.channel('suppliers')
@@ -286,8 +286,8 @@ const info = (data, id) => {
                                                     <div class="w-full text-sm text-surface-900/60 font-bold">
                                                         Gcias.
                                                     </div>
-                                                    <div class="uppercase" :class="{ 'text-red-500': !data.incomeTax }">
-                                                        {{ (data.incomeTax) ? 'SI' : 'NO' }}
+                                                    <div class="uppercase" :class="{ 'text-red-500': !data.incomeTaxWithholding }">
+                                                        {{ (data.incomeTaxWithholding) ? 'SI' : 'NO' }}
                                                     </div>
                                                 </div>
                                             </div>

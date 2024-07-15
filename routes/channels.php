@@ -40,3 +40,7 @@ Broadcast::channel('expenses', function () {
 Broadcast::channel('suppliers', function () {
     return true;
 });
+
+Broadcast::channel('taxes', function () {
+    return true;
+});

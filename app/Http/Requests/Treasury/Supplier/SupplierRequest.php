@@ -35,7 +35,7 @@ class SupplierRequest extends FormRequest {
             'address.latitude' => ['required', 'string', 'max:20'],
             'address.longitude' => ['required', 'string', 'max:20'],
             'address.postalCode' => ['required', 'string', 'max:8'],
-            'incomeTax' => ['boolean'],
+            'incomeTaxWithholding' => ['boolean'],
             'socialTax' => ['boolean'],
             'vatTax' => ['boolean'],
         ];
@@ -67,7 +67,7 @@ class SupplierRequest extends FormRequest {
             'address.address.longitude.required' => 'La longitud es obligatoria.',
             'address.postalCode.required' => 'El código postal es obligatorio.',
             'address.postalCode.max' => 'El código postal no puede exceder los :max caracteres.',
-            'incomeTax.required' => 'La condición de retención de ganancias es obligatoria.',
+            'incomeTaxWithholding.required' => 'La condición de retención de ganancias es obligatoria.',
             'socialTax.required' => 'La condición de retención de suss es obligatoria.',
             'vatTax.required' => 'La condición de retención de I.V.A es obligatoria.',
         ];

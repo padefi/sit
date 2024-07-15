@@ -18,7 +18,7 @@ const items = ref([
         items: [
             {
                 label: 'Comprobantes',
-                icon: 'pi pi-dollar',
+                icon: 'pi pi-shop',
                 method: 'get',
                 route: 'voucher-subtypes.index',
             },
@@ -29,8 +29,34 @@ const items = ref([
                 route: 'banks.index',
             },
             {
+                label: 'Retenciones',
+                icon: 'pi pi-book',
+                method: 'get',
+                route: 'taxes.index',
+                /* items: [
+                    {
+                        label: 'Ganancias',
+                        icon: 'pi pi-dollar',
+                        method: 'get',
+                        // route: 'taxes.index',
+                    },
+                    {
+                        label: 'Suss',
+                        icon: 'pi pi-users',
+                        method: 'get',
+                        // route: 'taxes.index',
+                    },
+                    {
+                        label: 'I.V.A.',
+                        icon: 'pi pi-percentage text-sm',
+                        method: 'get',
+                        // route: 'taxes.index',
+                    },
+                ] */
+            },
+            {
                 label: 'Proveedores',
-                icon: 'pi pi-shop',
+                icon: 'pi pi-truck',
                 method: 'get',
                 route: 'suppliers.index',
             },
@@ -46,13 +72,13 @@ const items = ref([
                     },
                     {
                         label: 'Subtipos',
-                        icon: 'pi pi-list',
+                        icon: 'pi pi-share-alt',
                         method: 'get',
                         route: 'voucher-subtypes.index',
                     },
                     {
                         label: 'Gastos',
-                        icon: 'pi pi-list',
+                        icon: 'pi pi-sitemap',
                         method: 'get',
                         route: 'voucher-expenses.index',
                     },

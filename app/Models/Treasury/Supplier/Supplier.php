@@ -31,7 +31,7 @@ class Supplier extends Model {
         'phone',
         'email',
         'notes',
-        'incomeTax',
+        'incomeTaxWithholding',
         'socialTax',
         'vatTax',
         'idUserCreated',

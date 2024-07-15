@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Treasury\Taxes\incomeTaxWithholdingController;
+use App\Http\Controllers\Treasury\Taxes\IncomeTaxWithholdingScaleController;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Users\UserController;
@@ -67,6 +69,15 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
     Route::resource('suppliers', SupplierController::class);
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security withholdings']], function () {
+    Route::get('/taxes', function () {
+        return Inertia::render('Treasury/Taxes/Taxes');
+    })->name('taxes.index');
+
+    Route::resource('income-tax-witholdings', incomeTaxWithholdingController::class);
+    Route::resource('income-tax-witholdingsScales', IncomeTaxWithholdingScaleController::class);
 });
 
 Route::middleware('auth')->group(function () {

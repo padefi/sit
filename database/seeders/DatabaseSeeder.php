@@ -25,5 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call(VoucherExpenseSeeder::class);
         $this->call(VatConditionSeeder::class);
         $this->call(CategorySeeder::class);
+        $this->call(IncomeTaxWithholdingSeeder::class);
+        $this->call(IncomeTaxWithholdingScaleSeeder::class);
     }
 }

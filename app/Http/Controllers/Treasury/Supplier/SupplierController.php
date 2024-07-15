@@ -24,6 +24,9 @@ class SupplierController extends Controller {
         $this->middleware('check.permission:view users')->only('info');
     }
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(): Response {
         $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
         $vatCondition = VatCondition::orderBy('name', 'asc')->get();
@@ -70,7 +73,7 @@ class SupplierController extends Controller {
             'phone' => $request->phone ?? '',
             'email' => $request->email ?? '',
             'cbu' => $request->cbu ?? '',
-            'incomeTax' => $request->incomeTax ? 1 : 0,
+            'incomeTaxWithholding' => $request->incomeTaxWithholding ? 1 : 0,
             'socialTax' => $request->socialTax ? 1 : 0,
             'vatTax' => $request->vatTax ? 1 : 0,
             'idUserCreated' => auth()->user()->id,
@@ -125,7 +128,7 @@ class SupplierController extends Controller {
             'phone' => $request->phone ?? '',
             'email' => $request->email ?? '',
             'cbu' => $request->cbu ?? '',
-            'incomeTax' => $request->incomeTax ? 1 : 0,
+            'incomeTaxWithholding' => $request->incomeTaxWithholding ? 1 : 0,
             'socialTax' => $request->socialTax ? 1 : 0,
             'vatTax' => $request->vatTax ? 1 : 0,
             'idUserUpdated' => auth()->user()->id,

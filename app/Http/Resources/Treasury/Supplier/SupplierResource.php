@@ -24,6 +24,7 @@ class SupplierResource extends JsonResource {
             'street' => $this->street,
             'streetNumber' => $this->streetNumber,
             'floor' => $this->floor,
+            'apartment' => $this->apartment,
             'city' => $this->city,
             'state' => $this->state,
             'country' => $this->country,
@@ -35,7 +36,7 @@ class SupplierResource extends JsonResource {
             'email' => $this->email,
             'cbu' => $this->cbu,
             'notes' => $this->notes,
-            'incomeTax' => $this->incomeTax,
+            'incomeTaxWithholding' => $this->incomeTaxWithholding,
             'socialTax' => $this->socialTax,
             'vatTax' => $this->vatTax,
             'userCreated' => $this->userCreated ? [
