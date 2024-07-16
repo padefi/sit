@@ -120,8 +120,6 @@ const enabledEditButtons = (callback, event) => {
 
 /* Add new income tax withholdings */
 const addNewIncomeTaxWithholding = (data) => {
-    console.log(data);
-    console.log(categoriesArray.value[data.categoryIndex]);
     if (data.scale === 0 && data.incomeTax.length > 0) {
         confirm.require({
             message: 'Ya posee una retención ¿Desea aplicar escala?',
@@ -130,8 +128,6 @@ const addNewIncomeTaxWithholding = (data) => {
                 // data.scale = 1;
                 onRowExpand(data);
                 originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].incomeTax];
-
-                console.log(originalCategoriesArray.value);
             },
             reject: () => {
                 // data.scale = 0;
