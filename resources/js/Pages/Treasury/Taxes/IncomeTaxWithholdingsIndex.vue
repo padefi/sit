@@ -39,24 +39,42 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
     categories.map((category, index) => {
         const tax = incomeTaxWithholdings
             .filter(tax => tax.idCat === category.id)
-            .map(t => ({
-                ...t,
-                rate: parseFloat(t.rate),
-                minAmount: parseFloat(t.minAmount),
-                fixedAmount: parseFloat(t.fixedAmount),
-                categoryIndex: index
-            }));
+            .map(t => {
+                const startAt = new Date(t.startAt);
+                startAt.setDate(startAt.getDate() + 1);
+                const endAt = new Date(t.endAt);
+                endAt.setDate(endAt.getDate() + 1);
+
+                return {
+                    ...t,
+                    rate: parseFloat(t.rate),
+                    minAmount: parseFloat(t.minAmount),
+                    fixedAmount: parseFloat(t.fixedAmount),
+                    startAt,
+                    endAt,
+                    categoryIndex: index
+                }
+            });
 
         const taxScale = incomeTaxWithholdingsScales
             .filter(tax => tax.idCat === category.id)
-            .map(t => ({
-                ...t,
-                rate: parseFloat(t.rate),
-                minAmount: parseFloat(t.minAmount),
-                maxAmount: parseFloat(t.maxAmount),
-                fixedAmount: parseFloat(t.fixedAmount),
-                categoryIndex: index
-            }));
+            .map(t => {
+                const startAt = new Date(t.startAt);
+                startAt.setDate(startAt.getDate() + 1);
+                const endAt = new Date(t.endAt);
+                endAt.setDate(endAt.getDate() + 1);
+
+                return {
+                    ...t,
+                    rate: parseFloat(t.rate),
+                    minAmount: parseFloat(t.minAmount),
+                    maxAmount: parseFloat(t.maxAmount),
+                    fixedAmount: parseFloat(t.fixedAmount),
+                    startAt,
+                    endAt,
+                    categoryIndex: index
+                }
+            });
 
         const data = {
             ...category,
@@ -151,6 +169,10 @@ defineExpose({ fetchIncomeTaxWithholdings });
 div[data-pc-section="columnfilter"] {
     margin-left: 0 !important;
 }
+
+label {
+    text-transform: capitalize;
+}
 </style>
 
 <template>
@@ -210,41 +232,80 @@ div[data-pc-section="columnfilter"] {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <!-- <span class="relative">
-                                <i class="pi pi-percentage text-xs absolute top-2/4 -mt-2 left-3 text-surface-400 dark:text-surface-600" />
-                                <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off" class="pl-7"
-                                    :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" style="width: 100%;" max="100" /> 
-                            </span> -->
-                            <InputNumber v-model="data[field]" id="rate" class="w-full" autocomplete="off" inputId="percent" prefix="%" :max="100"
-                                :invalid="!data[field] || data[field] === 0" />
+                            <InputNumber v-model="data[field]" inputId="percent" prefix="%" id="rate" class="w-full"
+                                :class="data[field] !== null ? 'filled' : ''" :min="0" :max="100" :minFractionDigits="2"
+                                :invalid="data[field] === null" />
                             <label for="rate">Tasa</label>
                         </FloatLabel>
-                        <InputError :message="!data[field] || data[field] === 0 ? rules : ''" />
+                        <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
                 <Column field="minAmount" header="Monto mínimo">
                     <template #body="{ data }">
                         {{ currencyNumber(data.minAmount) }}
                     </template>
+                    <template #editor="{ data, field }">
+                        <FloatLabel>
+                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
+                                id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                                :minFractionDigits="2" :invalid="data[field] === null" />
+                            <label for="minAmount">Monto mínino</label>
+                        </FloatLabel>
+                        <InputError :message="data[field] === null ? rules : ''" />
+                    </template>
                 </Column>
                 <Column v-if="data.incomeTax.some(tax => tax.maxAmount)" field="maxAmount" header="Monto máximo">
                     <template #body="{ data }">
                         {{ currencyNumber(data.maxAmount) }}
+                    </template>
+                    <template #editor="{ data, field }">
+                        <FloatLabel>
+                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
+                                id="maxAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                                :minFractionDigits="2" :invalid="data[field] === null" />
+                            <label for="maxAmount">Monto máximo</label>
+                        </FloatLabel>
+                        <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
                 <Column field="fixedAmount" header="Monto fijo">
                     <template #body="{ data }">
                         {{ currencyNumber(data.fixedAmount) }}
                     </template>
+                    <template #editor="{ data, field }">
+                        <FloatLabel>
+                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
+                                id="fixedAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                                :minFractionDigits="2" :invalid="data[field] === null" />
+                            <label for="fixedAmount">Monto fijo</label>
+                        </FloatLabel>
+                        <InputError :message="data[field] === null ? rules : ''" />
+                    </template>
                 </Column>
                 <Column field="startAt" header="F. inicio">
                     <template #body="{ data }">
                         {{ dateFormat(data.startAt) }}
                     </template>
+                    <template #editor="{ data, field }">
+                        <FloatLabel>
+                            <Calendar v-model="data[field]" showButtonBar id="startAt" class="w-full" :class="data[field] !== null ? 'filled' : ''"
+                                :invalid="data[field] === null" />
+                            <label for="startAt">F. inicio</label>
+                        </FloatLabel>
+                        <InputError :message="data[field] === null ? rules : ''" />
+                    </template>
                 </Column>
                 <Column field="endAt" header="F. fin">
                     <template #body="{ data }">
                         {{ dateFormat(data.endAt) }}
+                    </template>
+                    <template #editor="{ data, field }">
+                        <FloatLabel>
+                            <Calendar v-model="data[field]" showButtonBar id="endAt" class="w-full" :class="data[field] !== null ? 'filled' : ''"
+                                :invalid="data[field] === null" />
+                            <label for="endAt">F. fin</label>
+                        </FloatLabel>
+                        <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
                 <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem;">

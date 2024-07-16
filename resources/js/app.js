@@ -3,7 +3,7 @@ import "primeicons/primeicons.css";
 import "../css/app.css";
 import "../css/flags.css";
 import "../css/styles.scss";
-import 'leaflet/dist/leaflet.css';
+import "leaflet/dist/leaflet.css";
 
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
@@ -49,7 +49,7 @@ import Dropdown from "primevue/dropdown";
 import DynamicDialog from "primevue/dynamicdialog";
 import Fieldset from "primevue/fieldset";
 import FileUpload from "primevue/fileupload";
-import FloatLabel from 'primevue/floatlabel';
+import FloatLabel from "primevue/floatlabel";
 import FocusTrap from "primevue/focustrap";
 import Galleria from "primevue/galleria";
 import Image from "primevue/image";
@@ -242,24 +242,6 @@ createInertiaApp({
                         minute: "Minuto",
                         second: "Segundo",
                         time: "Tiempo",
-                        dayNames: [
-                            "Domingo",
-                            "Lunes",
-                            "Martes",
-                            "Miercoles",
-                            "Jueves",
-                            "Viernes",
-                            "Sabado",
-                        ],
-                        dayNamesShort: [
-                            "Dom",
-                            "Lun",
-                            "Mar",
-                            "Mie",
-                            "Jue",
-                            "Vie",
-                            "Sab",
-                        ],
                         monthNames: [
                             "Enero",
                             "Febrero",
@@ -288,6 +270,28 @@ createInertiaApp({
                             "Nov",
                             "Dic",
                         ],
+                        dayNames: [
+                            "Domingo",
+                            "Lunes",
+                            "Martes",
+                            "Miercoles",
+                            "Jueves",
+                            "Viernes",
+                            "Sabado",
+                        ],
+                        dayNamesShort: [
+                            "Dom",
+                            "Lun",
+                            "Mar",
+                            "Mie",
+                            "Jue",
+                            "Vie",
+                            "Sab",
+                        ],
+                        dayNamesMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+                        dateFormat: "dd/mm/yy",
+                        weekHeader: "Sm",
+                        firstDayOfWeek: 0,
                     },
                 })
                 .use(ConfirmationService)
@@ -333,7 +337,7 @@ createInertiaApp({
                 .component("Dropdown", Dropdown)
                 .component("DynamicDialog", DynamicDialog)
                 .component("Fieldset", Fieldset)
-                .component('FloatLabel', FloatLabel)
+                .component("FloatLabel", FloatLabel)
                 .component("FileUpload", FileUpload)
                 .component("Galleria", Galleria)
                 .component("Image", Image)
