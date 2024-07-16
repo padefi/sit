@@ -76,8 +76,8 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
         return Inertia::render('Treasury/Taxes/Taxes');
     })->name('taxes.index');
 
-    Route::resource('income-tax-witholdings', incomeTaxWithholdingController::class);
-    Route::resource('income-tax-witholdingsScales', IncomeTaxWithholdingScaleController::class);
+    Route::resource('incomeTaxWitholdings', incomeTaxWithholdingController::class);
+    Route::resource('incomeTaxWitholdingsScales', IncomeTaxWithholdingScaleController::class);
 });
 
 Route::middleware('auth')->group(function () {

@@ -4,6 +4,7 @@ import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
+import { useForm } from '@inertiajs/vue3';
 import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
@@ -20,7 +21,7 @@ const confirm = useConfirm();
 
 const fetchIncomeTaxWithholdings = async () => {
     try {
-        const response = await fetch('/income-tax-witholdings');
+        const response = await fetch('/incomeTaxWitholdings');
 
         if (!response.ok) {
             throw new Error('Error al obtener datos de impuestos a las ganancias');
@@ -120,6 +121,16 @@ const enabledEditButtons = (callback, event) => {
 
 /* Add new income tax withholdings */
 const addNewIncomeTaxWithholding = (data) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de modificar una retención.',
+            life: 3000,
+        });
+
+        return;
+    }
+
     if (data.scale === 0 && data.incomeTax.length > 0) {
         confirm.require({
             message: 'Ya posee una retención ¿Desea aplicar escala?',
@@ -151,7 +162,64 @@ const onRowEditCancelIncomeTaxWithholding = (event) => {
     editingRows.value = [];
 };
 
+const validateIncomeTaxWithholding = (event, saveCallback, data) => {
+    if (data.rate === null || data.minAmount === null || data.fixedAmount === null || data.startAt === null || data.endAt === null) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    if (data.condition === 'newIncomeTaxWithholding') {
+        confirm.require({
+            target: event.currentTarget,
+            message: '¿Está seguro de agrear la retención?',
+            rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+            accept: () => {
+                newRow.value = data;
+                saveCallback(event);
+            },
+        });
+
+        return;
+    }
+
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de modificar la retención?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            saveCallback(event);
+        },
+    });
+}
+
 const onRowEditSaveIncomeTaxWithholding = (event) => {
+    let { newData, index } = event;
+
+    const form = useForm({
+        idCat: newData.idCat,
+        minAmount: newData.minAmount,
+        maxAmount: newData.maxAmount,
+        fixedAmount: newData.fixedAmount,
+        startAt: newData.startAt,
+        endAt: newData.endAt,
+    });
+    
+    /* form.put(route("incomeTaxWitholdings.update", event.data.id ), {
+        onSuccess: () => {
+            editing.value = false;
+            newData.accountType = bankAccountTypesSelect.value.filter(a => a.value === newData.idAT)[0].label;
+            banksArray.value[newData.bankIndex].accounts[index] = newData;
+        },
+        onError: () => {
+            editing.value = true;
+            editingRows.value = [newData];
+        }
+    }); */
 }
 /* End editing income tax withholdings */
 
@@ -164,10 +232,6 @@ defineExpose({ fetchIncomeTaxWithholdings });
 <style>
 div[data-pc-section="columnfilter"] {
     margin-left: 0 !important;
-}
-
-label {
-    text-transform: capitalize;
 }
 </style>
 
@@ -228,9 +292,9 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" inputId="percent" prefix="%" id="rate" class="w-full"
-                                :class="data[field] !== null ? 'filled' : ''" :min="0" :max="100" :minFractionDigits="2"
-                                :invalid="data[field] === null" />
+                            <InputNumber v-model="data[field]" placeholder="% 0,00" inputId="percent" prefix="%" id="rate"
+                                class="w-full :not(:focus)::placeholder:text-transparent" :class="data[field] !== null ? 'filled' : ''" :min="0"
+                                :max="100" :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="rate">Tasa</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />
@@ -242,8 +306,8 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
-                                id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
+                                locale="es-AR" id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="minAmount">Monto mínino</label>
                         </FloatLabel>
@@ -256,8 +320,8 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
-                                id="maxAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
+                                locale="es-AR" id="maxAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="maxAmount">Monto máximo</label>
                         </FloatLabel>
@@ -270,8 +334,8 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" inputId="currency-argentina" mode="currency" currency="ARS" locale="es-AR"
-                                id="fixedAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
+                                locale="es-AR" id="fixedAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="fixedAmount">Monto fijo</label>
                         </FloatLabel>
@@ -284,8 +348,8 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <Calendar v-model="data[field]" showButtonBar id="startAt" class="w-full" :class="data[field] !== null ? 'filled' : ''"
-                                :invalid="data[field] === null" />
+                            <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="startAt" class="w-full"
+                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" />
                             <label for="startAt">F. inicio</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />
@@ -297,8 +361,8 @@ label {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <Calendar v-model="data[field]" showButtonBar id="endAt" class="w-full" :class="data[field] !== null ? 'filled' : ''"
-                                :invalid="data[field] === null" />
+                            <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="endAt" class="w-full"
+                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" />
                             <label for="endAt">F. fin</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />
@@ -321,7 +385,7 @@ label {
                         <div class="space-x-4 flex pl-7">
                             <ConfirmPopup></ConfirmPopup>
                             <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
-                                    @click="validateBankAccount($event, editorSaveCallback, data)"></i></button>
+                                    @click="validateIncomeTaxWithholding($event, editorSaveCallback, data)"></i></button>
                             <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
                                     @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
                         </div>

@@ -9,9 +9,7 @@ ul[data-pc-section="submenu"] {
         border-radius: 6px;
     }
 
-    div[data-pc-section="submenu"] {
-        
-    }
+    div[data-pc-section="submenu"] {}
 
     a[data-pc-section="action"] {
         padding: 0.75rem 0.5rem;
@@ -91,4 +89,13 @@ ul[data-pc-section="submenu"] {
         max-height: 0;
         overflow: hidden;
     }
+}
+
+span[data-pc-name=floatlabel] label {
+    text-transform: capitalize;
+}
+
+span[data-pc-name=floatlabel] span[data-pc-name=inputnumber] input:not(:focus)::placeholder,
+span[data-pc-name=floatlabel] span[data-pc-name=calendar] input:not(:focus)::placeholder {
+    color: transparent;
 }
