@@ -44,3 +44,7 @@ Broadcast::channel('suppliers', function () {
 Broadcast::channel('taxes', function () {
     return true;
 });
+
+Broadcast::channel('incomeTaxWithholdings', function () {
+    return true;
+});

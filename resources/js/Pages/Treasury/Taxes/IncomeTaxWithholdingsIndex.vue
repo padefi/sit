@@ -21,7 +21,7 @@ const confirm = useConfirm();
 
 const fetchIncomeTaxWithholdings = async () => {
     try {
-        const response = await fetch('/incomeTaxWitholdings');
+        const response = await fetch('/incomeTaxWithholdings');
 
         if (!response.ok) {
             throw new Error('Error al obtener datos de impuestos a las ganancias');
@@ -43,6 +43,7 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
             .map(t => {
                 const startAt = new Date(t.startAt);
                 startAt.setDate(startAt.getDate() + 1);
+
                 const endAt = new Date(t.endAt);
                 endAt.setDate(endAt.getDate() + 1);
 
@@ -62,6 +63,7 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
             .map(t => {
                 const startAt = new Date(t.startAt);
                 startAt.setDate(startAt.getDate() + 1);
+
                 const endAt = new Date(t.endAt);
                 endAt.setDate(endAt.getDate() + 1);
 
@@ -202,29 +204,72 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
 
     const form = useForm({
         idCat: newData.idCat,
+        rate: newData.rate,
         minAmount: newData.minAmount,
         maxAmount: newData.maxAmount,
         fixedAmount: newData.fixedAmount,
         startAt: newData.startAt,
         endAt: newData.endAt,
     });
-    
-    /* form.put(route("incomeTaxWitholdings.update", event.data.id ), {
+
+    const routeUrl = categoriesArray.value[newData.categoryIndex].scale === 0 ? "incomeTaxWithholdings.update" : "incomeTaxWithholdingsScales.update";
+
+    form.put(route(routeUrl, newData.id), {
         onSuccess: () => {
             editing.value = false;
-            newData.accountType = bankAccountTypesSelect.value.filter(a => a.value === newData.idAT)[0].label;
-            banksArray.value[newData.bankIndex].accounts[index] = newData;
+            categoriesArray.value[newData.categoryIndex].incomeTax[index] = newData;
         },
         onError: () => {
             editing.value = true;
             editingRows.value = [newData];
+
         }
-    }); */
+    });
 }
 /* End editing income tax withholdings */
 
 onMounted(() => {
     fetchIncomeTaxWithholdings();
+
+    Echo.channel('incomeTaxWithholdings')
+        .listen('Treasury\\Taxes\\IncomeTaxWithholdingEvent', (e) => {
+            const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholding.category.id);
+
+            const incomeTaxEventDataStructure = (indexCategory, incomeTaxWithholding) => {
+                const startAt = new Date(incomeTaxWithholding.startAt);
+                startAt.setDate(startAt.getDate() + 1);
+
+                const endAt = new Date(incomeTaxWithholding.endAt);
+                endAt.setDate(endAt.getDate() + 1);
+
+                return {
+                    ...incomeTaxWithholding,
+                    rate: parseFloat(incomeTaxWithholding.rate),
+                    minAmount: parseFloat(incomeTaxWithholding.minAmount),
+                    fixedAmount: parseFloat(incomeTaxWithholding.fixedAmount),
+                    startAt,
+                    endAt,
+                    categoryIndex: indexCategory,
+                }
+            }
+
+            if (indexCategory !== -1) {
+                if (e.type === 'create') {
+                    setTimeout(() => {
+                        /* if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
+                            banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
+                        } */
+                    }, 500);
+                } else if (e.type === 'update') {
+                    const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholding.id);
+
+                    if (indexIncomeTax !== -1) {
+                        categoriesArray.value[indexCategory].incomeTax[indexIncomeTax] = incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholding);
+                    }
+                }
+            }
+
+        });
 });
 
 defineExpose({ fetchIncomeTaxWithholdings });
@@ -349,7 +394,7 @@ div[data-pc-section="columnfilter"] {
                     <template #editor="{ data, field }">
                         <FloatLabel>
                             <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="startAt" class="w-full"
-                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" />
+                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" :maxDate="data.endAt" />
                             <label for="startAt">F. inicio</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />
@@ -362,7 +407,7 @@ div[data-pc-section="columnfilter"] {
                     <template #editor="{ data, field }">
                         <FloatLabel>
                             <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="endAt" class="w-full"
-                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" />
+                                :class="data[field] !== null ? 'filled' : ''" :invalid="data[field] === null" :minDate="data.startAt" />
                             <label for="endAt">F. fin</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />

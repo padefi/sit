@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Treasury\Taxes;
 
+use App\Events\Treasury\Taxes\IncomeTaxWithholdingEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingRequest;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingResource;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Redirect;
 
 class incomeTaxWithholdingController extends Controller {
     public function __construct() {
@@ -38,14 +39,34 @@ class incomeTaxWithholdingController extends Controller {
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request) {
-        //
+    public function store(IncomeTaxWithholdingRequest $request) {
+        var_dump($request->all());
+        die();
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id) {
-        //
+    public function update(IncomeTaxWithholdingRequest $request, IncomeTaxWithholding $incomeTaxWithholding) {
+        $incomeTaxWithholding->update([
+            'rate' => $request->rate,
+            'minAmount' => $request->minAmount,
+            'fixedAmount' => $request->fixedAmount,
+            'startAt' => date('Y-m-d', strtotime($request->startAt)),
+            'endAt' => date('Y-m-d', strtotime($request->endAt)),
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        $incomeTaxWithholding->load('category', 'userCreated', 'userUpdated');
+        event(new IncomeTaxWithholdingEvent($incomeTaxWithholding, $incomeTaxWithholding->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Retención modificada exitosamente.',
+            ],
+            'success' => true,
+        ]);
     }
 }
