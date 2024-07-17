@@ -219,7 +219,15 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
             editing.value = false;
             categoriesArray.value[newData.categoryIndex].incomeTax[index] = newData;
         },
-        onError: () => {
+        onError: (error) => {
+            Object.keys(error).forEach((key) => {
+                toast.add({
+                    severity: 'error',
+                    detail: error[key],
+                    life: 3000,
+                });
+            });
+
             editing.value = true;
             editingRows.value = [newData];
 

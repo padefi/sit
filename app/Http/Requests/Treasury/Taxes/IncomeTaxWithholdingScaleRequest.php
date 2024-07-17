@@ -24,7 +24,7 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
             'maxAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
             'fixedAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
             'startAt' => ['required', 'date', 'before:endAt'],
-            'endtAt' => ['required', 'date', 'after:startAt'],
+            'endAt' => ['required', 'date', 'after:startAt'],
         ];
     }
 

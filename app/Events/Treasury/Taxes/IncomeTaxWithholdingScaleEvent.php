@@ -2,25 +2,25 @@
 
 namespace App\Events\Treasury\Taxes;
 
-use App\Models\Treasury\Taxes\IncomeTaxWithholding;
+use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class IncomeTaxWithholdingEvent implements ShouldBroadcast {
+class IncomeTaxWithholdingScaleEvent implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public $incomeTaxWithholding;
-    public $incomeTaxWithholdingId;
+    
+    public $incomeTaxWithholdingScale;
+    public $incomeTaxWithholdingScaleId;
     public $type;
     /**
      * Create a new event instance.
      */
-    public function __construct(IncomeTaxWithholding $incomeTaxWithholding, $incomeTaxWithholdingId, $type) {
-        $this->incomeTaxWithholding = $incomeTaxWithholding;
-        $this->incomeTaxWithholdingId = $incomeTaxWithholdingId;
+    public function __construct(IncomeTaxWithholdingScale $incomeTaxWithholdingScale, $incomeTaxWithholdingScaleId, $type) {
+        $this->incomeTaxWithholdingScale = $incomeTaxWithholdingScale;
+        $this->incomeTaxWithholdingScaleId = $incomeTaxWithholdingScaleId;
         $this->type = $type;
     }
 
@@ -30,13 +30,13 @@ class IncomeTaxWithholdingEvent implements ShouldBroadcast {
      * @return array<int, \Illuminate\Broadcasting\Channel>
      */
     public function broadcastOn(): array {
-        return [new Channel('incomeTaxWithholdings')];
+        return [new Channel('incomeTaxWithholdingsScales')];
     }
 
     public function broadcastWith() {
         return [
-            'incomeTaxWithholding' => $this->incomeTaxWithholding,
-            'incomeTaxWithholdingId' => $this->incomeTaxWithholdingId,
+            'incomeTaxWithholdingScale' => $this->incomeTaxWithholdingScale,
+            'incomeTaxWithholdingScaleId' => $this->incomeTaxWithholdingScaleId,
             'type' => $this->type,
         ];
     }
