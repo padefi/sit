@@ -11,7 +11,7 @@ class IncomeTaxWithholdingScaleSeeder extends Seeder {
      * Run the database seeds.
      */
     public function run(): void {
-        $incomeTaxWithholdingsScales = [
+        $incomeTaxWithholdingScales = [
             // Comisiones
             ['idCat' => 7, 'rate' => 5.00, 'minAmount' => 0.00, 'maxAmount' => 8000.00, 'fixedAmount' => 0.00, 'startAt' => '2020-01-01', 'endAt' => '2100-12-31', 'idUserCreated' => 1, 'updated_at' => null],
             ['idCat' => 7, 'rate' => 9.00, 'minAmount' => 8000.00, 'maxAmount' => 16000.00, 'fixedAmount' => 400.00, 'startAt' => '2020-01-01', 'endAt' => '2100-12-31', 'idUserCreated' => 1, 'updated_at' => null],
@@ -33,7 +33,7 @@ class IncomeTaxWithholdingScaleSeeder extends Seeder {
             ['idCat' => 8, 'rate' => 31.00, 'minAmount' => 852000.00, 'maxAmount' => 99999999.00, 'fixedAmount' => 165430.00, 'startAt' => '2020-01-01', 'endAt' => '2100-12-31', 'idUserCreated' => 1, 'updated_at' => null],
         ];
 
-        foreach ($incomeTaxWithholdingsScales as $incomeTaxWithholdingScale) {
+        foreach ($incomeTaxWithholdingScales as $incomeTaxWithholdingScale) {
             IncomeTaxWithholdingScale::create($incomeTaxWithholdingScale);
         }
     }

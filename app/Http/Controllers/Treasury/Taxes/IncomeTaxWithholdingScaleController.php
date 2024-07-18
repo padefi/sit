@@ -5,12 +5,9 @@ namespace App\Http\Controllers\Treasury\Taxes;
 use App\Events\Treasury\Taxes\IncomeTaxWithholdingScaleEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingScaleRequest;
-use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
-use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use Illuminate\Support\Facades\Redirect;
-use Inertia\Inertia;
 
 class IncomeTaxWithholdingScaleController extends Controller {
     public function __construct() {
@@ -18,19 +15,6 @@ class IncomeTaxWithholdingScaleController extends Controller {
         $this->middleware('check.permission:create income tax withholdings')->only('store');
         $this->middleware('check.permission:edit income tax withholdings')->only('update');
         $this->middleware('check.permission:view users')->only('info');
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index() {
-        $category = Category::orderBy('name', 'asc')->get();
-        $incomeTaxWithholdingScale = IncomeTaxWithholdingScale::with(['userCreated', 'userUpdated'])->get();
-
-        return Inertia::render('Treasury/Taxes/IncomeTaxWithholdingsScalesIndex', [
-            'categories' => CategoryResource::collection($category),
-            'incomeTaxWithholdingsScales' => IncomeTaxWithholdingScaleResource::collection($incomeTaxWithholdingScale),
-        ]);
     }
 
     /**

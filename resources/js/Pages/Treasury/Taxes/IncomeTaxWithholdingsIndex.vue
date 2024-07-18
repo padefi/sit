@@ -28,13 +28,13 @@ const fetchIncomeTaxWithholdings = async () => {
         }
 
         const data = await response.json();
-        categoryIncomeTaxWithholdings(data.categories, data.incomeTaxWithholdings, data.incomeTaxWithholdingsScales);
+        categoryIncomeTaxWithholdings(data.categories, data.incomeTaxWithholdings, data.incomeTaxWithholdingScales);
     } catch (error) {
         console.error(error);
     }
 }
 
-const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, incomeTaxWithholdingsScales) => {
+const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, incomeTaxWithholdingScales) => {
     categoriesArray.value = [];
 
     categories.map((category, index) => {
@@ -58,7 +58,7 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
                 }
             });
 
-        const taxScale = incomeTaxWithholdingsScales
+        const taxScale = incomeTaxWithholdingScales
             .filter(tax => tax.idCat === category.id)
             .map(t => {
                 const startAt = new Date(t.startAt);
@@ -212,7 +212,8 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
         endAt: newData.endAt,
     });
 
-    const routeUrl = categoriesArray.value[newData.categoryIndex].scale === 0 ? "incomeTaxWithholdings.update" : "incomeTaxWithholdingsScales.update";
+    const routeUrl = categoriesArray.value[newData.categoryIndex].scale === 0 ? "incomeTaxWithholdings.update" : "incomeTaxWithholdingScales.update";
+    editing.value = false;
 
     form.put(route(routeUrl, newData.id), {
         onSuccess: () => {
@@ -270,9 +271,50 @@ onMounted(() => {
                     }, 500);
                 } else if (e.type === 'update') {
                     const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholding.id);
-
+                    
                     if (indexIncomeTax !== -1) {
                         categoriesArray.value[indexCategory].incomeTax[indexIncomeTax] = incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholding);
+                    }
+                }
+            }
+
+        });
+
+        Echo.channel('incomeTaxWithholdingScales')
+        .listen('Treasury\\Taxes\\IncomeTaxWithholdingScaleEvent', (e) => {
+            const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholdingScale.category.id);
+
+            const incomeTaxEventDataStructure = (indexCategory, incomeTaxWithholdingScale) => {
+                const startAt = new Date(incomeTaxWithholdingScale.startAt);
+                startAt.setDate(startAt.getDate() + 1);
+
+                const endAt = new Date(incomeTaxWithholdingScale.endAt);
+                endAt.setDate(endAt.getDate() + 1);
+
+                return {
+                    ...incomeTaxWithholdingScale,
+                    rate: parseFloat(incomeTaxWithholdingScale.rate),
+                    minAmount: parseFloat(incomeTaxWithholdingScale.minAmount),
+                    maxAmount: parseFloat(incomeTaxWithholdingScale.maxAmount),
+                    fixedAmount: parseFloat(incomeTaxWithholdingScale.fixedAmount),
+                    startAt,
+                    endAt,
+                    categoryIndex: indexCategory,
+                }
+            }
+
+            if (indexCategory !== -1) {
+                if (e.type === 'create') {
+                    setTimeout(() => {
+                        /* if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
+                            banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
+                        } */
+                    }, 500);
+                } else if (e.type === 'update') {
+                    const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholdingScale.id);
+                    
+                    if (indexIncomeTax !== -1) {
+                        categoriesArray.value[indexCategory].incomeTax[indexIncomeTax] = incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholdingScale);
                     }
                 }
             }

@@ -13,7 +13,7 @@ use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use Illuminate\Support\Facades\Redirect;
 
-class incomeTaxWithholdingController extends Controller {
+class IncomeTaxWithholdingController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view income tax withholdings')->only('index');
         $this->middleware('check.permission:create income tax withholdings')->only('store');
@@ -32,7 +32,7 @@ class incomeTaxWithholdingController extends Controller {
         return response()->json([
             'categories' => CategoryResource::collection($category),
             'incomeTaxWithholdings' => IncomeTaxWithholdingResource::collection($incomeTaxWithholding),
-            'incomeTaxWithholdingsScales' => IncomeTaxWithholdingScaleResource::collection($incomeTaxWithholdingScale),
+            'incomeTaxWithholdingScales' => IncomeTaxWithholdingScaleResource::collection($incomeTaxWithholdingScale),
         ]);
     }
 

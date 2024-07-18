@@ -9,7 +9,7 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('income_tax_withholdings_scales', function (Blueprint $table) {
+        Schema::create('income_tax_withholding_scales', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('idCat');
             $table->decimal('rate', 5, 2);
@@ -22,8 +22,15 @@ return new class extends Migration {
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
 
+            $table->index('idCat');
             $table->index('idUserCreated');
             $table->index('idUserUpdated');
+
+            $table->foreign('idCat')
+                ->references('id')
+                ->on('categories')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
 
             $table->foreign('idUserCreated')
                 ->references('id')
@@ -43,11 +50,12 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('income_tax_withholdings_scales', function (Blueprint $table) {
+        Schema::table('income_tax_withholding_scales', function (Blueprint $table) {
+            $table->dropForeign(['idCat']);
             $table->dropForeign(['idUserCreated']);
             $table->dropForeign(['idUserUpdated']);
         });
 
-        Schema::dropIfExists('income_tax_withholdings_scales');
+        Schema::dropIfExists('income_tax_withholding_scales');
     }
 };

@@ -9,9 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class IncomeTaxWithholdingScale extends Model {
     use HasFactory;
-
-    protected $table = 'income_tax_withholdings_scales';
-
     protected $fillable = [
         'idCat',
         'rate',

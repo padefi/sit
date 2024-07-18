@@ -49,6 +49,6 @@ Broadcast::channel('incomeTaxWithholdings', function () {
     return true;
 });
 
-Broadcast::channel('incomeTaxWithholdingsScales', function () {
+Broadcast::channel('incomeTaxWithholdingScales', function () {
     return true;
 });
