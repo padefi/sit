@@ -7,6 +7,9 @@ import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3';
 import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
+import { toastService } from '@/composables/toastService';
+
+toastService();
 
 const { hasPermission } = usePermissions();
 const toast = useToast();
@@ -100,6 +103,10 @@ const onRowExpand = (data) => {
     expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
 }
 
+const onRowCollapse = (data) => {
+    delete expandedRows.value[data.id];
+}
+
 const disabledEditButtons = (callback, event) => {
     if (editing.value) {
         toast.add({
@@ -122,7 +129,7 @@ const enabledEditButtons = (callback, event) => {
 }
 
 /* Add new income tax withholdings */
-const addNewIncomeTaxWithholding = (data) => {
+const addNewIncomeTaxWithholding = async (data) => {
     if (editing.value) {
         toast.add({
             severity: 'error',
@@ -133,20 +140,49 @@ const addNewIncomeTaxWithholding = (data) => {
         return;
     }
 
+    originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].incomeTax];
+
     if (data.scale === 0 && data.incomeTax.length > 0) {
-        confirm.require({
-            message: 'Ya posee una retención ¿Desea aplicar escala?',
-            rejectClass: 'bg-red-500 text-white hover:bg-red-600',
-            accept: () => {
-                // data.scale = 1;
-                onRowExpand(data);
-                originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].incomeTax];
-            },
-            reject: () => {
-                // data.scale = 0;
-            },
-        });
+        try {
+            await new Promise((resolve, reject) => {
+                confirm.require({
+                    message: 'Ya posee una retención ¿Desea aplicar escala?',
+                    rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+                    accept: () => {
+                        categoriesArray.value[data.categoryIndex].incomeTax.map(incomeTax => {
+                            incomeTax.maxAmount = 0.001;
+                        });
+
+                        resolve();
+                    },
+                    reject: () => {
+                        originalCategoriesArray.value = [];
+                        reject(new Error());
+                    },
+                });
+            });
+        } catch (error) {
+            return;
+        };
     }
+
+    const newIncomeTax = {
+        id: crypto.randomUUID(),
+        idCat: data.id,
+        categoryIndex: data.categoryIndex,
+        rate: newRow.value?.rate,
+        minAmount: newRow.value?.minAmount,
+        maxAmount: newRow.value?.maxAmount,
+        fixedAmount: newRow.value?.fixedAmount,
+        startAt: newRow.value?.startAt,
+        endAt: newRow.value?.endAt,
+        condition: 'newIncomeTaxWithholding',
+    };
+
+    categoriesArray.value[data.categoryIndex].incomeTax.unshift(newIncomeTax);
+    editing.value = true;
+    editingRows.value = [newIncomeTax];
+    onRowExpand(data);
 
 }
 /* End add new income tax withholdings */
@@ -158,6 +194,18 @@ const onRowEditInitIncomeTaxWithholding = (event) => {
 }
 
 const onRowEditCancelIncomeTaxWithholding = (event) => {
+    if (categoriesArray.value[event.data.categoryIndex].scale === 0 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) {
+        originalCategoriesArray.value.map(incomeTax => {
+            delete incomeTax.maxAmount;
+        });
+
+        onRowCollapse(categoriesArray.value[event.data.categoryIndex]);
+
+        setTimeout(() => {
+            onRowExpand(categoriesArray.value[event.data.categoryIndex]);
+        }, 100);
+    }
+
     categoriesArray.value[event.data.categoryIndex].incomeTax = [...originalCategoriesArray.value];
     editing.value = false;
     newRow.value = [];
@@ -165,10 +213,30 @@ const onRowEditCancelIncomeTaxWithholding = (event) => {
 };
 
 const validateIncomeTaxWithholding = (event, saveCallback, data) => {
-    if (data.rate === null || data.minAmount === null || data.fixedAmount === null || data.startAt === null || data.endAt === null) {
+    if (!data.rate || data.minAmount === null || (!data.maxAmount && data.maxAmount === null) || data.fixedAmount === null || !data.startAt || !data.endAt) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    if (data.minAmount > data.maxAmount) {
+        toast.add({
+            severity: 'error',
+            detail: 'El monto mínimo no puede ser mayor al monto máximo.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    if (data.startAt > data.endAt) {
+        toast.add({
+            severity: 'error',
+            detail: 'La fecha desde no puede ser mayor a la fecha hasta.',
             life: 3000,
         });
 
@@ -212,6 +280,41 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
         endAt: newData.endAt,
     });
 
+    if (newData.condition === 'newIncomeTaxWithholding') {
+        const routeUrl = (categoriesArray.value[event.data.categoryIndex].scale === 0 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) ? "incomeTaxWithholdingScales.store" : "incomeTaxWithholdings.store";
+
+        form.post(route(routeUrl, newData.id), {
+            onSuccess: (result) => {
+                const data = result.props.flash.info.incomeTaxWithholding;
+                editing.value = false;
+                newData.condition = 'editIncomeTaxWithholding';
+                newData.id = data.id;
+                newData.idCat = data.idCat;
+                newData.rate = data.rate;
+                newData.minAmount = data.minAmount;
+                newData.maxAmount = data.maxAmount;
+                newData.fixedAmount = data.fixedAmount;
+                newData.startAt = data.startAt;
+                newData.endAt = data.endAt;
+                newRow.value = [];
+            },
+            onError: (error) => {
+                Object.keys(error).forEach((key) => {
+                    toast.add({
+                        severity: 'error',
+                        detail: error[key],
+                        life: 3000,
+                    });
+                });
+
+                editing.value = true;
+                editingRows.value = [newData];
+            }
+        });
+
+        return;
+    }
+
     const routeUrl = categoriesArray.value[newData.categoryIndex].scale === 0 ? "incomeTaxWithholdings.update" : "incomeTaxWithholdingScales.update";
     editing.value = false;
 
@@ -231,12 +334,10 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
 
             editing.value = true;
             editingRows.value = [newData];
-
         }
     });
 }
 /* End editing income tax withholdings */
-
 onMounted(() => {
     fetchIncomeTaxWithholdings();
 
@@ -271,7 +372,7 @@ onMounted(() => {
                     }, 500);
                 } else if (e.type === 'update') {
                     const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholding.id);
-                    
+
                     if (indexIncomeTax !== -1) {
                         categoriesArray.value[indexCategory].incomeTax[indexIncomeTax] = incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholding);
                     }
@@ -280,7 +381,7 @@ onMounted(() => {
 
         });
 
-        Echo.channel('incomeTaxWithholdingScales')
+    Echo.channel('incomeTaxWithholdingScales')
         .listen('Treasury\\Taxes\\IncomeTaxWithholdingScaleEvent', (e) => {
             const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholdingScale.category.id);
 
@@ -312,7 +413,7 @@ onMounted(() => {
                     }, 500);
                 } else if (e.type === 'update') {
                     const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholdingScale.id);
-                    
+
                     if (indexIncomeTax !== -1) {
                         categoriesArray.value[indexCategory].incomeTax[indexIncomeTax] = incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholdingScale);
                     }
@@ -359,7 +460,7 @@ div[data-pc-section="columnfilter"] {
         <Column header="Cant.">
             <template #body="{ data }">
                 <Badge :value="data.incomeTax.length" size="large" :severity="data.incomeTax.length === 0 ? 'danger' : 'success'" class="rounded-full"
-                    v-tooltip="data.scale === 1 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
+                    v-tooltip="data.scale === 1 && data.incomeTax.length > 0 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
         <Column header="Acciones" style="width: 5%; min-width: 8rem;">
@@ -380,19 +481,23 @@ div[data-pc-section="columnfilter"] {
             <DataTable v-model:editingRows="editingRows" :value="data.incomeTax" editMode="row" class="data-table-expanded"
                 @row-edit-init="onRowEditInitIncomeTaxWithholding($event)" @row-edit-save="onRowEditSaveIncomeTaxWithholding"
                 @row-edit-cancel="onRowEditCancelIncomeTaxWithholding($event)">
-                {{ data.maxAmount }}
+                <template #empty>
+                    <div class="text-center text-lg text-red-500">
+                        Sin retenciones cargadas
+                    </div>
+                </template>
                 <Column field="rate" header="Tasa">
                     <template #body="{ data }">
                         {{ percentNumber(data.rate) }}
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" placeholder="% 0,00" inputId="percent" prefix="%" id="rate"
-                                class="w-full :not(:focus)::placeholder:text-transparent" :class="data[field] !== null ? 'filled' : ''" :min="0"
-                                :max="100" :minFractionDigits="2" :invalid="data[field] === null" />
+                            <InputNumber v-model="data[field]" placeholder="% 0,00" inputId="rate" prefix="%" id="rate"
+                                class="w-full :not(:focus)::placeholder:text-transparent" :class="data[field] !== null ? 'filled' : ''" :min="0.01"
+                                :max="100" :minFractionDigits="2" :invalid="data[field] === null || data[field] === 0" />
                             <label for="rate">Tasa</label>
                         </FloatLabel>
-                        <InputError :message="data[field] === null ? rules : ''" />
+                        <InputError :message="data[field] === null || data[field] === 0 ? rules : ''" />
                     </template>
                 </Column>
                 <Column field="minAmount" header="Monto mínimo">
@@ -401,8 +506,8 @@ div[data-pc-section="columnfilter"] {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
-                                locale="es-AR" id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="minAmount" mode="currency" currency="ARS" locale="es-AR"
+                                id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="minAmount">Monto mínino</label>
                         </FloatLabel>
@@ -415,8 +520,8 @@ div[data-pc-section="columnfilter"] {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
-                                locale="es-AR" id="maxAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="maxAmount" mode="currency" currency="ARS" locale="es-AR"
+                                id="maxAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="data.minAmount" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="maxAmount">Monto máximo</label>
                         </FloatLabel>
@@ -429,7 +534,7 @@ div[data-pc-section="columnfilter"] {
                     </template>
                     <template #editor="{ data, field }">
                         <FloatLabel>
-                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="currency-argentina" mode="currency" currency="ARS"
+                            <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="fixedAmount" mode="currency" currency="ARS"
                                 locale="es-AR" id="fixedAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
                                 :minFractionDigits="2" :invalid="data[field] === null" />
                             <label for="fixedAmount">Monto fijo</label>

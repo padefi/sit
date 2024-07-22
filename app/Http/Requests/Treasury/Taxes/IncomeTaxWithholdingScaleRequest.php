@@ -19,10 +19,10 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'rate' => ['required', 'integer', 'min:0', 'max:100'],
-            'minAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
-            'maxAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
-            'fixedAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
+            'rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'minAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
+            'maxAmount' => ['required', 'numeric', 'min:minAmount', 'max:99999999'],
+            'fixedAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'startAt' => ['required', 'date', 'before:endAt'],
             'endAt' => ['required', 'date', 'after:startAt'],
         ];
@@ -37,7 +37,7 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
             'minAmount.min' => 'El monto mínimo no puede ser negativo.',
             'minAmount.max' => 'El monto mínimo no puede ser mayor a 99999999.',
             'maxAmount.required' => 'El monto mínimo es obligatorio.',
-            'maxAmount.min' => 'El monto mínimo no puede ser negativo.',
+            'maxAmount.min' => 'El monto mínimo no puede ser menor al monto mínimo.',
             'maxAmount.max' => 'El monto mínimo no puede ser mayor a 99999999.',
             'fixedAmount.required' => 'El monto fijo es obligatorio.',
             'fixedAmount.min' => 'El monto fijo no puede ser negativo.',

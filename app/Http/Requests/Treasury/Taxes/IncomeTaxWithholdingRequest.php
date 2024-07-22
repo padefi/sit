@@ -19,9 +19,9 @@ class IncomeTaxWithholdingRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'rate' => ['required', 'integer', 'min:0', 'max:100'],
-            'minAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
-            'fixedAmount' => ['required', 'integer', 'min:0', 'max:99999999'],
+            'rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'minAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
+            'fixedAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'startAt' => ['required', 'date', 'before:endAt'],
             'endAt' => ['required', 'date', 'after:startAt'],
         ];
