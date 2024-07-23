@@ -78,6 +78,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
 
     Route::resource('incomeTaxWithholdings', IncomeTaxWithholdingController::class);
     Route::resource('incomeTaxWithholdingScales', IncomeTaxWithholdingScaleController::class);
+    Route::resource('socialSecurityTaxWithholdings', SocialSecurityTaxWithholdingController::class);
 });
 
 Route::middleware('auth')->group(function () {

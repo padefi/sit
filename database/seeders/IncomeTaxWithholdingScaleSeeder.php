@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class IncomeTaxWithholdingScaleSeeder extends Seeder {

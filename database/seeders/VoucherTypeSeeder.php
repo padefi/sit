@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Treasury\Voucher\VoucherType;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class VoucherTypeSeeder extends Seeder {

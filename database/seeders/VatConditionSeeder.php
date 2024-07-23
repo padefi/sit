@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Treasury\Taxes\VatCondition;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class VatConditionSeeder extends Seeder {
