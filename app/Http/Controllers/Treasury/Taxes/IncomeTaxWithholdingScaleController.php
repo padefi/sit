@@ -21,8 +21,31 @@ class IncomeTaxWithholdingScaleController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(IncomeTaxWithholdingScaleRequest $request) {
-        var_dump($request->all());
-        die();
+        $incomeTaxWithholdingScale = IncomeTaxWithholdingScale::create([
+            'idCat' => $request->idCat,
+            'rate' => $request->rate,
+            'minAmount' => $request->minAmount,
+            'maxAmount' => $request->maxAmount,
+            'fixedAmount' => $request->fixedAmount,
+            'startAt' => date('Y-m-d', strtotime($request->startAt)),
+            'endAt' => date('Y-m-d', strtotime($request->endAt)),
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
+
+        $tempUUID = $request->keys()[7];
+        $incomeTaxWithholdingScale->load('category', 'userCreated', 'userUpdated');
+        event(new IncomeTaxWithholdingScaleEvent($incomeTaxWithholdingScale, $tempUUID, 'create'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Retención agregada exitosamente.',
+                'incomeTaxWithholding' => $incomeTaxWithholdingScale,
+            ],
+            'success' => true,
+        ]);
     }
 
     /**

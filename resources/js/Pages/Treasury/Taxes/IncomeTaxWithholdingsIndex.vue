@@ -140,6 +140,9 @@ const addNewIncomeTaxWithholding = async (data) => {
         return;
     }
 
+    const originalExpandedRows = { ...expandedRows.value };
+    const newExpandedRows = categoriesArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
+    expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
     originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].incomeTax];
 
     if (data.scale === 0 && data.incomeTax.length > 0) {
@@ -193,17 +196,17 @@ const onRowEditInitIncomeTaxWithholding = (event) => {
 }
 
 const onRowEditCancelIncomeTaxWithholding = (event) => {
+    onRowCollapse(categoriesArray.value[event.data.categoryIndex]);
+
     if (categoriesArray.value[event.data.categoryIndex].scale === 0 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) {
         originalCategoriesArray.value.map(incomeTax => {
             delete incomeTax.maxAmount;
         });
-
-        onRowCollapse(categoriesArray.value[event.data.categoryIndex]);
-
-        setTimeout(() => {
-            onRowExpand(categoriesArray.value[event.data.categoryIndex]);
-        }, 100);
     }
+
+    setTimeout(() => {
+        onRowExpand(categoriesArray.value[event.data.categoryIndex]);
+    }, 100);
 
     categoriesArray.value[event.data.categoryIndex].incomeTax = [...originalCategoriesArray.value];
     editing.value = false;
@@ -280,7 +283,7 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
     });
 
     if (newData.condition === 'newIncomeTaxWithholding') {
-        const routeUrl = (categoriesArray.value[event.data.categoryIndex].scale === 0 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) ? "incomeTaxWithholdingScales.store" : "incomeTaxWithholdings.store";
+        const routeUrl = (categoriesArray.value[event.data.categoryIndex].scale === 1 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) ? "incomeTaxWithholdingScales.store" : "incomeTaxWithholdings.store";
 
         form.post(route(routeUrl, newData.id), {
             onSuccess: (result) => {
@@ -290,17 +293,10 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
                 newData.id = data.id;
                 newRow.value = [];
             },
-            onError: (error) => {
-                Object.keys(error).forEach((key) => {
-                    toast.add({
-                        severity: 'error',
-                        detail: error[key],
-                        life: 3000,
-                    });
-                });
-
-                editing.value = true;
-                editingRows.value = [newData];
+            onError: () => {
+                categoriesArray.value[event.data.categoryIndex].incomeTax = [...originalCategoriesArray.value];
+                editing.value = false;
+                addNewIncomeTaxWithholding(categoriesArray.value[event.data.categoryIndex]);
             }
         });
 
@@ -308,24 +304,15 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
     }
 
     const routeUrl = categoriesArray.value[newData.categoryIndex].scale === 0 ? "incomeTaxWithholdings.update" : "incomeTaxWithholdingScales.update";
-    editing.value = false;
 
     form.put(route(routeUrl, newData.id), {
         onSuccess: () => {
             editing.value = false;
             categoriesArray.value[newData.categoryIndex].incomeTax[index] = newData;
         },
-        onError: (error) => {
-            Object.keys(error).forEach((key) => {
-                toast.add({
-                    severity: 'error',
-                    detail: error[key],
-                    life: 3000,
-                });
-            });
-
+        onError: () => {
             editing.value = true;
-            editingRows.value = [newData];
+            editingRows.value = [event.data];
         }
     });
 }
@@ -399,9 +386,9 @@ onMounted(() => {
             if (indexCategory !== -1) {
                 if (e.type === 'create') {
                     setTimeout(() => {
-                        /* if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
-                            banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
-                        } */
+                        if (!categoriesArray.value[indexCategory].incomeTax.some(tax => tax.id === e.incomeTaxWithholdingScale.id)) {
+                            categoriesArray.value[indexCategory].incomeTax.unshift(incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholdingScale));
+                        }
                     }, 500);
                 } else if (e.type === 'update') {
                     const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholdingScale.id);

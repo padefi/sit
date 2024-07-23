@@ -296,7 +296,7 @@ const addNewBankAccount = (data) => {
         accountNumber: newRow.value?.accountNumber,
         cbu: newRow.value?.cbu,
         alias: newRow.value?.alias,
-        status: newRow.value?.status === 'ACTIVA' ? 1 : 0,
+        status: newRow.value?.status,
         condition: 'newBankAccount',
     };
 
@@ -371,9 +371,9 @@ const onRowEditSaveBankAccount = (event) => {
                 newRow.value = [];
             },
             onError: () => {
-                banksArray.value = [...originalBanksArray.value];
+                banksArray.value[newData.bankIndex].accounts = [...originalBanksArray.value];
                 editing.value = false;
-                addNewBankAccount();
+                addNewBankAccount(banksArray.value[event.data.bankIndex]);
             }
         });
 

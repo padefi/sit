@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Treasury\Taxes;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class IncomeTaxWithholdingScaleRequest extends FormRequest {
     /**
@@ -21,26 +22,36 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
         return [
             'rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'minAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
-            'maxAmount' => ['required', 'numeric', 'min:minAmount', 'max:99999999'],
+            'maxAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'fixedAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'startAt' => ['required', 'date', 'before:endAt'],
             'endAt' => ['required', 'date', 'after:startAt'],
         ];
     }
 
+    protected function withValidator(Validator $validator) {
+        $validator->after(function ($validator) {
+            $minAmount = $this->input('minAmount');
+            $maxAmount = $this->input('maxAmount');
+
+            if ($minAmount !== null && $maxAmount !== null && $minAmount > $maxAmount) {
+                $validator->errors()->add('minAmount', 'El monto mínimo no puede ser mayor al monto máximo.');
+            }
+        });
+    }
+
     public function messages(): array {
         return [
             'rate.required' => 'El Porcentaje es obligatorio.',
-            'rate.min' => 'El Porcentaje no puede ser negativo.',
+            'rate.min' => 'El Porcentaje no puede ser menor a 0.',
             'rate.max' => 'El Porcentaje no puede ser mayor a 100.',
             'minAmount.required' => 'El monto mínimo es obligatorio.',
-            'minAmount.min' => 'El monto mínimo no puede ser negativo.',
+            'minAmount.min' => 'El monto mínimo no puede ser menor a 0.',
             'minAmount.max' => 'El monto mínimo no puede ser mayor a 99999999.',
             'maxAmount.required' => 'El monto mínimo es obligatorio.',
-            'maxAmount.min' => 'El monto mínimo no puede ser menor al monto mínimo.',
             'maxAmount.max' => 'El monto mínimo no puede ser mayor a 99999999.',
             'fixedAmount.required' => 'El monto fijo es obligatorio.',
-            'fixedAmount.min' => 'El monto fijo no puede ser negativo.',
+            'fixedAmount.min' => 'El monto fijo no puede ser menor a 0.',
             'fixedAmount.max' => 'El monto fijo no puede ser mayor a 99999999.',
             'startAt.required' => 'La fecha de inicio es obligatoria.',
             'startAt.before' => 'La fecha de inicio no puede ser posterior a la fecha de finalización.',

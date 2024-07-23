@@ -30,13 +30,13 @@ class IncomeTaxWithholdingRequest extends FormRequest {
     public function messages(): array {
         return [
             'rate.required' => 'El Porcentaje es obligatorio.',
-            'rate.min' => 'El Porcentaje no puede ser negativo.',
+            'rate.min' => 'El Porcentaje no puede ser menor a 0.',
             'rate.max' => 'El Porcentaje no puede ser mayor a 100.',
             'minAmount.required' => 'El monto mínimo es obligatorio.',
-            'minAmount.min' => 'El monto mínimo no puede ser negativo.',
+            'minAmount.min' => 'El monto mínimo no puede ser menor a 0.',
             'minAmount.max' => 'El monto mínimo no puede ser mayor a 99999999.',
             'fixedAmount.required' => 'El monto fijo es obligatorio.',
-            'fixedAmount.min' => 'El monto fijo no puede ser negativo.',
+            'fixedAmount.min' => 'El monto fijo no puede ser menor a 0.',
             'fixedAmount.max' => 'El monto fijo no puede ser mayor a 99999999.',
             'startAt.required' => 'La fecha de inicio es obligatoria.',
             'startAt.before' => 'La fecha de inicio no puede ser posterior a la fecha de finalización.',
