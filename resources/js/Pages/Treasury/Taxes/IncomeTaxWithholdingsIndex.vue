@@ -85,8 +85,8 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
         const data = {
             ...category,
             categoryIndex: index,
-            incomeTax: tax.length > 0 ? tax : taxScale,
-            scale: tax.length > 0 ? 0 : 1,
+            incomeTax: tax.length > 0 ? tax : taxScale.length > 0 ? taxScale : [],
+            scale: tax.length > 0 ? 0 : taxScale.length > 0 ? 1 : 0,
         };
 
         categoriesArray.value.push(data);
@@ -183,7 +183,6 @@ const addNewIncomeTaxWithholding = async (data) => {
     editing.value = true;
     editingRows.value = [newIncomeTax];
     onRowExpand(data);
-
 }
 /* End add new income tax withholdings */
 
@@ -289,13 +288,6 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
                 editing.value = false;
                 newData.condition = 'editIncomeTaxWithholding';
                 newData.id = data.id;
-                newData.idCat = data.idCat;
-                newData.rate = data.rate;
-                newData.minAmount = data.minAmount;
-                newData.maxAmount = data.maxAmount;
-                newData.fixedAmount = data.fixedAmount;
-                newData.startAt = data.startAt;
-                newData.endAt = data.endAt;
                 newRow.value = [];
             },
             onError: (error) => {
@@ -366,9 +358,9 @@ onMounted(() => {
             if (indexCategory !== -1) {
                 if (e.type === 'create') {
                     setTimeout(() => {
-                        /* if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
-                            banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
-                        } */
+                        if (!categoriesArray.value[indexCategory].incomeTax.some(tax => tax.id === e.incomeTaxWithholding.id)) {
+                            categoriesArray.value[indexCategory].incomeTax.unshift(incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholding));
+                        }
                     }, 500);
                 } else if (e.type === 'update') {
                     const indexIncomeTax = categoriesArray.value[indexCategory].incomeTax.findIndex(tax => tax.id === e.incomeTaxWithholding.id);
@@ -460,7 +452,7 @@ div[data-pc-section="columnfilter"] {
         <Column header="Cant.">
             <template #body="{ data }">
                 <Badge :value="data.incomeTax.length" size="large" :severity="data.incomeTax.length === 0 ? 'danger' : 'success'" class="rounded-full"
-                    v-tooltip="data.scale === 1 && data.incomeTax.length > 0 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
+                    v-tooltip="data.scale === 1 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
         <Column header="Acciones" style="width: 5%; min-width: 8rem;">
