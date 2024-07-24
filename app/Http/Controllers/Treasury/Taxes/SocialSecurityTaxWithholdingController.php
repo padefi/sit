@@ -10,6 +10,7 @@ use App\Http\Resources\Treasury\Taxes\SocialSecurityTaxWithholdingResource;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 
 class SocialSecurityTaxWithholdingController extends Controller {
     public function __construct() {
@@ -86,5 +87,17 @@ class SocialSecurityTaxWithholdingController extends Controller {
             ],
             'success' => true,
         ]);
+    }
+
+    public function info(SocialSecurityTaxWithholding $socialSecurityTaxWithholding) {
+        $socialSecurityTaxWithholding = SocialSecurityTaxWithholding::with(['userCreated', 'userUpdated'])->where('id', $socialSecurityTaxWithholding->id)->first();
+
+        if (!$socialSecurityTaxWithholding) {
+            throw ValidationException::withMessages([
+                'message' => trans('Retención no encontrada.')
+            ]);
+        }
+
+        return new SocialSecurityTaxWithholdingResource($socialSecurityTaxWithholding);
     }
 }

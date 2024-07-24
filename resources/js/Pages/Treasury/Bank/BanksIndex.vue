@@ -506,18 +506,17 @@ const info = (route, data, id) => {
                     </div>
                     <template v-if="hasPermission('create banks')">
                         <div class="align-right">
-                            <Button label="Agregar banco" severity="info" outlined icon="pi pi-building-columns"
-                                size="large" @click="addNewBank($event)" />
+                            <Button label="Agregar banco" severity="info" outlined icon="pi pi-building-columns" size="large"
+                                @click="addNewBank($event)" />
                         </div>
                     </template>
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" v-model:filters="banksFilters" :expandedRows="expandedRows"
-                    :value="banksArray" scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
-                    :globalFilterFields="['name', 'address', 'phone', 'email']"
-                    @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank"
-                    @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="banksFilters" :expandedRows="expandedRows" :value="banksArray"
+                    scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
+                    :globalFilterFields="['name', 'address', 'phone', 'email']" @row-edit-init="onRowEditInitBank($event)"
+                    @row-edit-save="onRowEditSaveBank" @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
                     @row-toggle="onRowToggle($event)" @row-collapse="onRowCollapse($event)" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -538,13 +537,12 @@ const info = (route, data, id) => {
                             {{ data.name }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por nombre" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por nombre" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre"
-                                style="width: 100%;" maxlength="100" />
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
@@ -553,13 +551,12 @@ const info = (route, data, id) => {
                             {{ data.address }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="address"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por dirección" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="address" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por dirección" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="address" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección"
-                                style="width: 100%;" maxlength="100" />
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección" style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
@@ -568,16 +565,15 @@ const info = (route, data, id) => {
                             {{ data.phone }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="phone"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por teléfono" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="phone" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por teléfono" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="phone" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])"
-                                placeholder="Teléfono" style="width: 100%;" maxlength="15"
+                                :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])" placeholder="Teléfono"
+                                style="width: 100%;" maxlength="15"
                                 onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
-                            <InputError
-                                :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
+                            <InputError :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
                         </template>
                     </Column>
                     <Column field="email" header="Email" style="width: 15%;" sortable>
@@ -585,13 +581,13 @@ const info = (route, data, id) => {
                             {{ data.email }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por email" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por email" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
-                                placeholder="Email" style="width: 100%;" maxlength="100" />
+                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])" placeholder="Email"
+                                style="width: 100%;" maxlength="100" />
                             <InputError
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
@@ -600,8 +596,7 @@ const info = (route, data, id) => {
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
                                 <template v-if="hasPermission('edit banks')">
-                                    <button v-tooltip="'Editar'"><i
-                                            class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                    <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event, 'banks')"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view users')">
@@ -609,8 +604,7 @@ const info = (route, data, id) => {
                                             @click="info('banks', data, data.id)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view bank accounts') && hasPermission('create bank accounts')">
-                                    <button v-tooltip="'Agregar cuenta'"><i
-                                            class="pi pi-plus-circle text-green-500 text-2xl"
+                                    <button v-tooltip="'Agregar cuenta'"><i class="pi pi-plus-circle text-green-500 text-2xl"
                                             @click="addNewBankAccount(data)"></i></button>
                                 </template>
                             </div>
@@ -627,11 +621,9 @@ const info = (route, data, id) => {
                     </Column>
                     <template #expansion="{ data }">
                         <template v-if="data.accounts">
-                            <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row"
-                                dataKey="id" class="data-table-expanded"
-                                @row-edit-init="onRowEditInitBankAccount($event)"
-                                @row-edit-save="onRowEditSaveBankAccount"
-                                @row-edit-cancel="onRowEditCancelBankAccount($event)">
+                            <DataTable v-model:editingRows="editingRows" :value="data.accounts" editMode="row" dataKey="id"
+                                class="data-table-expanded" @row-edit-init="onRowEditInitBankAccount($event)"
+                                @row-edit-save="onRowEditSaveBankAccount" @row-edit-cancel="onRowEditCancelBankAccount($event)">
                                 <template #empty>
                                     <div class="text-center text-lg text-red-500">
                                         Sin cuentas asociadas
@@ -639,13 +631,10 @@ const info = (route, data, id) => {
                                 </template>
                                 <Column field="accountNumber" header="Nº Cta.">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" name="accountNumber"
-                                            autocomplete="off"
-                                            :invalid="!data[field] || !validateAccountNumber(data[field])"
-                                            placeholder="Nº Cta." style="width: 100%;" maxlength="10"
-                                            onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
-                                        <InputError
-                                            :message="!data[field] ? rules : validateAccountNumber(data[field]) ? '' : 'Nº Cta. invalido'" />
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="accountNumber" autocomplete="off"
+                                            :invalid="!data[field] || !validateAccountNumber(data[field])" placeholder="Nº Cta." style="width: 100%;"
+                                            maxlength="10" onkeypress='return event.keyCode >= 47 && event.keyCode <= 57' />
+                                        <InputError :message="!data[field] ? rules : validateAccountNumber(data[field]) ? '' : 'Nº Cta. invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="idAT" header="Tipo Cta.">
@@ -654,9 +643,8 @@ const info = (route, data, id) => {
                                             class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                                     </template>
                                     <template #editor="{ data, field }">
-                                        <Dropdown v-model="data[field]" :invalid="!data[field]"
-                                            :options="bankAccountTypesSelect" optionLabel="label" optionValue="value"
-                                            placeholder="Seleccione un tipo de cta">
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]" :options="bankAccountTypesSelect" optionLabel="label"
+                                            optionValue="value" placeholder="Seleccione un tipo de cta">
                                             <template #option="slotProps">
                                                 <Tag :value="slotProps.option.label"
                                                     class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
@@ -668,20 +656,17 @@ const info = (route, data, id) => {
                                 <Column field="cbu" header="CBU">
                                     <template #editor="{ data, field }">
                                         <InputText v-model="data[field]" name="cbu" autocomplete="off"
-                                            :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU"
-                                            style="width: 100%;" :minlength="22" :maxlength="22"
-                                            onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
-                                        <InputError
-                                            :message="!data[field] ? rules : validateCBU(data[field]) ? '' : 'CBU invalido'" />
+                                            :invalid="!data[field] || !validateCBU(data[field])" placeholder="CBU" style="width: 100%;"
+                                            :minlength="22" :maxlength="22" onkeypress='return event.keyCode >= 48 && event.keyCode <= 57' />
+                                        <InputError :message="!data[field] ? rules : validateCBU(data[field]) ? '' : 'CBU invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="alias" header="ALIAS">
                                     <template #editor="{ data, field }">
-                                        <InputText :class="'uppercase'" v-model="data[field]" name="alias"
-                                            autocomplete="off" :invalid="!data[field] || !validateAlias(data[field])"
-                                            placeholder="Alias" style="width: 100%;" minlength="6" maxlength="20" />
-                                        <InputError
-                                            :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
+                                        <InputText :class="'uppercase'" v-model="data[field]" name="alias" autocomplete="off"
+                                            :invalid="!data[field] || !validateAlias(data[field])" placeholder="Alias" style="width: 100%;"
+                                            minlength="6" maxlength="20" />
+                                        <InputError :message="!data[field] ? rules : validateAlias(data[field]) ? '' : 'Alias invalido'" />
                                     </template>
                                 </Column>
                                 <Column field="status" header="Estado" style="width: 10%;">
@@ -690,11 +675,10 @@ const info = (route, data, id) => {
                                             :severity="getStatusLabel(slotProps.data.status)" />
                                     </template>
                                     <template #editor="{ data, field }">
-                                        <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
-                                            optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
+                                        <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses" optionLabel="label"
+                                            optionValue="value" placeholder="Seleccione un estado">
                                             <template #option="slotProps">
-                                                <Tag :value="slotProps.option.value"
-                                                    :severity="getStatusLabel(slotProps.option.value)"
+                                                <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)"
                                                     class="!text-sm uppercase" />
                                             </template>
                                         </Dropdown>
@@ -705,13 +689,11 @@ const info = (route, data, id) => {
                                     <template #body="{ editorInitCallback, data }">
                                         <div class="space-x-4 flex pl-6">
                                             <template v-if="hasPermission('edit banks')">
-                                                <button v-tooltip="'Editar'"><i
-                                                        class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                                <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                                         @click="disabledEditButtons(editorInitCallback, $event, 'bankAccounts')"></i></button>
                                             </template>
                                             <template v-if="hasPermission('view users')">
-                                                <button v-tooltip="'+Info'"><i
-                                                        class="pi pi-id-card text-cyan-500 text-2xl"
+                                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                                         @click="info('bankAccounts', data, data.idBankAccount)"></i></button>
                                             </template>
                                         </div>

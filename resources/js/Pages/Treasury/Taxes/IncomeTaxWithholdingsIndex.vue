@@ -399,6 +399,45 @@ onMounted(() => {
         });
 });
 
+/*  */
+import infoModal from '@/Components/InfoModal.vue';
+import { useDialog } from 'primevue/usedialog';
+
+const dialog = useDialog();
+
+const info = (data) => {
+    const route = categoriesArray.value[data.categoryIndex].scale === 0 ? "incomeTaxWithholdings" : "incomeTaxWithholdingScales";
+    const id = data.id;
+
+    axios.get(`/${route}/${id}/info`)
+        .then((response) => {
+            const header = `Información de la retención de la categoría ${data.category.toUpperCase()}`;
+
+            dialog.open(infoModal, {
+                props: {
+                    header: header,
+                    style: {
+                        width: '50vw',
+                    },
+                    breakpoints: {
+                        '960px': '75vw',
+                        '640px': '90vw'
+                    },
+                    modal: true
+                },
+                data: response.data
+            });
+        })
+        .catch((error) => {
+            toast.add({
+                severity: 'error',
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
+}
+/*  */
+
 defineExpose({ fetchIncomeTaxWithholdings });
 </script>
 <style>
@@ -552,8 +591,7 @@ div[data-pc-section="columnfilter"] {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
-                                        @click="info('bankAccounts', data, data.idBankAccount)"></i></button>
+                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

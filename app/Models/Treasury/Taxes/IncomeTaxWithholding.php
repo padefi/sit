@@ -18,7 +18,9 @@ class IncomeTaxWithholding extends Model {
         'startAt',
         'endAt',
         'idUserCreated',
+        'created_at',
         'idUserUpdated',
+        'updated_at',
     ];
 
     public function category() {

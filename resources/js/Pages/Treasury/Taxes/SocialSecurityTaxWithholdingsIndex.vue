@@ -294,6 +294,40 @@ onMounted(() => {
         });
 });
 
+/*  */
+import infoModal from '@/Components/InfoModal.vue';
+import { useDialog } from 'primevue/usedialog';
+
+const dialog = useDialog();
+
+const info = (data) => {
+    axios.get(`/socialSecurityTaxWithholdings/${data.id}/info`)
+        .then((response) => {
+            dialog.open(infoModal, {
+                props: {
+                    header: `Información de la retención de la categoría ${data.category.toUpperCase()}`,
+                    style: {
+                        width: '50vw',
+                    },
+                    breakpoints: {
+                        '960px': '75vw',
+                        '640px': '90vw'
+                    },
+                    modal: true
+                },
+                data: response.data
+            });
+        })
+        .catch((error) => {
+            toast.add({
+                severity: 'error',
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
+}
+/*  */
+
 defineExpose({ fetchSocialSecurityWithholdings });
 </script>
 <style>
@@ -330,14 +364,15 @@ div[data-pc-section="columnfilter"] {
         </Column>
         <Column header="Cant.">
             <template #body="{ data }">
-                <Badge :value="data.socialSecurityTax.length" size="large" :severity="data.socialSecurityTax.length === 0 ? 'danger' : 'success'" class="rounded-full"
-                    @click="onRowExpand(data)"></Badge>
+                <Badge :value="data.socialSecurityTax.length" size="large" :severity="data.socialSecurityTax.length === 0 ? 'danger' : 'success'"
+                    class="rounded-full" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
         <Column header="Acciones" style="width: 5%; min-width: 8rem;">
             <template #body="{ data }">
                 <div class="text-center">
-                    <template v-if="hasPermission('view social security tax withholdings') && hasPermission('create social security tax withholdings') && data.socialSecurityTax.length === 0">
+                    <template
+                        v-if="hasPermission('view social security tax withholdings') && hasPermission('create social security tax withholdings') && data.socialSecurityTax.length === 0">
                         <ConfirmPopup></ConfirmPopup>
                         <button v-tooltip="'Agregar retención'"><i class="pi pi-plus-circle text-green-500 text-2xl"
                                 @click="addNewSocialSecurityTaxWithholding(data)"></i></button>
@@ -433,8 +468,7 @@ div[data-pc-section="columnfilter"] {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
-                                        @click="info('bankAccounts', data, data.idBankAccount)"></i></button>
+                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

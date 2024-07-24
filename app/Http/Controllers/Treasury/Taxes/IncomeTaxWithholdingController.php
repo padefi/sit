@@ -12,6 +12,7 @@ use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 
 class IncomeTaxWithholdingController extends Controller {
     public function __construct() {
@@ -90,5 +91,17 @@ class IncomeTaxWithholdingController extends Controller {
             ],
             'success' => true,
         ]);
+    }
+
+    public function info(IncomeTaxWithholding $incomeTaxWithholding) {
+        $incomeTaxWithholding = IncomeTaxWithholding::with(['userCreated', 'userUpdated'])->where('id', $incomeTaxWithholding->id)->first();
+
+        if (!$incomeTaxWithholding) {
+            throw ValidationException::withMessages([
+                'message' => trans('Retención no encontrada.')
+            ]);
+        }
+
+        return new IncomeTaxWithholdingResource($incomeTaxWithholding);
     }
 }

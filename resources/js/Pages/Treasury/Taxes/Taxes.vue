@@ -58,5 +58,7 @@ function handleTabChange(e) {
                 </TabView>
             </template>
         </Card>
+
+        <DynamicDialog />
     </AuthenticatedLayout>
 </template>
