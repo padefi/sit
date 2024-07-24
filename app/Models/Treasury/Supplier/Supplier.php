@@ -30,12 +30,14 @@ class Supplier extends Model {
         'longitude',
         'phone',
         'email',
+        'cbu',
         'notes',
         'incomeTaxWithholding',
         'socialTax',
         'vatTax',
         'idUserCreated',
         'idUserUpdated',
+        'updated_at',
     ];
 
     public function vatCondition() {
