@@ -11,6 +11,7 @@ use App\Http\Controllers\Treasury\Bank\BankController;
 use App\Http\Controllers\Treasury\Bank\BankAccountController;
 use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
+use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,7 +72,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], func
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
 });
 
-Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security withholdings']], function () {
+Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {
     Route::get('/taxes', function () {
         return Inertia::render('Treasury/Taxes/Taxes');
     })->name('taxes.index');

@@ -41,9 +41,9 @@ class PermissionSeeder extends Seeder {
             ['name' => 'view income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
             ['name' => 'create income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
             ['name' => 'edit income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
-            ['name' => 'view social security withholdings', 'description' => 'Imp. Suss', 'show' => true],
-            ['name' => 'create social security withholdings', 'description' => 'Imp. Suss', 'show' => true],
-            ['name' => 'edit social security withholdings', 'description' => 'Imp. Suss', 'show' => true],
+            ['name' => 'view social security tax withholdings', 'description' => 'Imp. Suss', 'show' => true],
+            ['name' => 'create social security tax withholdings', 'description' => 'Imp. Suss', 'show' => true],
+            ['name' => 'edit social security tax withholdings', 'description' => 'Imp. Suss', 'show' => true],
         ];
 
         foreach ($permissions as $permission) {

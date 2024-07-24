@@ -5,7 +5,7 @@ namespace App\Http\Resources\Treasury\Taxes;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SocialSecurityTaxWithholding extends JsonResource {
+class SocialSecurityTaxWithholdingResource extends JsonResource {
     /**
      * Transform the resource into an array.
      *

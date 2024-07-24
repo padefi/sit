@@ -52,3 +52,7 @@ Broadcast::channel('incomeTaxWithholdings', function () {
 Broadcast::channel('incomeTaxWithholdingScales', function () {
     return true;
 });
+
+Broadcast::channel('socialSecurityTaxWithholdingScales', function () {
+    return true;
+});

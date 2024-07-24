@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Treasury\Taxes;
 
+use App\Events\Treasury\Taxes\SocialSecurityTaxWithholdingEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Taxes\SocialSecurityTaxWithholdingRequest;
+use App\Http\Resources\Treasury\Taxes\CategoryResource;
+use App\Http\Resources\Treasury\Taxes\SocialSecurityTaxWithholdingResource;
+use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class SocialSecurityTaxWithholdingController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view social security withholdings')->only('index');
-        $this->middleware('check.permission:create social security withholdings')->only('store');
-        $this->middleware('check.permission:edit social security withholdings')->only('update');
+        $this->middleware('check.permission:view social security tax withholdings')->only('index');
+        $this->middleware('check.permission:create social security tax withholdings')->only('store');
+        $this->middleware('check.permission:edit social security tax withholdings')->only('update');
         $this->middleware('check.permission:view users')->only('info');
     }
 
@@ -19,20 +23,68 @@ class SocialSecurityTaxWithholdingController extends Controller {
      * Display a listing of the resource.
      */
     public function index() {
-        //
+        $category = Category::whereNot('id', 1)->orderBy('name', 'asc')->get();
+        $socialSecurityTaxWithholding = SocialSecurityTaxWithholding::with(['category', 'userCreated', 'userUpdated'])->get();
+
+        return response()->json([
+            'categories' => CategoryResource::collection($category),
+            'socialSecurityTaxWithholdings' => SocialSecurityTaxWithholdingResource::collection($socialSecurityTaxWithholding),
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(SocialSecurityTaxWithholdingRequest $request) {
-        //
+        $socialSecurityTaxWithholding = SocialSecurityTaxWithholding::create([
+            'idCat' => $request->idCat,
+            'rate' => $request->rate,
+            'minAmount' => $request->minAmount,
+            'fixedAmount' => $request->fixedAmount,
+            'startAt' => date('Y-m-d', strtotime($request->startAt)),
+            'endAt' => date('Y-m-d', strtotime($request->endAt)),
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
+
+        $tempUUID = $request->keys()[6];
+        $socialSecurityTaxWithholding->load('category', 'userCreated', 'userUpdated');
+        event(new SocialSecurityTaxWithholdingEvent($socialSecurityTaxWithholding, $tempUUID, 'create'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Retención agregada exitosamente.',
+                'socialSecurityTaxWithholding' => $socialSecurityTaxWithholding,
+            ],
+            'success' => true,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(SocialSecurityTaxWithholdingRequest $request, SocialSecurityTaxWithholding $socialSecurityTaxWithholding) {
-        //
+        $socialSecurityTaxWithholding->update([
+            'rate' => $request->rate,
+            'minAmount' => $request->minAmount,
+            'fixedAmount' => $request->fixedAmount,
+            'startAt' => date('Y-m-d', strtotime($request->startAt)),
+            'endAt' => date('Y-m-d', strtotime($request->endAt)),
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        $socialSecurityTaxWithholding->load('category', 'userCreated', 'userUpdated');
+        event(new SocialSecurityTaxWithholdingEvent($socialSecurityTaxWithholding, $socialSecurityTaxWithholding->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Retención modificada exitosamente.',
+            ],
+            'success' => true,
+        ]);
     }
 }

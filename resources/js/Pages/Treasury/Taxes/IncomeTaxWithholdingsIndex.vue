@@ -7,9 +7,6 @@ import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3';
 import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
-import { toastService } from '@/composables/toastService';
-
-toastService();
 
 const { hasPermission } = usePermissions();
 const toast = useToast();

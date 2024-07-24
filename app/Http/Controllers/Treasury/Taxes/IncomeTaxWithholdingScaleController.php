@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Treasury\Taxes;
 use App\Events\Treasury\Taxes\IncomeTaxWithholdingScaleEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingScaleRequest;
-use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use Illuminate\Support\Facades\Redirect;
 

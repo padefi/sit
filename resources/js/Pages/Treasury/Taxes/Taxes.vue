@@ -4,6 +4,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import IncomeTaxWithholdingsIndex from './IncomeTaxWithholdingsIndex.vue';
 import SocialSecurityTaxWithholdingsIndex from './SocialSecurityTaxWithholdingsIndex.vue';
 import { usePermissions } from '@/composables/permissions';
+import { toastService } from '@/composables/toastService';
+
+toastService();
 
 const { hasPermission } = usePermissions();
 const activeIndex = ref(0);
@@ -45,7 +48,7 @@ function handleTabChange(e) {
                             <IncomeTaxWithholdingsIndex ref="incomeTaxComponentRef" />
                         </TabPanel>
                     </template>
-                    <template v-if="hasPermission('view social security withholdings')">
+                    <template v-if="hasPermission('view social security tax withholdings')">
                         <TabPanel header="Suss">
                             <SocialSecurityTaxWithholdingsIndex ref="socialSecurityTaxomponentRef" />
                         </TabPanel>
