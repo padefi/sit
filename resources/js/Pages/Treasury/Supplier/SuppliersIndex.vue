@@ -5,7 +5,8 @@ import { usePermissions } from '@/composables/permissions';
 import { toastService } from '@/composables/toastService'
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import stepperModal from './StepperModal.vue';
+import supplierModal from './SupplierModal.vue';
+import voucherModal from './VoucherModal.vue';
 import { useDialog } from 'primevue/usedialog';
 import L from 'leaflet';
 
@@ -39,8 +40,31 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
+const addNewVoucher = () => {
+    dialog.open(voucherModal, {
+        props: {
+            header: 'Nuevo comprobante',
+            style: {
+                width: '60vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true,
+            contentStyle: {
+                padding: '1.25rem'
+            },
+        },
+        /* data: {
+            vatConditions: props.vatConditions,
+            categories: props.categories,
+        } */
+    });
+};
+
 const addNewSupplier = () => {
-    dialog.open(stepperModal, {
+    dialog.open(supplierModal, {
         props: {
             header: 'Nuevo proveedor',
             style: {
@@ -63,7 +87,7 @@ const addNewSupplier = () => {
 };
 
 const editSupplier = (data) => {
-    dialog.open(stepperModal, {
+    dialog.open(supplierModal, {
         props: {
             header: `Editar proveedor ${data.name.toUpperCase()}`,
             style: {
@@ -187,7 +211,7 @@ const info = (data, id) => {
                             Sin proveedores cargados
                         </div>
                     </template>
-                    <Column expander style="width: 1%" v-if="hasPermission('view bank accounts')" />
+                    <Column expander style="width: 1%" v-if="hasPermission('view suppliers')" />
                     <Column field="cuit" header="Cuit">
                         <template #body="{ data }">
                             {{ data.cuit }}
@@ -244,9 +268,15 @@ const info = (data, id) => {
                     </Column>
                     <Column header="Acciones" style="width: 5%; min-width: 8rem;">
                         <template #body="{ data }">
-                            <div class="space-x-4 flex pl-6">
-                                <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
-                                        @click="editSupplier(data)"></i></button>
+                            <div class="space-x-2 flex pl-2">
+                                <template v-if="hasPermission('create vouchers')">
+                                    <button v-tooltip="'Cargar comprobante'"><i class="pi pi-shopping-cart text-green-500 text-lg font-extrabold"
+                                            @click="addNewVoucher(data)"></i></button>
+                                </template>
+                                <template v-if="hasPermission('edit suppliers')">
+                                    <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                            @click="editSupplier(data)"></i></button>
+                                </template>
                                 <template v-if="hasPermission('view users')">
                                     <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                             @click="info(data, data.id)"></i></button>
