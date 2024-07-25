@@ -20,6 +20,8 @@ class DatabaseSeeder extends Seeder {
         $this->call(VoucherTypeSeeder::class);
         $this->call(VoucherSubtypeSeeder::class);
         $this->call(VoucherExpenseSeeder::class);
+        $this->call(TypeSubtypeRelationshipSeeder::class);
+        $this->call(SubtypeExpenseRelationshipSeeder::class);
         $this->call(VatConditionSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(IncomeTaxWithholdingSeeder::class);

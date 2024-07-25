@@ -36,7 +36,7 @@ class VoucherType extends Model {
     }
 
     public function subtypes() {
-        return $this->belongsToMany(VoucherSubtype::class, 'type_subtype_relationship', 'idType', 'idSubtype')
+        return $this->belongsToMany(VoucherSubtype::class, 'type_subtype_relationships', 'idType', 'idSubtype')
             ->withPivot('idUserRelated', 'related_at')
             ->with('userRelated');
     }

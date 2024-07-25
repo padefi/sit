@@ -9,7 +9,7 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('type_subtype_relationship', function (Blueprint $table) {
+        Schema::create('type_subtype_relationships', function (Blueprint $table) {
             $table->unsignedBigInteger('idType');
             $table->unsignedBigInteger('idSubtype');
             $table->unsignedBigInteger('idUserRelated');
@@ -43,12 +43,12 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('type_expense_relationship', function (Blueprint $table) {
+        Schema::table('type_subtype_relationships', function (Blueprint $table) {
             $table->dropForeign(['idType']);
             $table->dropForeign(['idSubtype']);
             $table->dropForeign(['idUserRelated']);
         });
 
-        Schema::dropIfExists('type_expense_relationship');
+        Schema::dropIfExists('type_subtype_relationships');
     }
 };
