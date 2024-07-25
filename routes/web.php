@@ -12,6 +12,7 @@ use App\Http\Controllers\Treasury\Bank\BankAccountController;
 use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
+use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +86,9 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
 
     Route::resource('socialSecurityTaxWithholdings', SocialSecurityTaxWithholdingController::class);
     Route::get('/socialSecurityTaxWithholdings/{socialSecurityTaxWithholding}/info', [SocialSecurityTaxWithholdingController::class, 'info'])->name('socialSecurityTaxWithholdings.info');
+
+    Route::resource('vatTaxWithholdings', VatTaxWithholdingController::class);
+    Route::get('/vatTaxWithholdings/{vatTaxWithholding}/info', [VatTaxWithholdingController::class, 'info'])->name('vatTaxWithholdings.info');
 });
 
 Route::middleware('auth')->group(function () {

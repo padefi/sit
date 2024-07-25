@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import IncomeTaxWithholdingsIndex from './IncomeTaxWithholdingsIndex.vue';
 import SocialSecurityTaxWithholdingsIndex from './SocialSecurityTaxWithholdingsIndex.vue';
+import VatTaxWithholdingsIndex from './VatTaxWithholdingsIndex.vue';
 import { usePermissions } from '@/composables/permissions';
 import { toastService } from '@/composables/toastService';
 
@@ -12,6 +13,7 @@ const { hasPermission } = usePermissions();
 const activeIndex = ref(0);
 const incomeTaxComponentRef = ref(null);
 const socialSecurityTaxomponentRef = ref(null);
+const vatTaxomponentRef = ref(null);
 
 function handleTabChange(e) {
     activeIndex.value = e.index;
@@ -25,6 +27,11 @@ function handleTabChange(e) {
         case 1:
             if (socialSecurityTaxomponentRef.value) {
                 socialSecurityTaxomponentRef.value.fetchSocialSecurityWithholdings();
+            }
+            break;
+        case 2:
+            if (vatTaxomponentRef.value) {
+                vatTaxomponentRef.value.fetchVatWithholdings();
             }
             break;
     }
@@ -54,6 +61,7 @@ function handleTabChange(e) {
                         </TabPanel>
                     </template>
                     <TabPanel header="I.V.A.">
+                        <VatTaxWithholdingsIndex ref="vatTaxomponentRef" />
                     </TabPanel>
                 </TabView>
             </template>

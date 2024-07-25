@@ -6,9 +6,8 @@ use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SocialSecurityTaxWithholding extends Model {
+class VatTaxWithholding extends Model {
     use HasFactory;
-
     protected $fillable = [
         'idCat',
         'rate',

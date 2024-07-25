@@ -53,6 +53,10 @@ Broadcast::channel('incomeTaxWithholdingScales', function () {
     return true;
 });
 
-Broadcast::channel('socialSecurityTaxWithholdingScales', function () {
+Broadcast::channel('socialSecurityTaxWithholdings', function () {
+    return true;
+});
+
+Broadcast::channel('vatTaxWithholdings', function () {
     return true;
 });

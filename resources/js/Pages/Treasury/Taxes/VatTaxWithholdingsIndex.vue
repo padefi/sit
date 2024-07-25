@@ -19,26 +19,26 @@ const rules = 'Debe completar el campo'
 const expandedRows = ref([]);
 const confirm = useConfirm();
 
-const fetchSocialSecurityWithholdings = async () => {
+const fetchVatWithholdings = async () => {
     try {
-        const response = await fetch('/socialSecurityTaxWithholdings');
+        const response = await fetch('/vatTaxWithholdings');
 
         if (!response.ok) {
             throw new Error('Error al obtener datos de suss');
         }
 
         const data = await response.json();
-        categorySecuritySocialTaxWithholdings(data.categories, data.socialSecurityTaxWithholdings);
+        categoryVatTaxWithholdings(data.categories, data.vatTaxWithholdings);
     } catch (error) {
         console.error(error);
     }
 }
 
-const categorySecuritySocialTaxWithholdings = (categories, socialSecurityTaxWithholdings) => {
+const categoryVatTaxWithholdings = (categories, vatTaxWithholdings) => {
     categoriesArray.value = [];
 
     categories.map((category, index) => {
-        const tax = socialSecurityTaxWithholdings
+        const tax = vatTaxWithholdings
             .filter(tax => tax.idCat === category.id)
             .map(t => {
                 const startAt = new Date(t.startAt);
@@ -61,7 +61,7 @@ const categorySecuritySocialTaxWithholdings = (categories, socialSecurityTaxWith
         const data = {
             ...category,
             categoryIndex: index,
-            socialSecurityTax: tax,
+            vatTax: tax,
         };
 
         categoriesArray.value.push(data);
@@ -103,8 +103,8 @@ const enabledEditButtons = (callback, event) => {
     callback(event);
 }
 
-/* Add new social security tax withholdings */
-const addNewSocialSecurityTaxWithholding = async (data) => {
+/* Add new vat tax withholdings */
+const addNewVatTaxWithholding = async (data) => {
     if (editing.value) {
         toast.add({
             severity: 'error',
@@ -118,9 +118,9 @@ const addNewSocialSecurityTaxWithholding = async (data) => {
     const originalExpandedRows = { ...expandedRows.value };
     const newExpandedRows = categoriesArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
     expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
-    originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].socialSecurityTax];
+    originalCategoriesArray.value = [...categoriesArray.value[data.categoryIndex].vatTax];
 
-    const newSocialSecurityTax = {
+    const newVatTax = {
         id: crypto.randomUUID(),
         idCat: data.id,
         categoryIndex: data.categoryIndex,
@@ -129,36 +129,36 @@ const addNewSocialSecurityTaxWithholding = async (data) => {
         fixedAmount: newRow.value?.fixedAmount,
         startAt: newRow.value?.startAt,
         endAt: newRow.value?.endAt,
-        condition: 'newSocialSecurityTaxWithholding',
+        condition: 'newVatTaxWithholding',
     };
 
-    categoriesArray.value[data.categoryIndex].socialSecurityTax.unshift(newSocialSecurityTax);
+    categoriesArray.value[data.categoryIndex].vatTax.unshift(newVatTax);
     editing.value = true;
-    editingRows.value = [newSocialSecurityTax];
+    editingRows.value = [newVatTax];
     onRowExpand(data);
 }
 /* End add new social security tax withholdings */
 
 /* Editing social security tax withholdings  */
-const onRowEditInitSocialSecurityTaxWithholding = (event) => {
-    originalCategoriesArray.value = [...categoriesArray.value[event.data.categoryIndex].socialSecurityTax];
+const onRowEditInitVatTaxWithholding = (event) => {
+    originalCategoriesArray.value = [...categoriesArray.value[event.data.categoryIndex].vatTax];
     editingRows.value = [event.data];
 }
 
-const onRowEditCancelSocialSecurityTaxWithholding = (event) => {
+const onRowEditCancelVatTaxWithholding = (event) => {
     onRowCollapse(categoriesArray.value[event.data.categoryIndex]);
 
     setTimeout(() => {
         onRowExpand(categoriesArray.value[event.data.categoryIndex]);
     }, 100);
 
-    categoriesArray.value[event.data.categoryIndex].socialSecurityTax = [...originalCategoriesArray.value];
+    categoriesArray.value[event.data.categoryIndex].vatTax = [...originalCategoriesArray.value];
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
 };
 
-const validateSocialSecurityTaxWithholding = (event, saveCallback, data) => {
+const validateVatTaxWithholding = (event, saveCallback, data) => {
     if (!data.rate || data.minAmount === null || data.fixedAmount === null || !data.startAt || !data.endAt) {
         toast.add({
             severity: 'error',
@@ -179,7 +179,7 @@ const validateSocialSecurityTaxWithholding = (event, saveCallback, data) => {
         return;
     }
 
-    if (data.condition === 'newSocialSecurityTaxWithholding') {
+    if (data.condition === 'newVatTaxWithholding') {
         confirm.require({
             target: event.currentTarget,
             message: '¿Está seguro de agrear la retención?',
@@ -203,7 +203,7 @@ const validateSocialSecurityTaxWithholding = (event, saveCallback, data) => {
     });
 }
 
-const onRowEditSaveSocialSecurityTaxWithholding = (event) => {
+const onRowEditSaveVatTaxWithholding = (event) => {
     let { newData, index } = event;
 
     const form = useForm({
@@ -215,33 +215,33 @@ const onRowEditSaveSocialSecurityTaxWithholding = (event) => {
         endAt: newData.endAt,
     });
 
-    if (newData.condition === 'newSocialSecurityTaxWithholding') {
-        const routeUrl = "socialSecurityTaxWithholdings.store";
+    if (newData.condition === 'newVatTaxWithholding') {
+        const routeUrl = "vatTaxWithholdings.store";
 
         form.post(route(routeUrl, newData.id), {
             onSuccess: (result) => {
-                const data = result.props.flash.info.socialSecurityTaxWithholding;
+                const data = result.props.flash.info.vatTaxWithholding;
                 editing.value = false;
-                newData.condition = 'editSocialSecurityTaxWithholding';
+                newData.condition = 'editVatTaxWithholding';
                 newData.id = data.id;
                 newRow.value = [];
             },
             onError: () => {
-                categoriesArray.value[event.data.categoryIndex].socialSecurityTax = [...originalCategoriesArray.value];
+                categoriesArray.value[event.data.categoryIndex].vatTax = [...originalCategoriesArray.value];
                 editing.value = false;
-                addNewSocialSecurityTaxWithholding(categoriesArray.value[event.data.categoryIndex]);
+                addNewVatTaxWithholding(categoriesArray.value[event.data.categoryIndex]);
             }
         });
 
         return;
     }
 
-    const routeUrl = "socialSecurityTaxWithholdings.update";
+    const routeUrl = "vatTaxWithholdings.update";
 
     form.put(route(routeUrl, newData.id), {
         onSuccess: () => {
             editing.value = false;
-            categoriesArray.value[newData.categoryIndex].socialSecurityTax[index] = newData;
+            categoriesArray.value[newData.categoryIndex].vatTax[index] = newData;
         },
         onError: () => {
             editing.value = true;
@@ -251,24 +251,24 @@ const onRowEditSaveSocialSecurityTaxWithholding = (event) => {
 }
 /* End editing social security tax withholdings */
 onMounted(() => {
-    fetchSocialSecurityWithholdings();
+    fetchVatWithholdings();
 
-    Echo.channel('socialSecurityTaxWithholdings')
-        .listen('Treasury\\Taxes\\SocialSecurityTaxWithholdingEvent', (e) => {
-            const indexCategory = categoriesArray.value.findIndex(category => category.id === e.socialSecurityTaxWithholding.category.id);
+    Echo.channel('vatTaxWithholdings')
+        .listen('Treasury\\Taxes\\VatTaxWithholdingEvent', (e) => {
+            const indexCategory = categoriesArray.value.findIndex(category => category.id === e.vatTaxWithholding.category.id);
 
-            const socialSecurityTaxEventDataStructure = (indexCategory, socialSecurityTaxWithholding) => {
-                const startAt = new Date(socialSecurityTaxWithholding.startAt);
+            const vatTaxEventDataStructure = (indexCategory, vatTaxWithholding) => {
+                const startAt = new Date(vatTaxWithholding.startAt);
                 startAt.setDate(startAt.getDate() + 1);
 
-                const endAt = new Date(socialSecurityTaxWithholding.endAt);
+                const endAt = new Date(vatTaxWithholding.endAt);
                 endAt.setDate(endAt.getDate() + 1);
 
                 return {
-                    ...socialSecurityTaxWithholding,
-                    rate: parseFloat(socialSecurityTaxWithholding.rate),
-                    minAmount: parseFloat(socialSecurityTaxWithholding.minAmount),
-                    fixedAmount: parseFloat(socialSecurityTaxWithholding.fixedAmount),
+                    ...vatTaxWithholding,
+                    rate: parseFloat(vatTaxWithholding.rate),
+                    minAmount: parseFloat(vatTaxWithholding.minAmount),
+                    fixedAmount: parseFloat(vatTaxWithholding.fixedAmount),
                     startAt,
                     endAt,
                     categoryIndex: indexCategory,
@@ -278,15 +278,15 @@ onMounted(() => {
             if (indexCategory !== -1) {
                 if (e.type === 'create') {
                     setTimeout(() => {
-                        if (!categoriesArray.value[indexCategory].socialSecurityTax.some(tax => tax.id === e.socialSecurityTaxWithholding.id)) {
-                            categoriesArray.value[indexCategory].socialSecurityTax.unshift(socialSecurityTaxEventDataStructure(indexCategory, e.socialSecurityTaxWithholding));
+                        if (!categoriesArray.value[indexCategory].vatTax.some(tax => tax.id === e.vatTaxWithholding.id)) {
+                            categoriesArray.value[indexCategory].vatTax.unshift(vatTaxEventDataStructure(indexCategory, e.vatTaxWithholding));
                         }
                     }, 500);
                 } else if (e.type === 'update') {
-                    const indexSocialSecurityTax = categoriesArray.value[indexCategory].socialSecurityTax.findIndex(tax => tax.id === e.socialSecurityTaxWithholding.id);
+                    const indexVatTax = categoriesArray.value[indexCategory].vatTax.findIndex(tax => tax.id === e.vatTaxWithholding.id);
 
-                    if (indexSocialSecurityTax !== -1) {
-                        categoriesArray.value[indexCategory].socialSecurityTax[indexSocialSecurityTax] = socialSecurityTaxEventDataStructure(indexCategory, e.socialSecurityTaxWithholding);
+                    if (indexVatTax !== -1) {
+                        categoriesArray.value[indexCategory].vatTax[indexVatTax] = vatTaxEventDataStructure(indexCategory, e.vatTaxWithholding);
                     }
                 }
             }
@@ -301,7 +301,7 @@ import { useDialog } from 'primevue/usedialog';
 const dialog = useDialog();
 
 const info = (data) => {
-    axios.get(`/socialSecurityTaxWithholdings/${data.id}/info`)
+    axios.get(`/vatTaxWithholdings/${data.id}/info`)
         .then((response) => {
             dialog.open(infoModal, {
                 props: {
@@ -328,7 +328,7 @@ const info = (data) => {
 }
 /*  */
 
-defineExpose({ fetchSocialSecurityWithholdings });
+defineExpose({ fetchVatWithholdings });
 </script>
 <style>
 div[data-pc-section="columnfilter"] {
@@ -364,7 +364,7 @@ div[data-pc-section="columnfilter"] {
         </Column>
         <Column header="Cant.">
             <template #body="{ data }">
-                <Badge :value="data.socialSecurityTax.length" size="large" :severity="data.socialSecurityTax.length === 0 ? 'danger' : 'success'"
+                <Badge :value="data.vatTax.length" size="large" :severity="data.vatTax.length === 0 ? 'danger' : 'success'"
                     class="rounded-full" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
@@ -372,21 +372,21 @@ div[data-pc-section="columnfilter"] {
             <template #body="{ data }">
                 <div class="text-center">
                     <template
-                        v-if="hasPermission('view social security tax withholdings') && hasPermission('create social security tax withholdings') && data.socialSecurityTax.length === 0">
+                        v-if="hasPermission('view social security tax withholdings') && hasPermission('create social security tax withholdings') && data.vatTax.length === 0">
                         <ConfirmPopup></ConfirmPopup>
                         <button v-tooltip="'Agregar retención'"><i class="pi pi-plus-circle text-green-500 text-2xl"
-                                @click="addNewSocialSecurityTaxWithholding(data)"></i></button>
+                                @click="addNewVatTaxWithholding(data)"></i></button>
                     </template>
                 </div>
             </template>
         </Column>
         <template #expansion="{ data }">
-            <Divider v-if="data.socialSecurityTax.some(tax => tax.maxAmount)" align="center" type="solid" class="text-lg text-primary-700 !m-0 !mb-2">
+            <Divider v-if="data.vatTax.some(tax => tax.maxAmount)" align="center" type="solid" class="text-lg text-primary-700 !m-0 !mb-2">
                 <b>Sobre escala</b>
             </Divider>
-            <DataTable v-model:editingRows="editingRows" :value="data.socialSecurityTax" editMode="row" class="data-table-expanded"
-                @row-edit-init="onRowEditInitSocialSecurityTaxWithholding($event)" @row-edit-save="onRowEditSaveSocialSecurityTaxWithholding"
-                @row-edit-cancel="onRowEditCancelSocialSecurityTaxWithholding($event)">
+            <DataTable v-model:editingRows="editingRows" :value="data.vatTax" editMode="row" class="data-table-expanded"
+                @row-edit-init="onRowEditInitVatTaxWithholding($event)" @row-edit-save="onRowEditSaveVatTaxWithholding"
+                @row-edit-cancel="onRowEditCancelVatTaxWithholding($event)">
                 <template #empty>
                     <div class="text-center text-lg text-red-500">
                         Sin retenciones cargadas
@@ -476,7 +476,7 @@ div[data-pc-section="columnfilter"] {
                         <div class="space-x-4 flex pl-7">
                             <ConfirmPopup></ConfirmPopup>
                             <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
-                                    @click="validateSocialSecurityTaxWithholding($event, editorSaveCallback, data)"></i></button>
+                                    @click="validateVatTaxWithholding($event, editorSaveCallback, data)"></i></button>
                             <button><i class="pi pi-times text-red-500 text-lg font-extrabold"
                                     @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
                         </div>

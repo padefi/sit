@@ -4,13 +4,11 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
-{
+class DatabaseSeeder extends Seeder {
     /**
      * Seed the application's database.
      */
-    public function run(): void
-    {
+    public function run(): void {
         $this->call(RoleSeeder::class);
         $this->call(PermissionSeeder::class);
         $this->call(UserSeeder::class);
@@ -27,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call(IncomeTaxWithholdingSeeder::class);
         $this->call(IncomeTaxWithholdingScaleSeeder::class);
         $this->call(SocialSecurityTaxWithholdingSeeder::class);
+        $this->call(VatTaxWithholdingSeeder::class);
         $this->call(SupplierSeeder::class);
     }
 }

@@ -17,6 +17,7 @@ class IncomeTaxWithholdingScale extends Model {
         'fixedAmount',
         'startAt',
         'endAt',
+        'idUserCreated',
         'created_at',
         'idUserUpdated',
         'updated_at',
