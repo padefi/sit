@@ -28,7 +28,7 @@ return new class extends Migration {
             $table->string('latitude', 20);
             $table->string('longitude', 20);
             $table->string('phone', 20)->collation('utf8mb4_general_ci')->nullable();
-            $table->string('email', 255)->collation('utf8mb4_general_ci')->nullable();
+            $table->string('email', 100)->collation('utf8mb4_general_ci')->nullable();
             $table->string('cbu', 22)->collation('utf8mb4_general_ci')->nullable();
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
             $table->boolean('incomeTaxWithholding')->default(false);

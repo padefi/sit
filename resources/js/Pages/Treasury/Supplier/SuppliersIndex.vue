@@ -26,6 +26,14 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    invoiceTypes: {
+        type: Object,
+        default: () => ({}),
+    },
+    invoiceTypeCodes: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission } = usePermissions();
@@ -56,10 +64,10 @@ const addNewVoucher = () => {
                 padding: '1.25rem'
             },
         },
-        /* data: {
-            vatConditions: props.vatConditions,
-            categories: props.categories,
-        } */
+        data: {
+            invoiceTypes: props.invoiceTypes,
+            invoiceTypeCodes: props.invoiceTypeCodes,
+        }
     });
 };
 

@@ -12,7 +12,7 @@ return new class extends Migration {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username', 20)->unique()->collation('utf8mb4_general_ci');
-            $table->string('email', 255)->unique()->collation('utf8mb4_general_ci');
+            $table->string('email', 100)->unique()->collation('utf8mb4_general_ci');
             $table->string('password', 255)->collation('utf8mb4_general_ci');
             $table->string('name', 50)->collation('utf8mb4_general_ci');
             $table->string('surname', 50)->collation('utf8mb4_general_ci');

@@ -8,9 +8,13 @@ use App\Http\Requests\Treasury\Supplier\SupplierRequest;
 use App\Http\Resources\Treasury\Supplier\SupplierResource;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\VatConditionResource;
+use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
+use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
+use App\Models\Treasury\Voucher\InvoiceType;
+use App\Models\Treasury\Voucher\InvoiceTypeCode;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -31,11 +35,15 @@ class SupplierController extends Controller {
         $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
         $vatCondition = VatCondition::orderBy('name', 'asc')->get();
         $category = Category::orderBy('name', 'asc')->get();
+        $invoiceType = InvoiceType::orderBy('name', 'asc')->get();
+        $invoiceTypeCode = InvoiceTypeCode::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
             'vatConditions' => VatConditionResource::collection($vatCondition),
             'categories' => CategoryResource::collection($category),
+            'invoiceTypes' => InvoiceTypeResource::collection($invoiceType),
+            'invoiceTypeCodes' => InvoiceTypeCodeResource::collection($invoiceTypeCode),
         ]);
     }
 
