@@ -6,18 +6,22 @@ import { validateCBU } from '@/utils/validateFunctions';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
-    invoiceType: undefined,
-    invoiceTypeCode: undefined,
-    pointOfNumber: undefined,
-    invoiceNumber: undefined,
+    invoiceType: null,
+    invoiceTypeCode: null,
+    pointOfNumber: null,
+    invoiceNumber: null,
     invoiceDate: undefined,
     invocePaymentDate: undefined,
-    saleCondition: undefined,
+    saleCondition: null,
 });
 
 const rules = 'Debe completar el campo'
 const invoiceTypes = ref([]);
 const invoiceTypeCodes = ref([]);
+
+const handleInvoiceNumber = (input, length) => {
+    form[input] = (form[input] && form[input] !== '0') ? form[input].padStart(length, '0') : '';
+};
 
 const dialogRef = inject("dialogRef");
 
@@ -27,51 +31,78 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <div class="card flex flex-col">
-        <div class="flex w-6/6 space-x-2">
-            <div class="flex md:w-2/6 space-x-2">
-                <div>
-                    <FloatLabel>
-                        <InputNumber v-model="form.pointOfNumber" placeholder="0000" inputId="pointOfNumber" id="pointOfNumber"
-                            class=":not(:focus)::placeholder:text-transparent"
-                            :class="form.pointOfNumber !== null && form.pointOfNumber !== undefined ? 'filled' : ''" :min="1" :max="5"
-                            :invalid="form.pointOfNumber === null || form.pointOfNumber === 0" />
-                        <label for="pointOfNumber">Pto. Vta.</label>
-                    </FloatLabel>
-                    <InputError :message="form.pointOfNumber === null || form.pointOfNumber === 0 ? rules : ''" />
-                </div>
-                <div>
-                    <FloatLabel>
-                        <InputNumber v-model="form.invoiceNumber" placeholder="0000000" inputId="invoiceNumber" id="invoiceNumber"
-                            class=":not(:focus)::placeholder:text-transparent"
-                            :class="form.invoiceNumber !== null && form.invoiceNumber !== undefined ? 'filled' : ''" :min="1" :max="8"
-                            :invalid="form.invoiceNumber === null || form.invoiceNumber === 0" />
-                        <label for="invoiceNumber">Número</label>
-                    </FloatLabel>
-                    <InputError :message="form.invoiceNumber === null || form.invoiceNumber === 0 ? rules : ''" />
-                </div>
-            </div>
+    <div class="card flex p-0 justify-center">
+        <div class="flex flex-col w-full">
+            <div class="flex flex-col justify-center font-medium">
+                <div class="flex gap-3 m-3 flex-wrap justify-center">
+                    <div class="min-w-52">
+                        <FloatLabel class="!top-[2px]">
+                            <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceType)" optionLabel="name"
+                                optionValue="id" />
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                            </template>
+                            <label for="invoiceType">T. comp.</label>
+                        </FloatLabel>
+                    </div>
 
-            <div class="w-1/6">
-                <FloatLabel class="!top-[2px]">
-                    <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
-                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.invoiceType)" optionLabel="name" optionValue="id" />
-                    <template #option="slotProps">
-                        <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                    </template>
-                    <label for="invoiceType">T. comprobante</label>
-                </FloatLabel>
-            </div>
+                    <div class="min-w-32">
+                        <FloatLabel class="!top-[2px]">
+                            <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear
+                                resetFilterOnHide class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceTypeCode)"
+                                optionLabel="name" optionValue="id" />
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                            </template>
+                            <label for="invoiceTypeCode">T. fac.</label>
+                        </FloatLabel>
+                    </div>
 
-            <div class="w-1/6">
-                <FloatLabel class="!top-[2px]">
-                    <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear resetFilterOnHide
-                        class="!focus:border-primary-500 w-full" :class="dropdownClasses(form.invoiceTypeCode)" optionLabel="name" optionValue="id" />
-                    <template #option="slotProps">
-                        <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                    </template>
-                    <label for="invoiceTypeCode">T. factura</label>
-                </FloatLabel>
+                    <div class="flex min-w-48 gap-3">
+                        <div class="max-w-20">
+                            <FloatLabel>
+                                <InputText v-model="form.pointOfNumber" inputId="pointOfNumber" id="pointOfNumber"
+                                    class="w-full :not(:focus)::placeholder:text-transparent" minlength="5" maxlength="5"
+                                    :invalid="form.pointOfNumber && (form.pointOfNumber.trim() === '' || form.pointOfNumber === '')"
+                                    @blur="handleInvoiceNumber('pointOfNumber', 5)" />
+                                <label for="pointOfNumber">Pto Vta</label>
+                            </FloatLabel>
+                            <InputError :message="form.pointOfNumber && form.pointOfNumber.trim() === '' || form.pointOfNumber === '' ? rules : ''" />
+                        </div>
+
+                        <div class="max-w-28">
+                            <FloatLabel>
+                                <InputText v-model="form.invoiceNumber" inputId="invoiceNumber" id="invoiceNumber"
+                                    class="w-full :not(:focus)::placeholder:text-transparent" minlength="8" maxlength="8"
+                                    :invalid="form.invoiceNumber && (form.invoiceNumber.trim() === '' || form.invoiceNumber === '')"
+                                    @blur="handleInvoiceNumber('invoiceNumber', 8)" />
+                                <label for="invoiceNumber">Número</label>
+                            </FloatLabel>
+                            <InputError :message="form.invoiceNumber && form.invoiceNumber.trim() === '' || form.invoiceNumber === '' ? rules : ''" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <FloatLabel>
+                            <Calendar v-model="form.invoiceDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDate" class="w-full"
+                                :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''"
+                                :invalid="form.invoiceDate === null" :maxDate="new Date()" />
+                            <label for="invoiceDate">F. emisión</label>
+                        </FloatLabel>
+                        <InputError :message="form.invoiceDate === null ? rules : ''" />
+                    </div>
+
+                    <div>
+                        <FloatLabel>
+                            <Calendar v-model="form.invocePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invocePaymentDate" class="w-full"
+                                :class="form.invocePaymentDate !== null && form.invocePaymentDate !== undefined ? 'filled' : ''"
+                                :invalid="form.invocePaymentDate === null" :minDate="form.invoiceDate" @blur="console.log(form.invocePaymentDate)" />
+                            <label for="invocePaymentDate">F. vencimiento</label>
+                        </FloatLabel>
+                        <InputError :message="form.invocePaymentDate === null ? rules : ''" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
