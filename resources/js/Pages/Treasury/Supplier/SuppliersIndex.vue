@@ -34,6 +34,22 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    saleConditions: {
+        type: Object,
+        default: () => ({}),
+    },
+    voucherTypes: {
+        type: Object,
+        default: () => ({}),
+    },
+    voucherSubtypes: {
+        type: Object,
+        default: () => ({}),
+    },
+    voucherExpenses: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission } = usePermissions();
@@ -53,7 +69,7 @@ const addNewVoucher = () => {
         props: {
             header: 'Nuevo comprobante',
             style: {
-                width: '60vw',
+                width: '55vw',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -67,6 +83,10 @@ const addNewVoucher = () => {
         data: {
             invoiceTypes: props.invoiceTypes,
             invoiceTypeCodes: props.invoiceTypeCodes,
+            saleConditions: props.saleConditions,
+            voucherTypes: props.voucherTypes,
+            voucherSubtypes: props.voucherSubtypes,
+            voucherExpenses: props.voucherExpenses,
         }
     });
 };

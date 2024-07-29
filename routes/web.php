@@ -71,6 +71,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
     Route::resource('suppliers', SupplierController::class);
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
+    Route::get('/voucher-subtypes/{voucher_type}/data-related', [VoucherSubtypeController::class, 'dataRelated'])->name('voucher-subtypes.data-related');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {

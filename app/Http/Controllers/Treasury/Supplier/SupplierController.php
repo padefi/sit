@@ -10,11 +10,19 @@ use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\VatConditionResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
+use App\Http\Resources\Treasury\Voucher\SaleConditionResource;
+use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
+use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
+use App\Http\Resources\Treasury\Voucher\VoucherTypeResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
 use App\Models\Treasury\Voucher\InvoiceType;
 use App\Models\Treasury\Voucher\InvoiceTypeCode;
+use App\Models\Treasury\Voucher\SaleCondition;
+use App\Models\Treasury\Voucher\VoucherExpense;
+use App\Models\Treasury\Voucher\VoucherSubtype;
+use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -37,6 +45,10 @@ class SupplierController extends Controller {
         $category = Category::orderBy('name', 'asc')->get();
         $invoiceType = InvoiceType::orderBy('name', 'asc')->get();
         $invoiceTypeCode = InvoiceTypeCode::orderBy('name', 'asc')->get();
+        $saleCondition = SaleCondition::orderBy('name', 'asc')->get();
+        $voucherTypes = VoucherType::with(['subtypes'])->orderBy('name', 'asc')->get();
+        $voucherSubtypes = VoucherSubtype::with(['expenses'])->orderBy('name', 'asc')->get();
+        $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
@@ -44,6 +56,10 @@ class SupplierController extends Controller {
             'categories' => CategoryResource::collection($category),
             'invoiceTypes' => InvoiceTypeResource::collection($invoiceType),
             'invoiceTypeCodes' => InvoiceTypeCodeResource::collection($invoiceTypeCode),
+            'saleConditions' => SaleConditionResource::collection($saleCondition),
+            'voucherTypes' => VoucherTypeResource::collection($voucherTypes),
+            'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
+            'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
         ]);
     }
 

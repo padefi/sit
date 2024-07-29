@@ -9,6 +9,7 @@ use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
+use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -25,6 +26,8 @@ class VoucherSubtypeController extends Controller {
         $this->middleware('check.permission:create voucher subtypes')->only('store');
         $this->middleware('check.permission:edit voucher subtypes')->only('update');
         $this->middleware('check.permission:view users')->only('info');
+        $this->middleware('check.permission:create voucher subtypes || check.permission:edit voucher subtypes')->only('relate');
+        $this->middleware('check.permission:view voucher subtypes')->only('dataRelated');
     }
 
     public function index(): Response {
@@ -143,6 +146,17 @@ class VoucherSubtypeController extends Controller {
                 'message' => 'Relación actualizada exitosamente.'
             ],
             'success' => true,
+        ]);
+    }
+
+    public function dataRelated(VoucherType $voucherType) {
+        /* $voucherSubtypes = VoucherSubtype::with(['expenses'])->where(
+        ->orderBy('name', 'asc')->get(); */
+
+        $voucherSubtypes = $voucherType->subtypes()->with('expenses')->where('status', 1)->orderBy('name', 'asc')->get();
+
+        return response()->json([
+            'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
         ]);
     }
 }
