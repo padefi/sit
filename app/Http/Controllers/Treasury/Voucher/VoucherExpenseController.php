@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherExpenseRequest;
 use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
+use App\Models\Treasury\Voucher\VoucherSubtype;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -22,6 +23,7 @@ class VoucherExpenseController extends Controller {
         $this->middleware('check.permission:create voucher expenses')->only('store');
         $this->middleware('check.permission:edit voucher expenses')->only('update');
         $this->middleware('check.permission:view users')->only('info');
+        $this->middleware('check.permission:view voucher expenses')->only('dataRelated');
     }
 
     public function index(): Response {
@@ -107,5 +109,13 @@ class VoucherExpenseController extends Controller {
         }
 
         return new VoucherExpenseResource($voucherExpense);
+    }
+
+    public function dataRelated(VoucherSubtype $voucherSubtype) {
+        $voucherExpenses = $voucherSubtype->expenses()->where('status', 1)->orderBy('name', 'asc')->get();
+
+        return response()->json([
+            'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
+        ]);
     }
 }

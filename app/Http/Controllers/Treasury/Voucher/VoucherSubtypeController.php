@@ -150,9 +150,6 @@ class VoucherSubtypeController extends Controller {
     }
 
     public function dataRelated(VoucherType $voucherType) {
-        /* $voucherSubtypes = VoucherSubtype::with(['expenses'])->where(
-        ->orderBy('name', 'asc')->get(); */
-
         $voucherSubtypes = $voucherType->subtypes()->with('expenses')->where('status', 1)->orderBy('name', 'asc')->get();
 
         return response()->json([

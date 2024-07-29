@@ -40,8 +40,15 @@ onMounted(async () => {
 });
 
 watch(() => form.voucherType, async (voucherTypeId) => {
+    form.voucherSubtype = null;
+    form.voucherExpense = null;
     voucherSubtypes.value = [];
     voucherExpenses.value = [];
+
+    if (!voucherTypeId) {
+        return;
+    }
+
     try {
         const response = await fetch(`/voucher-subtypes/${voucherTypeId}/data-related`);
 
@@ -56,8 +63,26 @@ watch(() => form.voucherType, async (voucherTypeId) => {
     }
 });
 
-watch(() => form.voucherSubtype, (data) => {
-    console.log(data);
+watch(() => form.voucherSubtype, async (voucherSubtype) => {
+    form.voucherExpense = null;
+    voucherExpenses.value = [];
+
+    if (!voucherSubtype) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/voucher-expenses/${voucherSubtype}/data-related`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los gastos relacionados');
+        }
+
+        const data = await response.json();
+        voucherExpenses.value = data.voucherExpenses;
+    } catch (error) {
+        console.error(error);
+    }
 });
 </script>
 <template>
@@ -65,7 +90,7 @@ watch(() => form.voucherSubtype, (data) => {
         <div class="flex flex-col w-full">
             <div class="flex flex-col justify-center font-medium">
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
-                    <div class="min-w-52">
+                    <div class="min-w-56">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
                                 class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceType)" optionLabel="name"
@@ -121,27 +146,27 @@ watch(() => form.voucherSubtype, (data) => {
                 <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
 
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
-                    <div>
+                    <div class="max-w-36">
                         <FloatLabel>
                             <Calendar v-model="form.invoiceDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDate" class="w-full"
-                                :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''"
+                                :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''" inputClass="w-full"
                                 :invalid="form.invoiceDate === null" :maxDate="new Date()" />
                             <label for="invoiceDate">F. emisión</label>
                         </FloatLabel>
                         <InputError :message="form.invoiceDate === null ? rules : ''" />
                     </div>
 
-                    <div>
+                    <div class="max-w-36">
                         <FloatLabel>
                             <Calendar v-model="form.invocePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invocePaymentDate" class="w-full"
-                                :class="form.invocePaymentDate !== null && form.invocePaymentDate !== undefined ? 'filled' : ''"
+                                :class="form.invocePaymentDate !== null && form.invocePaymentDate !== undefined ? 'filled' : ''" inputClass="w-full"
                                 :invalid="form.invocePaymentDate === null" :minDate="form.invoiceDate" />
                             <label for="invocePaymentDate">F. vencimiento</label>
                         </FloatLabel>
                         <InputError :message="form.invocePaymentDate === null ? rules : ''" />
                     </div>
 
-                    <div class="min-w-60">
+                    <div class="min-w-64">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="saleCondition" v-model="form.saleCondition" :options="saleConditions" filter showClear
                                 resetFilterOnHide class="w-full !focus:border-primary-500" :class="dropdownClasses(form.saleCondition)"
