@@ -15,7 +15,7 @@ class InvoiceTypeCodeSeeder extends Seeder {
             ['name' => 'B'],
             ['name' => 'C'],
             ['name' => 'X'],
-            ['name' => 'Ticket'],
+            ['name' => 'TICKET'],
         ];
 
         InvoiceTypeCode::withoutTimestamps(function () use ($invoiceTypeCodes) {

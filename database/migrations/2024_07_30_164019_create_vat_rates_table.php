@@ -9,9 +9,9 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('sale_conditions', function (Blueprint $table) {
+        Schema::create('vat_rates', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->collation('utf8mb4_general_ci');
+            $table->decimal('rate', 5, 2);
         });
     }
 
@@ -19,6 +19,6 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('sale_conditions');
+        Schema::dropIfExists('vat_rates');
     }
 };

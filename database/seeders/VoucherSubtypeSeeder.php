@@ -20,7 +20,6 @@ class VoucherSubtypeSeeder extends Seeder {
             ['name' => 'RETENCION SUSS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'RETENCION IVA', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'SUELDOS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
-            ['name' => 'VALORES A DEPOSITAR', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
         ];
 
         foreach ($voucherSubtypes as $subtype) {

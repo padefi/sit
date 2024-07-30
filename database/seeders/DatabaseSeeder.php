@@ -23,13 +23,14 @@ class DatabaseSeeder extends Seeder {
         $this->call(TypeSubtypeRelationshipSeeder::class);
         $this->call(SubtypeExpenseRelationshipSeeder::class);
         $this->call(VatConditionSeeder::class);
+        $this->call(VatRateSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(IncomeTaxWithholdingSeeder::class);
         $this->call(IncomeTaxWithholdingScaleSeeder::class);
         $this->call(SocialSecurityTaxWithholdingSeeder::class);
         $this->call(VatTaxWithholdingSeeder::class);
         $this->call(SupplierSeeder::class);
-        $this->call(SaleConditionSeeder::class);
+        $this->call(PayConditionSeeder::class);
         $this->call(InvoiceTypeSeeder::class);
         $this->call(InvoiceTypeCodeSeeder::class);
     }

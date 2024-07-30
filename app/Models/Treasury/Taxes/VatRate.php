@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Models\Treasury\Voucher;
+namespace App\Models\Treasury\Taxes;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SaleCondition extends Model {
+class VatRate extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'rate',
     ];
 }

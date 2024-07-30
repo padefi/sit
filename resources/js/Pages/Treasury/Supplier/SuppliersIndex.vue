@@ -22,6 +22,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    vatRates: {
+        type: Object,
+        default: () => ({}),
+    },
     categories: {
         type: Object,
         default: () => ({}),
@@ -34,7 +38,7 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
-    saleConditions: {
+    payConditions: {
         type: Object,
         default: () => ({}),
     },
@@ -64,10 +68,10 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-const addNewVoucher = () => {
+const addNewVoucher = (data) => {
     dialog.open(voucherModal, {
         props: {
-            header: 'Nuevo comprobante',
+            header: `Nuevo comprobante - ${data.businessName}`,
             style: {
                 width: '55vw',
             },
@@ -83,10 +87,11 @@ const addNewVoucher = () => {
         data: {
             invoiceTypes: props.invoiceTypes,
             invoiceTypeCodes: props.invoiceTypeCodes,
-            saleConditions: props.saleConditions,
+            payConditions: props.payConditions,
             voucherTypes: props.voucherTypes,
             voucherSubtypes: props.voucherSubtypes,
             voucherExpenses: props.voucherExpenses,
+            vatRates: props.vatRates,
         }
     });
 };

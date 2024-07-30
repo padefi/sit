@@ -16,7 +16,6 @@ class TypeSubtypeRelationshipSeeder extends Seeder {
             ['idType' => 1, 'idSubtype' => 1, 'idUserRelated' => 1, 'related_at' => now()],
             ['idType' => 1, 'idSubtype' => 3, 'idUserRelated' => 1, 'related_at' => now()],
             ['idType' => 1, 'idSubtype' => 5, 'idUserRelated' => 1, 'related_at' => now()],
-            ['idType' => 1, 'idSubtype' => 10, 'idUserRelated' => 1, 'related_at' => now()],
 
             // Egresos
             ['idType' => 2, 'idSubtype' => 1, 'idUserRelated' => 1, 'related_at' => now()],
