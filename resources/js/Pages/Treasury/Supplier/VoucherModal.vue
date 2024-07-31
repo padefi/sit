@@ -2,19 +2,20 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
+import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
-    invoiceType: null,
-    invoiceTypeCode: null,
-    pointOfNumber: null,
-    invoiceNumber: null,
+    invoiceType: undefined,
+    invoiceTypeCode: undefined,
+    pointOfNumber: undefined,
+    invoiceNumber: undefined,
     invoiceDate: undefined,
     invocePaymentDate: undefined,
-    payCondition: null,
-    voucherType: null,
-    voucherSubtype: null,
-    voucherExpense: null,
+    payCondition: undefined,
+    voucherType: undefined,
+    voucherSubtype: undefined,
+    voucherExpense: undefined,
     notes: ref(''),
 });
 
@@ -53,16 +54,26 @@ const addNewItem = () => {
 
     const newItem = {
         id: crypto.randomUUID(),
-        description: newRow.value?.description,
-        vat: newRow.value?.vat,
-        amount: newRow.value?.amount,
-        subtotalAmount: newRow.value?.subtotalAmount,
+        description: undefined,
+        vat: undefined,
+        amount: undefined,
+        subtotalAmount: 0,
         condition: 'newItem',
     };
 
     voucherItems.value.unshift(newItem);
     editing.value = true;
     editingRows.value = [newItem];
+};
+
+const calculateSubtotalAmount = (data, amountValue, rateValue) => {
+    if (amountValue > 99999999) return;
+
+    const rate = data.vat ? vatRates.value.find((rate) => rate.id === rateValue).rate : 0;
+    data.subtotalAmount = rate > 0 ? amountValue * (1 + rate / 100) || 0 : amountValue || 0;
+    /* form.totalAmount = voucherItems.value.reduce((total, item) => {
+        return total + (item.subtotalAmount || 0);
+    }, 0); */
 };
 
 const dialogRef = inject("dialogRef");
@@ -72,13 +83,15 @@ onMounted(async () => {
     invoiceTypeCodes.value = dialogRef.value.data.invoiceTypeCodes;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
-    vatRates.value = dialogRef.value.data.vatRates;
+    vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
+        return { label: percentNumber(vatRate.rate), rate: vatRate.rate, id: vatRate.id };
+    });
     addNewItem();
 });
 
 watch(() => form.voucherType, async (voucherTypeId) => {
-    form.voucherSubtype = null;
-    form.voucherExpense = null;
+    form.voucherSubtype = undefined;
+    form.voucherExpense = undefined;
     voucherSubtypes.value = [];
     voucherExpenses.value = [];
 
@@ -101,7 +114,7 @@ watch(() => form.voucherType, async (voucherTypeId) => {
 });
 
 watch(() => form.voucherSubtype, async (voucherSubtype) => {
-    form.voucherExpense = null;
+    form.voucherExpense = undefined;
     voucherExpenses.value = [];
 
     if (!voucherSubtype) {
@@ -132,25 +145,27 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     <div class="min-w-64">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceType)" optionLabel="name"
-                                optionValue="id" />
+                                :invalid="!!form.invoiceType" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                :class="dropdownClasses(form.invoiceType)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="invoiceType">T. comp.</label>
                         </FloatLabel>
+                        <InputError :message="form.invoiceType === null ? rules : ''" />
                     </div>
 
                     <div class="min-w-40">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear
-                                resetFilterOnHide class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceTypeCode)"
-                                optionLabel="name" optionValue="id" />
+                                resetFilterOnHide :invalid="form.invoiceTypeCode === null" optionLabel="name" optionValue="id"
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceTypeCode)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="invoiceTypeCode">T. fac.</label>
                         </FloatLabel>
+                        <InputError :message="form.invoiceTypeCode === null ? rules : ''" />
                     </div>
 
                     <div class="flex min-w-52 gap-1">
@@ -209,13 +224,14 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     <div class="min-w-72">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="payCondition" v-model="form.payCondition" :options="payConditions" filter showClear resetFilterOnHide
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.payCondition)" optionLabel="name"
-                                optionValue="id" />
+                                :invalid="form.payCondition === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                :class="dropdownClasses(form.payCondition)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="payCondition">Cond. pago</label>
                         </FloatLabel>
+                        <InputError :message="form.payCondition === null ? rules : ''" />
                     </div>
                 </div>
 
@@ -225,37 +241,40 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     <div class="min-w-40">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="voucherType" v-model="form.voucherType" :options="voucherTypes" filter showClear resetFilterOnHide
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherType)" optionLabel="name"
-                                optionValue="id" />
+                                :invalid="form.voucherType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                :class="dropdownClasses(form.voucherType)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="voucherType">Tipo</label>
                         </FloatLabel>
+                        <InputError :message="form.voucherType === null ? rules : ''" />
                     </div>
 
                     <div class="min-w-72">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="voucherSubtype" v-model="form.voucherSubtype" :options="voucherSubtypes" filter showClear
-                                resetFilterOnHide class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)"
-                                optionLabel="name" optionValue="id" />
+                                resetFilterOnHide :invalid="form.voucherSubtype === null" optionLabel="name" optionValue="id"
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="voucherSubtype">Subtipo</label>
                         </FloatLabel>
+                        <InputError :message="form.voucherSubtype === null ? rules : ''" />
                     </div>
 
                     <div class="min-w-56">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
-                                resetFilterOnHide class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)"
-                                optionLabel="name" optionValue="id" />
+                                resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
                             </template>
                             <label for="voucherExpense">Gasto</label>
                         </FloatLabel>
+                        <InputError :message="form.voucherExpense === null ? rules : ''" />
                     </div>
                 </div>
 
@@ -276,53 +295,57 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
 
                 <div class="m-3 !mb-0">
                     <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="70vh" editMode="row" dataKey="id">
-                        <Column field="description" header="Descripción" style="width: 10%;" class="rounded-tl-lg">
+                        <Column field="description" header="Descripción" class="rounded-tl-lg">
                             <template #body="{ data }">
                                 {{ data.description }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <InputText :class="'uppercase'" v-model="data[field]" id="description" autocomplete="off" inputId="description"
-                                        :invalid="!data[field] || data[field].trim() === ''" />
+                                    <InputText class="w-full uppercase" v-model="data[field]" id="description" autocomplete="off"
+                                        inputId="description" :invalid="data[field] !== undefined && data[field].trim() === ''" />
                                     <label for="description">Descripción</label>
                                 </FloatLabel>
-                                <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
+                                <InputError :message="data[field] !== undefined && data[field].trim() === '' ? rules : ''" />
                             </template>
                         </Column>
-                        <Column field="amount" header="Importe" style="width: 10%;" class="rounded-tl-lg">
+
+                        <Column field="amount" header="Importe" class="rounded-tl-lg">
                             <template #body="{ data }">
-                                {{ data.amount }}
+                                {{ currencyNumber(data.amount) }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
                                     <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="amount" prefix="$" id="amount"
-                                        class="w-full :not(:focus)::placeholder:text-transparent" :class="data[field] !== null ? 'filled' : ''"
-                                        :min="0.01" :max="99999999" :minFractionDigits="2" :invalid="data[field] === null || data[field] === 0" />
+                                        class=":not(:focus)::placeholder:text-transparent" :min="0.01" :max="99999999" :minFractionDigits="2"
+                                        :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0"
+                                        @input="calculateSubtotalAmount(data, $event.value, data['vat'])" />
                                     <label for="amount">Importe</label>
                                 </FloatLabel>
-                                <InputError :message="data[field] === null || data[field] === 0 ? rules : ''" />
+                                <InputError :message="data[field] <= 0 ? rules : ''" />
                             </template>
                         </Column>
-                        <Column field="vat" header="I.V.A." style="width: 10%;" class="rounded-tl-lg">
+
+                        <Column field="vat" header="I.V.A." class="rounded-tl-lg">
                             <template #body="{ data }">
-                                {{ data.vat }}
+                                {{ percentNumber(data.vat) }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel class="!top-[2px]">
-                                    <Dropdown inputId="vatRate" v-model="data[field]" :options="vatRates" showClear
-                                        class="w-full !focus:border-primary-500" :class="dropdownClasses(data[field])" optionLabel="rate"
-                                        optionValue="id" />
+                                    <Dropdown inputId="vatRate" v-model="data[field]" :options="vatRates" showClear :invalid="data[field] === null"
+                                        optionLabel="label" optionValue="id" class="w-full !focus:border-primary-500"
+                                        :class="dropdownClasses(data[field])" @change="calculateSubtotalAmount(data, data['amount'], $event.value)" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.rate" class="bg-transparent uppercase" />
                                     </template>
                                     <label for="rate">I.V.A.</label>
                                 </FloatLabel>
-                                <InputError :message="!data[field] ? rules : ''" />
+                                <InputError :message="data[field] === null ? rules : ''" />
                             </template>
                         </Column>
-                        <Column field="subtotalAmount" header="Subtotal" style="width: 10%;" class="rounded-tl-lg">
+
+                        <Column field="subtotalAmount" header="Subtotal" class="rounded-tl-lg">
                             <template #body="{ data }">
-                                {{ data.subtotalAmount }}
+                                {{ currencyNumber(data.subtotalAmount) }}
                             </template>
                         </Column>
                     </DataTable>
