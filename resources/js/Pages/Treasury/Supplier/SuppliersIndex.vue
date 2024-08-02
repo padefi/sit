@@ -74,6 +74,7 @@ const addNewVoucher = (data) => {
             header: `Nuevo comprobante - ${data.businessName}`,
             style: {
                 width: '55vw',
+                height: '90vh',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -81,7 +82,8 @@ const addNewVoucher = (data) => {
             },
             modal: true,
             contentStyle: {
-                padding: '1.25rem'
+                padding: '1.25rem',
+                height: '85vh',
             },
         },
         data: {

@@ -4,6 +4,7 @@ import { inject, onMounted, ref, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
 import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
+import { useToast } from "primevue/usetoast";
 
 const form = useForm({
     invoiceType: undefined,
@@ -33,6 +34,7 @@ const originalVoucherItems = ref([]);
 const newRow = ref([]);
 const editingRows = ref([]);
 const editing = ref(false);
+const toast = useToast();
 
 const handleInvoiceNumber = (input, length) => {
     // form[input] = !form[input] ? null : form[input].padStart(length, '0') !== '0'.padStart(length, '0') ? form[input].padStart(length, '0') : '';
@@ -65,6 +67,45 @@ const addNewItem = () => {
     editing.value = true;
     editingRows.value = [newItem];
 };
+
+const removeItem = (data) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de eliminar un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
+};
+
+const onRowEditInit = (event) => {
+    originalUsersArray.value = [...usersArray.value];
+    editingRows.value = [event.data];
+}
+
+const disabledEditButtons = (callback, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de modificar un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    editing.value = true;
+    callback(event);
+}
+const enabledEditButtons = (callback, event) => {
+    editing.value = false;
+    editingRows.value = [];
+    callback(event);
+}
 
 const calculateSubtotalAmount = (data, amountValue, rateValue) => {
     if (amountValue > 99999999) return;
@@ -137,7 +178,7 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
 });
 </script>
 <template>
-    <div class="card flex !p-2 justify-center">
+    <div class="card flex !p-2 !m-0 justify-center">
         <div class="flex flex-col w-fit">
             <div
                 class="flex flex-col border-2 border-dashed border-surface-200 dark:border-surface-700 rounded-md bg-surface-0 dark:bg-surface-950 justify-center font-medium">
@@ -145,7 +186,7 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     <div class="min-w-64">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
-                                :invalid="!!form.invoiceType" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                :invalid="form.invoiceType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
                                 :class="dropdownClasses(form.invoiceType)" />
                             <template #option="slotProps">
                                 <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
@@ -155,7 +196,7 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                         <InputError :message="form.invoiceType === null ? rules : ''" />
                     </div>
 
-                    <div class="min-w-40">
+                    <div class="min-w-44">
                         <FloatLabel class="!top-[2px]">
                             <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear
                                 resetFilterOnHide :invalid="form.invoiceTypeCode === null" optionLabel="name" optionValue="id"
@@ -294,7 +335,8 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                 </Divider>
 
                 <div class="m-3 !mb-0">
-                    <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="70vh" editMode="row" dataKey="id">
+                    <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="200px" editMode="row" dataKey="id"
+                        :pt="{ wrapper: { class: 'datatable-scrollbar' } }">
                         <Column field="description" header="Descripción" class="rounded-tl-lg">
                             <template #body="{ data }">
                                 {{ data.description }}
@@ -348,7 +390,31 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                                 {{ currencyNumber(data.subtotalAmount) }}
                             </template>
                         </Column>
+                        <Column header="Acciones" :rowEditor="true" class="max-w-24 !text-center">
+                            <template #body="{ editorInitCallback, data }">
+                                <div class="space-x-4 flex pl-6">
+                                    <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                            @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
+                                    <template v-if="voucherItems.length > 1">
+                                        <button v-tooltip="'Eliminar'"><i class="pi pi-trash text-red-500 text-lg font-extrabold"
+                                                @click="removeItem(data)"></i></button>
+                                    </template>
+                                </div>
+                            </template>
+                            <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
+                                <div class="space-x-4 flex pl-7">
+                                    <button v-tooltip="'Confirmar'"><i class="pi pi-check text-primary-500 text-lg font-extrabold"
+                                            @click="validate($event, editorSaveCallback, data)"></i></button>
+                                    <button v-tooltip="'Cancelar'"><i class="pi pi-times text-red-500 text-lg font-extrabold"
+                                            @click="enabledEditButtons(editorCancelCallback, $event, data)"></i></button>
+                                </div>
+                            </template>
+                        </Column>
                     </DataTable>
+
+                    <div class="flex py-3 w-full justify-center">
+                        <Button label="Agregar item" icon="pi pi-plus-circle" iconPos="right" @click="addNewItem()" />
+                    </div>
                 </div>
             </div>
         </div>

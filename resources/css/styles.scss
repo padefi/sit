@@ -99,3 +99,30 @@ span[data-pc-name=floatlabel] span[data-pc-name=inputnumber] input:not(:focus)::
 span[data-pc-name=floatlabel] span[data-pc-name=calendar] input:not(:focus)::placeholder {
     color: transparent;
 }
+
+.datatable-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+
+/* Scrollbar color */
+/* Track */
+.datatable-scrollbar::-webkit-scrollbar-track {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(229 231 235 / var(--tw-bg-opacity)) !important;
+    border-radius: .25rem !important;
+}
+
+/* Handle */
+.datatable-scrollbar::-webkit-scrollbar-thumb {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(209 213 219 / var(--tw-bg-opacity)) !important;
+    border-radius: .25rem !important;
+}
+
+/* Handle on hover */
+.datatable-scrollbar::-webkit-scrollbar-thumb:hover {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(156 163 175 / var(--tw-bg-opacity)) !important;
+}
+
+/* Scrollbar color */
