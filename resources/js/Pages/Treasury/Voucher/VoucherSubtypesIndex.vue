@@ -158,7 +158,7 @@ const validate = (event, saveCallback, data) => {
     if (data.condition === 'newVoucherSubtype') {
         confirm.require({
             target: event.currentTarget,
-            message: '¿Está seguro de agrear el subtipo?',
+            message: '¿Está seguro de agregar el subtipo?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
                 newRow.value = data;

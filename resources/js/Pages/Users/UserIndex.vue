@@ -132,7 +132,7 @@ const validate = (event, saveCallback, data) => {
     if (data.condition === 'newUser') {
         confirm.require({
             target: event.currentTarget,
-            message: '¿Está seguro de agrear el usuario?',
+            message: '¿Está seguro de agregar el usuario?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
                 newRow.value = data;

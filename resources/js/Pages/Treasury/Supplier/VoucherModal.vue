@@ -1,10 +1,11 @@
 <script setup>
 import { useForm } from "@inertiajs/vue3";
-import { inject, onMounted, ref, watch } from "vue";
+import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
 import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
-import InputError from '@/Components/InputError.vue';
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
+import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
     invoiceType: undefined,
@@ -18,6 +19,9 @@ const form = useForm({
     voucherSubtype: undefined,
     voucherExpense: undefined,
     notes: ref(''),
+    netAmount: ref(0),
+    vatAmount: ref(0),
+    totalAmount: ref(0),
 });
 
 const rules = 'Debe completar el campo'
@@ -34,13 +38,46 @@ const originalVoucherItems = ref([]);
 const newRow = ref([]);
 const editingRows = ref([]);
 const editing = ref(false);
+const confirm = useConfirm();
 const toast = useToast();
 
-const handleInvoiceNumber = (input, length) => {
-    // form[input] = !form[input] ? null : form[input].padStart(length, '0') !== '0'.padStart(length, '0') ? form[input].padStart(length, '0') : '';
-    form[input] = !form[input] || form[input].padStart(length, '0') === '0'.padStart(length, '0') ? '' : form[input].padStart(length, '0');
-};
+const disabledEditButtons = (callback, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de modificar un item.',
+            life: 3000,
+        });
 
+        return;
+    }
+
+    editing.value = true;
+    callback(event);
+}
+const enabledEditButtons = (callback, event, data) => {
+    if (data.condition === 'newItem') {
+        if (voucherItems.value.length <= 1) {
+            toast.add({
+                severity: 'error',
+                detail: 'Debe completar todos los cambios.',
+                life: 3000,
+            });
+        } else {
+            editing.value = false;
+            editingRows.value = [];
+            voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
+        }
+
+        return;
+    }
+
+    editing.value = false;
+    editingRows.value = [];
+    callback(event);
+}
+
+/* Add new voucher item */
 const addNewItem = () => {
     if (editing.value) {
         toast.add({
@@ -59,7 +96,7 @@ const addNewItem = () => {
         description: undefined,
         vat: undefined,
         amount: undefined,
-        subtotalAmount: 0,
+        subtotalAmount: ref(0),
         condition: 'newItem',
     };
 
@@ -68,7 +105,47 @@ const addNewItem = () => {
     editingRows.value = [newItem];
 };
 
-const removeItem = (data) => {
+
+const validate = (event, saveCallback, data) => {
+    if (data.description && !data.description.trim() || !data.amount || !data.vat) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    data.condition = 'editItem';
+    editing.value = false;
+    editingRows.value = [];
+    saveCallback(event);
+
+}
+/* End add new voucher item */
+
+/* Editing voucher item   */
+const onRowEditInit = (event) => {
+    originalVoucherItems.value = [...voucherItems.value];
+    editingRows.value = [event.data];
+}
+
+const onRowEditSave = (event) => {
+    if (event.data.condition === 'editItem') {
+        let { newData, index } = event;
+        voucherItems.value[index] = newData;
+    }
+}
+
+const onRowEditCancel = () => {
+    voucherItems.value = [...originalVoucherItems.value];
+    editing.value = false;
+    editingRows.value = [];
+};
+/* End editing voucher item */
+
+const removeItem = (event, data) => {
     if (editing.value) {
         toast.add({
             severity: 'error',
@@ -79,45 +156,116 @@ const removeItem = (data) => {
         return;
     }
 
-    voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de eliminar el item?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
+
+            form.netAmount = voucherItems.value.reduce((total, item) => {
+                return total + (item.amount || 0);
+            }, 0);
+
+            form.vatAmount = voucherItems.value.reduce((total, item) => {
+                return total + (item.subtotalAmount || 0) - (item.amount || 0);
+            }, 0);
+
+            form.totalAmount = voucherItems.value.reduce((total, item) => {
+                return total + (item.subtotalAmount || 0);
+            }, 0);
+        },
+    });
 };
 
-const onRowEditInit = (event) => {
-    originalUsersArray.value = [...usersArray.value];
-    editingRows.value = [event.data];
-}
+const handleInvoiceNumber = (input, length) => {
+    // form[input] = !form[input] ? null : form[input].padStart(length, '0') !== '0'.padStart(length, '0') ? form[input].padStart(length, '0') : '';
+    form[input] = !form[input] || form[input].padStart(length, '0') === '0'.padStart(length, '0') ? '' : form[input].padStart(length, '0');
+};
 
-const disabledEditButtons = (callback, event) => {
-    if (editing.value) {
+const calculateSubtotalAmount = (data, amountValue, rateValue) => {
+    if (amountValue > 99999999) return;
+
+    // const rate = data.vat ? vatRates.value.find((rate) => rate.id === rateValue).rate : 0;
+    const rate = rateValue || 0;
+    data.subtotalAmount = rate > 0 ? amountValue * (1 + rate / 100) || 0 : amountValue || 0;
+
+    form.netAmount = voucherItems.value.reduce((total, item) => {
+        const amount = (data.id === item.id) ? amountValue : item.amount || 0;
+        return total + amount;
+    }, 0);
+
+    form.vatAmount = voucherItems.value.reduce((total, item) => {
+        const amount = (data.id === item.id) ? amountValue : item.amount || 0;
+        const subtotalAmount = (data.id === item.id) ? data.subtotalAmount : item.subtotalAmount || 0;
+        return total + subtotalAmount - amount;
+    }, 0);
+
+    form.totalAmount = voucherItems.value.reduce((total, item) => {
+        const subtotalAmount = (data.id === item.id) ? data.subtotalAmount : item.subtotalAmount || 0;
+        return total + subtotalAmount;
+    }, 0);
+};
+
+const isFormInvalid = computed(() => {
+    if (!form.invoiceType) return true;
+    if (!form.invoiceTypeCode) return true;
+    if (!form.pointOfNumber) return true;
+    if (!form.invoiceNumber) return true;
+    if (!form.invoiceDate) return true;
+    if (!form.invocePaymentDate) return true;
+    if (!form.payCondition) return true;
+    if (!form.voucherType) return true;
+    if (!form.voucherSubtype) return true;
+    if (form.voucherExpense === undefined || form.voucherExpense === null) return true;
+    if (!form.netAmount < 0) return true;
+    if (!form.vatAmount <= 0) return true;
+    if (!form.totalAmount < 0) return true;
+    if (voucherItems.value.length === 0) return true;
+
+    return false;
+});
+
+const saveVoucher = (event) => {
+    if (voucherItems.value.length === 0) {
         toast.add({
             severity: 'error',
-            detail: 'Debe guardar los cambios antes de modificar un item.',
+            detail: 'Debe agregar al menos un item.',
             life: 3000,
         });
 
         return;
     }
 
-    editing.value = true;
-    callback(event);
-}
-const enabledEditButtons = (callback, event) => {
-    editing.value = false;
-    editingRows.value = [];
-    callback(event);
-}
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de agregar un nuevo item.',
+            life: 3000,
+        });
 
-const calculateSubtotalAmount = (data, amountValue, rateValue) => {
-    if (amountValue > 99999999) return;
+        return;
+    }
 
-    const rate = data.vat ? vatRates.value.find((rate) => rate.id === rateValue).rate : 0;
-    data.subtotalAmount = rate > 0 ? amountValue * (1 + rate / 100) || 0 : amountValue || 0;
-    /* form.totalAmount = voucherItems.value.reduce((total, item) => {
-        return total + (item.subtotalAmount || 0);
-    }, 0); */
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de ingresar el comprobante?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            form.post(route("vouchers.store"), {
+                onSuccess: () => {
+                    dialogRef.value.close();
+                },
+            });
+        },
+    });
 };
 
 const dialogRef = inject("dialogRef");
+
+const closeDialog = () => {
+    dialogRef.value.close();
+}
 
 onMounted(async () => {
     invoiceTypes.value = dialogRef.value.data.invoiceTypes;
@@ -323,7 +471,7 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
 
                 <div class="m-3 !mb-0">
                     <FloatLabel class="w-full !top-[2px]">
-                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full peer"
+                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full peer uppercase"
                             :class="dropdownClasses(form.notes)" />
                         <label for="notes" class="peer-focus:!top-[-0.75rem]"
                             :class="{ '!top-5': form.notes.trim() === '', '!top-[-0.75rem]': form.notes.trim() !== '' }">Observación</label>
@@ -336,10 +484,11 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
 
                 <div class="m-3 !mb-0">
                     <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="200px" editMode="row" dataKey="id"
+                        @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel"
                         :pt="{ wrapper: { class: 'datatable-scrollbar' } }">
                         <Column field="description" header="Descripción" class="rounded-tl-lg">
                             <template #body="{ data }">
-                                {{ data.description }}
+                                {{ data.description.toLocaleUpperCase() || '' }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
@@ -372,9 +521,9 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                                 {{ percentNumber(data.vat) }}
                             </template>
                             <template #editor="{ data, field }">
-                                <FloatLabel class="!top-[2px]">
+                                <FloatLabel>
                                     <Dropdown inputId="vatRate" v-model="data[field]" :options="vatRates" showClear :invalid="data[field] === null"
-                                        optionLabel="label" optionValue="id" class="w-full !focus:border-primary-500"
+                                        optionLabel="label" optionValue="rate" class="w-full !focus:border-primary-500"
                                         :class="dropdownClasses(data[field])" @change="calculateSubtotalAmount(data, data['amount'], $event.value)" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.rate" class="bg-transparent uppercase" />
@@ -396,8 +545,9 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                     <template v-if="voucherItems.length > 1">
+                                        <ConfirmPopup></ConfirmPopup>
                                         <button v-tooltip="'Eliminar'"><i class="pi pi-trash text-red-500 text-lg font-extrabold"
-                                                @click="removeItem(data)"></i></button>
+                                                @click="removeItem($event, data)"></i></button>
                                     </template>
                                 </div>
                             </template>
@@ -414,6 +564,31 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
 
                     <div class="flex py-3 w-full justify-center">
                         <Button label="Agregar item" icon="pi pi-plus-circle" iconPos="right" @click="addNewItem()" />
+                    </div>
+
+                    <Divider class="mt-3 mb-0" type="dashed" />
+
+                    <div class="flex flex-col gap-3 m-3">
+                        <div class="flex md:w-2/5">
+                            <div class="w-full text-left text-surface-900/60 font-bold">Neto ARS: </div>
+                            <div class="w-full text-left font-bold">{{ currencyNumber(form.netAmount) }}</div>
+                        </div>
+
+                        <div class="flex md:w-2/5">
+                            <div class="w-full text-left text-surface-900/60 font-bold">Total IVA: </div>
+                            <div class="w-full text-left font-bold">{{ currencyNumber(form.vatAmount) }}</div>
+                        </div>
+
+                        <div class="flex md:w-2/5">
+                            <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+                            <div class="w-full text-left font-bold">{{ currencyNumber(form.totalAmount) }}</div>
+                        </div>
+                    </div>
+
+                    <div class="flex p-4 justify-between">
+                        <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
+                        <ConfirmPopup></ConfirmPopup>
+                        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="editing || isFormInvalid" @click="saveVoucher($event)" />
                     </div>
                 </div>
             </div>

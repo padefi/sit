@@ -182,7 +182,7 @@ const validateVatTaxWithholding = (event, saveCallback, data) => {
     if (data.condition === 'newVatTaxWithholding') {
         confirm.require({
             target: event.currentTarget,
-            message: '¿Está seguro de agrear la retención?',
+            message: '¿Está seguro de agregar la retención?',
             rejectClass: 'bg-red-500 text-white hover:bg-red-600',
             accept: () => {
                 newRow.value = data;

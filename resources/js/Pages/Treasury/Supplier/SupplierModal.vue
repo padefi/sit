@@ -320,7 +320,7 @@ onMounted(async () => {
                         </div>
                     </div>
                     <div class="flex pt-4 justify-between">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
+                        <Button label="Volver" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
                         <Button label="Siguiente" icon="pi pi-arrow-right" iconPos="right" :disabled="isSecondInvalid"
                             @click="() => handleSecond(nextCallback)" />
                     </div>
@@ -473,7 +473,7 @@ onMounted(async () => {
                         </div>
                     </div>
                     <div class="flex pt-4 justify-between">
-                        <Button label="Back" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
+                        <Button label="Volver" severity="secondary" icon="pi pi-arrow-left" @click="prevCallback" />
                         <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="isFirstInvalid || isSecondInvalid"
                             @click="() => saveSupplier()" />
                     </div>

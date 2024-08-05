@@ -22,7 +22,7 @@
         "laravel/pint": "v1.17.1",
         "laravel/sail": "v1.31.0",
         "mockery/mockery": "^1.6.12",
-        "nunomaduro/collision": "v8.3.0",
+        "nunomaduro/collision": "v8.4.0",
         "phpunit/phpunit": "^11.3.0",
         "spatie/laravel-ignition": "^2.8.0"
     },
