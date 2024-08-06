@@ -18,10 +18,11 @@ const form = useForm({
     voucherType: undefined,
     voucherSubtype: undefined,
     voucherExpense: undefined,
-    notes: ref(''),
-    netAmount: ref(0),
-    vatAmount: ref(0),
-    totalAmount: ref(0),
+    voucherItems: [],
+    notes: '',
+    netAmount: 0,
+    vatAmount: 0,
+    totalAmount: 0,
 });
 
 const rules = 'Debe completar el campo'
@@ -566,7 +567,7 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                         <Button label="Agregar item" icon="pi pi-plus-circle" iconPos="right" @click="addNewItem()" />
                     </div>
 
-                    <Divider class="mt-3 mb-0" type="dashed" />
+                    <Divider class="!my-0" type="dashed" />
 
                     <div class="flex flex-col gap-3 m-3">
                         <div class="flex md:w-2/5">
@@ -585,10 +586,13 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                         </div>
                     </div>
 
-                    <div class="flex p-4 justify-between">
+                    <Divider class="!my-0" type="dashed" />
+
+                    <div class="flex p-3 justify-between">
                         <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
                         <ConfirmPopup></ConfirmPopup>
-                        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="editing || isFormInvalid" @click="saveVoucher($event)" />
+                        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="editing || isFormInvalid"
+                            @click="saveVoucher($event)" />
                     </div>
                 </div>
             </div>

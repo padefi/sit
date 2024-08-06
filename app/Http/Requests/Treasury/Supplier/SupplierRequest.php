@@ -50,7 +50,7 @@ class SupplierRequest extends FormRequest {
             'cuit.required' => 'El cuit es obligatorio.',
             'cuit.max' => 'El cuit no puede exceder los :max caracteres.',
             'idVC.required' => 'La condición de I.V.A. es obligatoria.',
-            'idVC.exists' => 'La condición de I.V.A. es obligatoria.',
+            'idVC.exists' => 'La condición de I.V.A. debe existir en el sistema.',
             'idCat.required' => 'El rubro es obligatorio.',
             'idCat.exists' => 'El rubro es obligatoria.',
             'address.required' => 'La dirección es obligatoria.',
