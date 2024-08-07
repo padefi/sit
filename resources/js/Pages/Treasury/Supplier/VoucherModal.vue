@@ -17,7 +17,7 @@ const form = useForm({
     invoiceNumber: undefined,
     invoiceDate: undefined,
     invocePaymentDate: undefined,
-    payCondition: undefined,    
+    payCondition: undefined,
     voucherItems: [],
     notes: '',
     netAmount: 0,
@@ -218,7 +218,7 @@ const isFormInvalid = computed(() => {
     if (!form.invoiceNumber) return true;
     if (!form.invoiceDate) return true;
     if (!form.invocePaymentDate) return true;
-    if (!form.payCondition) return true;    
+    if (!form.payCondition) return true;
     if (!form.netAmount < 0) return true;
     if (!form.vatAmount <= 0) return true;
     if (!form.totalAmount < 0) return true;
@@ -358,6 +358,18 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
     }
 });
 </script>
+<style>
+tbody tr td {
+    padding: 0.5rem 0.25rem !important;
+}
+
+.iva_dropdown div[data-pc-section="trigger"] {
+    /* padding: 0.5rem 0.25rem !important; */
+    width: 1rem;
+    right: 0.5rem;
+    position: relative;
+}
+</style>
 <template>
     <div class="card flex !p-2 !m-0 justify-center">
         <div class="flex flex-col w-fit">
@@ -502,9 +514,9 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
 
                 <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
 
-                <div class="m-3 !mb-0">
+                <div class="flex my-3 mx-6">
                     <FloatLabel class="w-full !top-[2px]">
-                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full peer uppercase"
+                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full resize-none peer uppercase"
                             :class="dropdownClasses(form.notes)" />
                         <label for="notes" class="peer-focus:!top-[-0.75rem]"
                             :class="{ '!top-5': form.notes.trim() === '', '!top-[-0.75rem]': form.notes.trim() !== '' }">Observación</label>
@@ -519,45 +531,46 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                     <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="200px" editMode="row" dataKey="id"
                         @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel"
                         :pt="{ wrapper: { class: 'datatable-scrollbar' } }">
-                        <Column field="description" header="Descripción" class="rounded-tl-lg">
+                        <Column field="description" header="Descripción" class="rounded-tl-lg min-w-56 max-w-56">
                             <template #body="{ data }">
                                 {{ data.description.toLocaleUpperCase() || '' }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <InputText class="w-full uppercase" v-model="data[field]" id="description" autocomplete="off"
+                                    <InputText class="w-full px-1 uppercase" v-model="data[field]" id="description" autocomplete="off"
                                         inputId="description" :invalid="data[field] !== undefined && data[field].trim() === ''" />
-                                    <label for="description">Descripción</label>
+                                    <label class="!left-1" for="description">Descripción</label>
                                 </FloatLabel>
                                 <InputError :message="data[field] !== undefined && data[field].trim() === '' ? rules : ''" />
                             </template>
                         </Column>
 
-                        <Column field="amount" header="Importe" class="rounded-tl-lg">
+                        <Column field="amount" header="Importe" class="rounded-tl-lg min-w-32 max-w-32">
                             <template #body="{ data }">
                                 {{ currencyNumber(data.amount) }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="amount" prefix="$" id="amount"
-                                        class=":not(:focus)::placeholder:text-transparent" :min="0.01" :max="99999999" :minFractionDigits="2"
-                                        :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0"
-                                        @input="calculateSubtotalAmount(data, $event.value, data['vat'])" />
+                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="amount" inputClass="w-full px-1" prefix="$"
+                                        id="amount" class=":not(:focus)::placeholder:text-transparent" :min="0.01" :max="99999999"
+                                        :minFractionDigits="2" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''"
+                                        :invalid="data[field] <= 0" @input="calculateSubtotalAmount(data, $event.value, data['vat'])" />
                                     <label for="amount">Importe</label>
                                 </FloatLabel>
                                 <InputError :message="data[field] <= 0 ? rules : ''" />
                             </template>
                         </Column>
 
-                        <Column field="vat" header="I.V.A." class="rounded-tl-lg">
+                        <Column field="vat" header="I.V.A." class="rounded-tl-lg min-w-24 max-w-24">
                             <template #body="{ data }">
                                 {{ percentNumber(data.vat) }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <Dropdown inputId="vatRate" v-model="data[field]" :options="vatRates" showClear :invalid="data[field] === null"
-                                        optionLabel="label" optionValue="rate" class="w-full !focus:border-primary-500"
-                                        :class="dropdownClasses(data[field])" @change="calculateSubtotalAmount(data, data['amount'], $event.value)" />
+                                    <Dropdown inputId="vatRate" inputClass="w-full flex flex-wrap pl-2 pr-0" v-model="data[field]" :options="vatRates"
+                                        :invalid="data[field] === null" optionLabel="label" optionValue="rate"
+                                        class="w-full !focus:border-primary-500 iva_dropdown" :class="dropdownClasses(data[field])"
+                                        @change="calculateSubtotalAmount(data, data['amount'], $event.value)" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.rate" class="bg-transparent uppercase" />
                                     </template>
@@ -567,14 +580,14 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                             </template>
                         </Column>
 
-                        <Column field="subtotalAmount" header="Subtotal" class="rounded-tl-lg">
+                        <Column field="subtotalAmount" header="Subtotal" class="rounded-tl-lg min-w-28 max-w-28">
                             <template #body="{ data }">
                                 {{ currencyNumber(data.subtotalAmount) }}
                             </template>
                         </Column>
-                        <Column header="Acciones" :rowEditor="true" class="max-w-24 !text-center">
+                        <Column header="Acciones" :rowEditor="true" class="min-w-28 max-w-28 !text-center">
                             <template #body="{ editorInitCallback, data }">
-                                <div class="space-x-4 flex pl-6">
+                                <div class="space-x-4 text-center">
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                     <template v-if="voucherItems.length > 1">
@@ -585,7 +598,7 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                                 </div>
                             </template>
                             <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
-                                <div class="space-x-4 flex pl-7">
+                                <div class="space-x-4 text-center">
                                     <button v-tooltip="'Confirmar'"><i class="pi pi-check text-primary-500 text-lg font-extrabold"
                                             @click="validate($event, editorSaveCallback, data)"></i></button>
                                     <button v-tooltip="'Cancelar'"><i class="pi pi-times text-red-500 text-lg font-extrabold"
