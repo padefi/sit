@@ -15,6 +15,12 @@ class InvoiceTypeResource extends JsonResource {
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'invoiceTypeCodes' => $this->invoiceTypeCodes->map(function ($invoiceTypeCode) {
+                return [
+                    'id' => $invoiceTypeCode->id,
+                    'name' => $invoiceTypeCode->name,
+                ];
+            }),
         ];
     }
 }

@@ -13,6 +13,7 @@ class InvoiceTypeSeeder extends Seeder {
     public function run(): void {
         $invoiceTypes = [
             ['name' => 'FACTURA'],
+            ['name' => 'RECIBO'],
             ['name' => 'NOTA DE CREDITO'],
             ['name' => 'NOTA DE DEBITO'],
         ];

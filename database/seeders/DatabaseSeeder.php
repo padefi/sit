@@ -33,5 +33,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(PayConditionSeeder::class);
         $this->call(InvoiceTypeSeeder::class);
         $this->call(InvoiceTypeCodeSeeder::class);
+        $this->call(VoucherTypeInvoiceTypeRelationshipSeeder::class);
+        $this->call(InvoiceTypeInvoiceTypeCodeRelationshipSeeder::class);
     }
 }

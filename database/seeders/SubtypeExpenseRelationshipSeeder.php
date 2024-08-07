@@ -15,6 +15,7 @@ class SubtypeExpenseRelationshipSeeder extends Seeder {
 
         foreach ($allVoucherExpenses as $voucherExpense) {
             $expenses = [
+                /* PROVEEDORES */
                 ['idSubtype' => 2, 'idExpense' => $voucherExpense->id, 'idUserRelated' => 1, 'related_at' => now()],
                 ['idSubtype' => 3, 'idExpense' => $voucherExpense->id, 'idUserRelated' => 1, 'related_at' => now()],
                 ['idSubtype' => 4, 'idExpense' => $voucherExpense->id, 'idUserRelated' => 1, 'related_at' => now()],

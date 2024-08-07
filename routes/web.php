@@ -13,6 +13,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
+use App\Http\Controllers\Treasury\Voucher\VoucherController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +74,12 @@ Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], func
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
     Route::get('/voucher-subtypes/{voucher_type}/data-related', [VoucherSubtypeController::class, 'dataRelated'])->name('voucher-subtypes.data-related');
     Route::get('/voucher-expenses/{voucher_subtype}/data-related', [VoucherExpenseController::class, 'dataRelated'])->name('voucher-expenses.data-related');
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], function () {
+    Route::resource('vouchers', VoucherController::class);
+    Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
+    Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {

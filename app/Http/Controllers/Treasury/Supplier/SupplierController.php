@@ -46,24 +46,16 @@ class SupplierController extends Controller {
         $vatCondition = VatCondition::orderBy('name', 'asc')->get();
         $vatRate = VatRate::orderBy('rate', 'asc')->get();
         $category = Category::orderBy('name', 'asc')->get();
-        $invoiceType = InvoiceType::orderBy('name', 'asc')->get();
-        $invoiceTypeCode = InvoiceTypeCode::orderBy('name', 'asc')->get();
         $payCondition = PayCondition::orderBy('name', 'asc')->get();
         $voucherTypes = VoucherType::with(['subtypes'])->orderBy('name', 'asc')->get();
-        $voucherSubtypes = VoucherSubtype::with(['expenses'])->orderBy('name', 'asc')->get();
-        $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
             'vatConditions' => VatConditionResource::collection($vatCondition),
             'vatRates' => VatRateResource::collection($vatRate),
             'categories' => CategoryResource::collection($category),
-            'invoiceTypes' => InvoiceTypeResource::collection($invoiceType),
-            'invoiceTypeCodes' => InvoiceTypeCodeResource::collection($invoiceTypeCode),
             'payConditions' => PayConditionResource::collection($payCondition),
             'voucherTypes' => VoucherTypeResource::collection($voucherTypes),
-            'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
-            'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
         ]);
     }
 

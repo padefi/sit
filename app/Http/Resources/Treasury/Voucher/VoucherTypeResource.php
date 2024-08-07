@@ -39,6 +39,12 @@ class VoucherTypeResource extends JsonResource {
                     'related_at' => $subtype->pivot->related_at,
                 ];
             }),
+            'invoiceTypes' => $this->invoiceTypes->map(function ($invoiceType) {
+                return [
+                    'id' => $invoiceType->id,
+                    'name' => $invoiceType->name,
+                ];
+            }),
             'status' => $this->status,
         ];
     }

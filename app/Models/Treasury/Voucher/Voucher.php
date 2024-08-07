@@ -10,6 +10,9 @@ class Voucher extends Model {
     use HasFactory;
 
     protected $fillable = [
+        'idType',
+        'idSubtype',
+        'idExpense',
         'idIT',
         'idITCode',
         'pointOfNumber',
@@ -17,15 +20,24 @@ class Voucher extends Model {
         'invoiceDate',
         'invoicePaymentDate',
         'idPC',
-        'idType',
-        'idSubtype',
-        'idExpense',
         'notes',
         'totalAmount',
         'idUserCreated',
         'idUserUpdated',
         'updated_at',
     ];
+
+    public function voucherType() {
+        return $this->belongsTo(VoucherType::class, 'idType');
+    }
+
+    public function voucherSubtype() {
+        return $this->belongsTo(VoucherSubtype::class, 'idSubtype');
+    }
+
+    public function voucherExpense() {
+        return $this->belongsTo(VoucherExpense::class, 'idExpense');
+    }
 
     public function invoiceType() {
         return $this->belongsTo(InvoiceType::class, 'idIT');
@@ -37,18 +49,6 @@ class Voucher extends Model {
 
     public function payCondition() {
         return $this->belongsTo(PayCondition::class, 'idPC');
-    }
-
-    public function voucherType() {
-        return $this->belongsTo(VoucherType::class, 'idType');
-    }
-
-    public function voucherSubtype() {
-        return $this->belongsTo(VoucherSubtype::class, 'idSubtype');
-    }
-    
-    public function voucherExpense() {
-        return $this->belongsTo(VoucherExpense::class, 'idExpense');
     }
 
     public function userCreated() {

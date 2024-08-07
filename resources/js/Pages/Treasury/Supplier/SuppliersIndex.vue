@@ -30,27 +30,11 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
-    invoiceTypes: {
-        type: Object,
-        default: () => ({}),
-    },
-    invoiceTypeCodes: {
-        type: Object,
-        default: () => ({}),
-    },
     payConditions: {
         type: Object,
         default: () => ({}),
     },
     voucherTypes: {
-        type: Object,
-        default: () => ({}),
-    },
-    voucherSubtypes: {
-        type: Object,
-        default: () => ({}),
-    },
-    voucherExpenses: {
         type: Object,
         default: () => ({}),
     },
@@ -87,12 +71,8 @@ const addNewVoucher = (data) => {
             },
         },
         data: {
-            invoiceTypes: props.invoiceTypes,
-            invoiceTypeCodes: props.invoiceTypeCodes,
             payConditions: props.payConditions,
             voucherTypes: props.voucherTypes,
-            voucherSubtypes: props.voucherSubtypes,
-            voucherExpenses: props.voucherExpenses,
             vatRates: props.vatRates,
         }
     });

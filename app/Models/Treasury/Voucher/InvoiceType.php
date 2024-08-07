@@ -11,4 +11,8 @@ class InvoiceType extends Model {
     protected $fillable = [
         'name',
     ];
+
+    public function invoiceTypeCodes() {
+        return $this->belongsToMany(InvoiceTypeCode::class, 'invoice_type_invoice_type_code_relationships', 'idIT', 'idITCode');
+    }
 }

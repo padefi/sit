@@ -8,16 +8,16 @@ import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
+    voucherType: undefined,
+    voucherSubtype: undefined,
+    voucherExpense: undefined,
     invoiceType: undefined,
     invoiceTypeCode: undefined,
     pointOfNumber: undefined,
     invoiceNumber: undefined,
     invoiceDate: undefined,
     invocePaymentDate: undefined,
-    payCondition: undefined,
-    voucherType: undefined,
-    voucherSubtype: undefined,
-    voucherExpense: undefined,
+    payCondition: undefined,    
     voucherItems: [],
     notes: '',
     netAmount: 0,
@@ -25,13 +25,13 @@ const form = useForm({
     totalAmount: 0,
 });
 
-const rules = 'Debe completar el campo'
-const invoiceTypes = ref([]);
-const invoiceTypeCodes = ref([]);
-const payConditions = ref([]);
+const rules = 'Debe completar el campo';
 const voucherTypes = ref([]);
 const voucherSubtypes = ref([]);
 const voucherExpenses = ref([]);
+const invoiceTypes = ref([]);
+const invoiceTypeCodes = ref([]);
+const payConditions = ref([]);
 const vatRates = ref([]);
 
 const voucherItems = ref([]);
@@ -209,16 +209,16 @@ const calculateSubtotalAmount = (data, amountValue, rateValue) => {
 };
 
 const isFormInvalid = computed(() => {
+    if (!form.voucherType) return true;
+    if (!form.voucherSubtype) return true;
+    if (form.voucherExpense === undefined || form.voucherExpense === null) return true;
     if (!form.invoiceType) return true;
     if (!form.invoiceTypeCode) return true;
     if (!form.pointOfNumber) return true;
     if (!form.invoiceNumber) return true;
     if (!form.invoiceDate) return true;
     if (!form.invocePaymentDate) return true;
-    if (!form.payCondition) return true;
-    if (!form.voucherType) return true;
-    if (!form.voucherSubtype) return true;
-    if (form.voucherExpense === undefined || form.voucherExpense === null) return true;
+    if (!form.payCondition) return true;    
     if (!form.netAmount < 0) return true;
     if (!form.vatAmount <= 0) return true;
     if (!form.totalAmount < 0) return true;
@@ -269,8 +269,6 @@ const closeDialog = () => {
 }
 
 onMounted(async () => {
-    invoiceTypes.value = dialogRef.value.data.invoiceTypes;
-    invoiceTypeCodes.value = dialogRef.value.data.invoiceTypeCodes;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
     vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
@@ -282,22 +280,34 @@ onMounted(async () => {
 watch(() => form.voucherType, async (voucherTypeId) => {
     form.voucherSubtype = undefined;
     form.voucherExpense = undefined;
+    form.invoiceType = undefined;
+    form.invoiceTypeCode = undefined;
     voucherSubtypes.value = [];
     voucherExpenses.value = [];
+    invoiceTypes.value = [];
+    invoiceTypeCodes.value = [];
 
     if (!voucherTypeId) {
         return;
     }
 
     try {
-        const response = await fetch(`/voucher-subtypes/${voucherTypeId}/data-related`);
+        const subtype = await fetch(`/voucher-subtypes/${voucherTypeId}/data-related`);
+        const invoiceType = await fetch(`/vouchers/${voucherTypeId}/types-related`);
 
-        if (!response.ok) {
+        if (!subtype.ok) {
             throw new Error('Error al obtener los subtipos relacionados');
         }
 
-        const data = await response.json();
-        voucherSubtypes.value = data.voucherSubtypes;
+        if (!invoiceType.ok) {
+            throw new Error('Error al obtener los tipos de comprobante relacionados');
+        }
+
+        const dataSubtype = await subtype.json();
+        voucherSubtypes.value = dataSubtype.voucherSubtypes;
+
+        const dataInvoiceType = await invoiceType.json();
+        invoiceTypes.value = dataInvoiceType.invoiceTypes;
     } catch (error) {
         console.error(error);
     }
@@ -325,12 +335,77 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
         console.error(error);
     }
 });
+
+watch(() => form.invoiceType, async (invoiceTypeId) => {
+    form.invoiceTypeCode = undefined;
+    invoiceTypeCodes.value = [];
+
+    if (!invoiceTypeId) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/vouchers/${invoiceTypeId}/invoice-types-related`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los tipos de factura relacionados');
+        }
+
+        const data = await response.json();
+        invoiceTypeCodes.value = data.invoiceTypeCodes;
+    } catch (error) {
+        console.error(error);
+    }
+});
 </script>
 <template>
     <div class="card flex !p-2 !m-0 justify-center">
         <div class="flex flex-col w-fit">
             <div
                 class="flex flex-col border-2 border-dashed border-surface-200 dark:border-surface-700 rounded-md bg-surface-0 dark:bg-surface-950 justify-center font-medium">
+                <div class="flex gap-3 m-3 flex-wrap justify-center">
+                    <div class="min-w-40">
+                        <FloatLabel class="!top-[2px]">
+                            <Dropdown inputId="voucherType" v-model="form.voucherType" :options="voucherTypes" filter showClear resetFilterOnHide
+                                :invalid="form.voucherType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                :class="dropdownClasses(form.voucherType)" />
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                            </template>
+                            <label for="voucherType">Tipo</label>
+                        </FloatLabel>
+                        <InputError :message="form.voucherType === null ? rules : ''" />
+                    </div>
+
+                    <div class="min-w-72">
+                        <FloatLabel class="!top-[2px]">
+                            <Dropdown inputId="voucherSubtype" v-model="form.voucherSubtype" :options="voucherSubtypes" filter showClear
+                                resetFilterOnHide :invalid="form.voucherSubtype === null" optionLabel="name" optionValue="id"
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)" />
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                            </template>
+                            <label for="voucherSubtype">Subtipo</label>
+                        </FloatLabel>
+                        <InputError :message="form.voucherSubtype === null ? rules : ''" />
+                    </div>
+
+                    <div class="min-w-56">
+                        <FloatLabel class="!top-[2px]">
+                            <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
+                                resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
+                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
+                            <template #option="slotProps">
+                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                            </template>
+                            <label for="voucherExpense">Gasto</label>
+                        </FloatLabel>
+                        <InputError :message="form.voucherExpense === null ? rules : ''" />
+                    </div>
+                </div>
+
+                <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
+
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
                     <div class="min-w-64">
                         <FloatLabel class="!top-[2px]">
@@ -422,49 +497,6 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                             <label for="payCondition">Cond. pago</label>
                         </FloatLabel>
                         <InputError :message="form.payCondition === null ? rules : ''" />
-                    </div>
-                </div>
-
-                <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
-
-                <div class="flex gap-3 m-3 flex-wrap justify-center">
-                    <div class="min-w-40">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherType" v-model="form.voucherType" :options="voucherTypes" filter showClear resetFilterOnHide
-                                :invalid="form.voucherType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
-                                :class="dropdownClasses(form.voucherType)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherType">Tipo</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherType === null ? rules : ''" />
-                    </div>
-
-                    <div class="min-w-72">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherSubtype" v-model="form.voucherSubtype" :options="voucherSubtypes" filter showClear
-                                resetFilterOnHide :invalid="form.voucherSubtype === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherSubtype">Subtipo</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherSubtype === null ? rules : ''" />
-                    </div>
-
-                    <div class="min-w-56">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
-                                resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherExpense">Gasto</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherExpense === null ? rules : ''" />
                     </div>
                 </div>
 

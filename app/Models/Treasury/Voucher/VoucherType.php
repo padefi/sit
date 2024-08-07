@@ -40,4 +40,8 @@ class VoucherType extends Model {
             ->withPivot('idUserRelated', 'related_at')
             ->with('userRelated');
     }
+
+    public function invoiceTypes() {
+        return $this->belongsToMany(InvoiceType::class, 'voucher_type_invoice_type_relationships', 'idVT', 'idIT');
+    }
 }

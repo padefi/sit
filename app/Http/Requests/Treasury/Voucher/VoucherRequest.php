@@ -21,6 +21,9 @@ class VoucherRequest extends FormRequest {
      */
     public function rules(): array {
         return [
+            'idType' => ['required', 'integer', 'exists:voucher_types,id'],
+            'idSubtype' => ['required', 'integer', 'exists:voucher_subtypes,id'],
+            'idExpense' => ['required', 'integer'],
             'idIT' => ['required', 'integer', 'exists:invoice_types,id'],
             'idITCode' => ['required', 'integer', 'exists:invoice_type_codes,id'],
             'pointOfNumber' => ['required', 'integer', 'min: 1', 'max:99999'],
@@ -28,9 +31,6 @@ class VoucherRequest extends FormRequest {
             'invoiceDate' => ['required', 'date', 'before:invoicePaymentDate'],
             'invoicePaymentDate' => ['required', 'date', 'after:invoiceDate'],
             'idPC' => ['required', 'integer', 'exists:pay_conditions,id'],
-            'idType' => ['required', 'integer', 'exists:voucher_types,id'],
-            'idSubtype' => ['required', 'integer', 'exists:voucher_subtypes,id'],
-            'idExpense' => ['required', 'integer'],
             'voucherItems' => ['array'],
             'voucherItems.description' => ['required', 'string', 'max:100'],
             'voucherItems.vat' => ['required', 'integer', 'exists:vat_rates,id'],
@@ -53,6 +53,11 @@ class VoucherRequest extends FormRequest {
 
     public function messages(): array {
         return [
+            'idType.required' => 'El tipo es obligatorio.',
+            'idType.exists' => 'El tipo debe existir en el sistema.',
+            'idSubtype.required' => 'El subtipo es obligatorio.',
+            'idSubtype.exists' => 'El subtipo debe existir en el sistema.',
+            'idExpense.required' => 'El gasto es obligatorio.',
             'idIT.required' => 'El tipo de comprobante es obligatorio.',
             'idIT.exists' => 'El tipo de comprobante debe existir en el sistema.',
             'idITCode.required' => 'El código del tipo de comprobante es obligatorio.',
@@ -69,11 +74,6 @@ class VoucherRequest extends FormRequest {
             'invoicePaymentDate.after' => 'La fecha de vencimiento no puede ser anterior a la fecha de emisión.',
             'idPC.required' => 'La condición de pago es obligatoria.',
             'idPC.exists' => 'La condición de pago debe existir en el sistema.',
-            'idType.required' => 'El tipo es obligatorio.',
-            'idType.exists' => 'El tipo debe existir en el sistema.',
-            'idSubtype.required' => 'El subtipo es obligatorio.',
-            'idSubtype.exists' => 'El subtipo debe existir en el sistema.',
-            'idExpense.required' => 'El gasto es obligatorio.',
             'voucherItems.required' => 'El item del comprobante es obligatorio.',
             'voucherItems.array' => 'El item debe ser un array.',
             'voucherItems.description.required' => 'La descripción del item es obligatoria.',
