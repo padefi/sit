@@ -205,7 +205,7 @@ const calculateSubtotalAmount = (data, amountValue, rateValue) => {
     form.totalAmount = voucherItems.value.reduce((total, item) => {
         const subtotalAmount = (data.id === item.id) ? data.subtotalAmount : item.subtotalAmount || 0;
         return total + subtotalAmount;
-    }, 0);
+    }, 0);    
 };
 
 const isFormInvalid = computed(() => {
@@ -219,9 +219,9 @@ const isFormInvalid = computed(() => {
     if (!form.invoiceDate) return true;
     if (!form.invocePaymentDate) return true;
     if (!form.payCondition) return true;
-    if (!form.netAmount < 0) return true;
-    if (!form.vatAmount <= 0) return true;
-    if (!form.totalAmount < 0) return true;
+    if (form.netAmount < 0) return true;
+    if (form.vatAmount < 0) return true;
+    if (form.totalAmount < 0) return true;
     if (voucherItems.value.length === 0) return true;
 
     return false;
@@ -253,6 +253,10 @@ const saveVoucher = (event) => {
         message: '¿Está seguro de ingresar el comprobante?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
+            form.voucherItems = voucherItems.value;
+            console.log(form);
+            return;
+
             form.post(route("vouchers.store"), {
                 onSuccess: () => {
                     dialogRef.value.close();
@@ -551,10 +555,10 @@ tbody tr td {
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="amount" inputClass="w-full px-1" prefix="$"
+                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" inputClass="w-full px-1" prefix="$"
                                         id="amount" class=":not(:focus)::placeholder:text-transparent" :min="0.01" :max="99999999"
-                                        :minFractionDigits="2" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''"
-                                        :invalid="data[field] <= 0" @input="calculateSubtotalAmount(data, $event.value, data['vat'])" />
+                                        :minFractionDigits="2" @input="calculateSubtotalAmount(data, $event.value, data['vat'])"
+                                        :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0" />
                                     <label for="amount">Importe</label>
                                 </FloatLabel>
                                 <InputError :message="data[field] <= 0 ? rules : ''" />

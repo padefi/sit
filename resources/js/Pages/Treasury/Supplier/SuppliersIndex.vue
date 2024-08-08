@@ -6,7 +6,7 @@ import { toastService } from '@/composables/toastService'
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import supplierModal from './SupplierModal.vue';
-import voucherModal from './VoucherModal.vue';
+import supplierVoucherModal from './SupplierVoucherModal.vue';
 import { useDialog } from 'primevue/usedialog';
 import L from 'leaflet';
 
@@ -52,13 +52,13 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-const addNewVoucher = (data) => {
-    dialog.open(voucherModal, {
+const Vouchers = (data) => {
+    dialog.open(supplierVoucherModal, {
         props: {
-            header: `Nuevo comprobante - ${data.businessName}`,
+            header: data.businessName,
             style: {
-                width: '55vw',
-                height: '90vh',
+                width: '95vw',
+                height: '70vh',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -68,6 +68,7 @@ const addNewVoucher = (data) => {
             contentStyle: {
                 padding: '1.25rem',
                 height: '85vh',
+                backgroundColor: 'rgb(var(--surface-50))',
             },
         },
         data: {
@@ -285,8 +286,8 @@ const info = (data, id) => {
                         <template #body="{ data }">
                             <div class="space-x-2 flex pl-2">
                                 <template v-if="hasPermission('create vouchers')">
-                                    <button v-tooltip="'Cargar comprobante'"><i class="pi pi-shopping-cart text-green-500 text-lg font-extrabold"
-                                            @click="addNewVoucher(data)"></i></button>
+                                    <button v-tooltip="'Comprobantes'"><i class="pi pi-book text-green-500 text-lg font-extrabold"
+                                            @click="Vouchers(data)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('edit suppliers')">
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
