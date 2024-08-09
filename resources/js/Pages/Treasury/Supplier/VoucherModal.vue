@@ -2,12 +2,14 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
-import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
+import { percentNumber, currencyNumber } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
+    id: crypto.randomUUID(),
+    idSupplier: undefined,
     voucherType: undefined,
     voucherSubtype: undefined,
     voucherExpense: undefined,
@@ -16,10 +18,10 @@ const form = useForm({
     pointOfNumber: undefined,
     invoiceNumber: undefined,
     invoiceDate: undefined,
-    invocePaymentDate: undefined,
+    invoicePaymentDate: undefined,
     payCondition: undefined,
-    voucherItems: [],
     notes: '',
+    voucherItems: [],
     netAmount: 0,
     vatAmount: 0,
     totalAmount: 0,
@@ -68,6 +70,7 @@ const enabledEditButtons = (callback, event, data) => {
             editing.value = false;
             editingRows.value = [];
             voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
+            recalculateAmounts();
         }
 
         return;
@@ -108,7 +111,7 @@ const addNewItem = () => {
 
 
 const validate = (event, saveCallback, data) => {
-    if (data.description && !data.description.trim() || !data.amount || !data.vat) {
+    if (data.description === undefined || !data.description.trim() || !data.amount || !data.vat) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -143,8 +146,23 @@ const onRowEditCancel = () => {
     voucherItems.value = [...originalVoucherItems.value];
     editing.value = false;
     editingRows.value = [];
+    recalculateAmounts();
 };
 /* End editing voucher item */
+
+const recalculateAmounts = () => {
+    form.netAmount = voucherItems.value.reduce((total, item) => {
+        return total + (item.amount || 0);
+    }, 0);
+
+    form.vatAmount = voucherItems.value.reduce((total, item) => {
+        return total + (item.subtotalAmount || 0) - (item.amount || 0);
+    }, 0);
+
+    form.totalAmount = voucherItems.value.reduce((total, item) => {
+        return total + (item.subtotalAmount || 0);
+    }, 0);
+}
 
 const removeItem = (event, data) => {
     if (editing.value) {
@@ -163,32 +181,20 @@ const removeItem = (event, data) => {
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             voucherItems.value = voucherItems.value.filter((item) => item.id !== data.id);
-
-            form.netAmount = voucherItems.value.reduce((total, item) => {
-                return total + (item.amount || 0);
-            }, 0);
-
-            form.vatAmount = voucherItems.value.reduce((total, item) => {
-                return total + (item.subtotalAmount || 0) - (item.amount || 0);
-            }, 0);
-
-            form.totalAmount = voucherItems.value.reduce((total, item) => {
-                return total + (item.subtotalAmount || 0);
-            }, 0);
+            recalculateAmounts();
         },
     });
 };
 
 const handleInvoiceNumber = (input, length) => {
-    // form[input] = !form[input] ? null : form[input].padStart(length, '0') !== '0'.padStart(length, '0') ? form[input].padStart(length, '0') : '';
     form[input] = !form[input] || form[input].padStart(length, '0') === '0'.padStart(length, '0') ? '' : form[input].padStart(length, '0');
 };
 
 const calculateSubtotalAmount = (data, amountValue, rateValue) => {
     if (amountValue > 99999999) return;
 
-    // const rate = data.vat ? vatRates.value.find((rate) => rate.id === rateValue).rate : 0;
-    const rate = rateValue || 0;
+    // const rate = vatRates.value.find((rate) => rate.id === rateValue).rate || 0;
+    const rate = data.vat ? parseFloat(vatRates.value.find((rate) => rate.id === rateValue).rate) : 0;
     data.subtotalAmount = rate > 0 ? amountValue * (1 + rate / 100) || 0 : amountValue || 0;
 
     form.netAmount = voucherItems.value.reduce((total, item) => {
@@ -205,7 +211,7 @@ const calculateSubtotalAmount = (data, amountValue, rateValue) => {
     form.totalAmount = voucherItems.value.reduce((total, item) => {
         const subtotalAmount = (data.id === item.id) ? data.subtotalAmount : item.subtotalAmount || 0;
         return total + subtotalAmount;
-    }, 0);    
+    }, 0);
 };
 
 const isFormInvalid = computed(() => {
@@ -217,7 +223,7 @@ const isFormInvalid = computed(() => {
     if (!form.pointOfNumber) return true;
     if (!form.invoiceNumber) return true;
     if (!form.invoiceDate) return true;
-    if (!form.invocePaymentDate) return true;
+    if (!form.invoicePaymentDate) return true;
     if (!form.payCondition) return true;
     if (form.netAmount < 0) return true;
     if (form.vatAmount < 0) return true;
@@ -254,8 +260,6 @@ const saveVoucher = (event) => {
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             form.voucherItems = voucherItems.value;
-            console.log(form);
-            return;
 
             form.post(route("vouchers.store"), {
                 onSuccess: () => {
@@ -272,12 +276,13 @@ const closeDialog = () => {
     dialogRef.value.close();
 }
 
-onMounted(async () => {
+onMounted(async () => {    
+    form.idSupplier = dialogRef.value.data.id;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
     vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
         return { label: percentNumber(vatRate.rate), rate: vatRate.rate, id: vatRate.id };
-    });
+    });    
     addNewItem();
 });
 
@@ -494,12 +499,12 @@ tbody tr td {
 
                     <div class="max-w-48">
                         <FloatLabel>
-                            <Calendar v-model="form.invocePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invocePaymentDate" class="w-full"
-                                :class="form.invocePaymentDate !== null && form.invocePaymentDate !== undefined ? 'filled' : ''" inputClass="w-full"
-                                :invalid="form.invocePaymentDate === null" :minDate="form.invoiceDate" />
-                            <label for="invocePaymentDate">F. vencimiento</label>
+                            <Calendar v-model="form.invoicePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invoicePaymentDate" class="w-full"
+                                :class="form.invoicePaymentDate !== null && form.invoicePaymentDate !== undefined ? 'filled' : ''" inputClass="w-full"
+                                :invalid="form.invoicePaymentDate === null" :minDate="form.invoiceDate" />
+                            <label for="invoicePaymentDate">F. vencimiento</label>
                         </FloatLabel>
-                        <InputError :message="form.invocePaymentDate === null ? rules : ''" />
+                        <InputError :message="form.invoicePaymentDate === null ? rules : ''" />
                     </div>
 
                     <div class="min-w-72">
@@ -555,9 +560,9 @@ tbody tr td {
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
-                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" inputClass="w-full px-1" prefix="$"
-                                        id="amount" class=":not(:focus)::placeholder:text-transparent" :min="0.01" :max="99999999"
-                                        :minFractionDigits="2" @input="calculateSubtotalAmount(data, $event.value, data['vat'])"
+                                    <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()"
+                                        inputClass="w-full px-1" prefix="$" id="amount" class=":not(:focus)::placeholder:text-transparent" :min="0.01"
+                                        :max="99999999" :minFractionDigits="2" @input="calculateSubtotalAmount(data, $event.value, data['vat'])"
                                         :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0" />
                                     <label for="amount">Importe</label>
                                 </FloatLabel>
@@ -567,14 +572,14 @@ tbody tr td {
 
                         <Column field="vat" header="I.V.A." class="rounded-tl-lg min-w-24 max-w-24">
                             <template #body="{ data }">
-                                {{ percentNumber(data.vat) }}
+                                {{ percentNumber(vatRates.find((rate) => rate.id === data.vat).rate) }}
                             </template>
                             <template #editor="{ data, field }">
                                 <FloatLabel>
                                     <Dropdown inputId="vatRate" inputClass="w-full flex flex-wrap pl-2 pr-0" v-model="data[field]" :options="vatRates"
-                                        :invalid="data[field] === null" optionLabel="label" optionValue="rate"
+                                        :invalid="data[field] === null" optionLabel="label" optionValue="id"
                                         class="w-full !focus:border-primary-500 iva_dropdown" :class="dropdownClasses(data[field])"
-                                        @change="calculateSubtotalAmount(data, data['amount'], $event.value)" />
+                                        @change="calculateSubtotalAmount(data, data['amount'] || 0, $event.value)" />
                                     <template #option="slotProps">
                                         <Tag :value="slotProps.option.rate" class="bg-transparent uppercase" />
                                     </template>

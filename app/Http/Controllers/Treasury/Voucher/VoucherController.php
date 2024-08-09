@@ -7,9 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherRequest;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
+use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use App\Models\Treasury\Voucher\InvoiceType;
+use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
 class VoucherController extends Controller {
@@ -23,21 +26,74 @@ class VoucherController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(VoucherRequest $request) {
-        $VoucherNumber = Voucher::where('idIt', $request->invoiceType, 'idITCode', $request->invoiceTypeCode, 'pointOfNumber', $request->pointOfNumber, 'invoiceNumber', $request->invoiceNumber)->first();
+        $VoucherNumber = Voucher::where('idIT', $request->invoiceType)
+            ->where('idITCode', $request->invoiceTypeCode)
+            ->where('pointOfNumber', $request->pointOfNumber)
+            ->where('invoiceNumber', $request->invoiceNumber)
+            ->first();
 
         if ($VoucherNumber) {
             throw ValidationException::withMessages([
                 'message' => trans('El comprobante ya se encuentra ingresado.')
             ]);
         }
+
+        $voucher = Voucher::create([
+            'idSupplier' => $request->idSupplier,
+            'idType' => $request->voucherType,
+            'idSubtype' => $request->voucherSubtype,
+            'idExpense' => $request->voucherExpense,
+            'idIT' => $request->invoiceType,
+            'idITCode' => $request->invoiceTypeCode,
+            'pointOfNumber' => $request->pointOfNumber,
+            'invoiceNumber' => $request->invoiceNumber,
+            'invoiceDate' => date('Y-m-d', strtotime($request->invoiceDate)),
+            'invoicePaymentDate' => date('Y-m-d', strtotime($request->invoicePaymentDate)),
+            'idPC' => $request->payCondition,
+            'notes' => $request->notes,
+            'totalAmount' => $request->totalAmount,
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
+
+        foreach ($request->input('voucherItems', []) as $item) {
+            $voucherItem = VoucherItem::create([
+                'idVoucher' => $voucher->id,
+                'description' => $item['description'],
+                'amount' => $item['amount'],
+                'idVat' => $item['vat'],
+                'subtotalAmount' => $item['subtotalAmount'],
+            ]);
+        }
+
+        // $voucher->load('userCreated', 'userUpdated', 'subtypes.userRelated');
+        // event(new VoucherEvent($voucher, $tempUUID, 'create'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobante cargado exitosamente.',
+                'voucher' => $voucher,
+            ],
+            'success' => true,
+        ]);
+    }
+
+
+    public function show(string $id) {
+        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
+            ->where('idSupplier', $id)
+            ->get();
+
+        return response()->json([
+            'vouchers' => VoucherResource::collection($vouchers),
+        ]);
     }
 
     /**

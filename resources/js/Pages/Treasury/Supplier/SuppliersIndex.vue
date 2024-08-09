@@ -52,7 +52,7 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-const Vouchers = (data) => {
+const Vouchers = (data) => {    
     dialog.open(supplierVoucherModal, {
         props: {
             header: data.businessName,
@@ -72,6 +72,7 @@ const Vouchers = (data) => {
             },
         },
         data: {
+            id: data.id,
             payConditions: props.payConditions,
             voucherTypes: props.voucherTypes,
             vatRates: props.vatRates,

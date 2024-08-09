@@ -10,6 +10,7 @@ class Voucher extends Model {
     use HasFactory;
 
     protected $fillable = [
+        'idSupplier',
         'idType',
         'idSubtype',
         'idExpense',
@@ -49,6 +50,10 @@ class Voucher extends Model {
 
     public function payCondition() {
         return $this->belongsTo(PayCondition::class, 'idPC');
+    }
+
+    public function items() {
+        return $this->hasMany(VoucherItem::class, 'idVoucher');
     }
 
     public function userCreated() {

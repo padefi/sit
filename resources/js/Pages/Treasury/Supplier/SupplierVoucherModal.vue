@@ -2,8 +2,9 @@
 import { inject, onMounted, ref, computed } from "vue";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
-import voucherModal from './VoucherModal.vue';
+import { currencyNumber, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { FilterMatchMode, FilterOperator } from "primevue/api";
+import voucherModal from './VoucherModal.vue';
 
 const { hasPermission } = usePermissions();
 const vouchersArray = ref([]);
@@ -18,6 +19,16 @@ const filters = ref({
     credit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     balanceDue: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
+
+const onRowExpand = (data) => {    
+    const originalExpandedRows = { ...expandedRows.value };
+    const newExpandedRows = vouchersArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
+    expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
+}
+
+const onRowCollapse = (data) => {
+    delete expandedRows.value[data.id];
+}
 
 const dialog = useDialog();
 
@@ -40,6 +51,7 @@ const addNewVoucher = (data) => {
             },
         },
         data: {
+            id: dialogRef.value.data.id,
             payConditions: dialogRef.value.data.payConditions,
             voucherTypes: dialogRef.value.data.voucherTypes,
             vatRates: dialogRef.value.data.vatRates,
@@ -50,7 +62,20 @@ const addNewVoucher = (data) => {
 const dialogRef = inject("dialogRef");
 
 onMounted(async () => {
-    vouchersArray.value = dialogRef.value.data.vouchersData;
+    try {
+        const response = await fetch(`/vouchers/${dialogRef.value.data.id}`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los comprobantes del proveedor');
+        }
+
+        const data = await response.json();
+        vouchersArray.value = data.vouchers;
+    } catch (error) {
+        console.error(error);
+    }
+
+    console.log(vouchersArray.value);
 });
 </script>
 <template>
@@ -70,7 +95,7 @@ onMounted(async () => {
         </template>
         <template #content>
             <DataTable :value="vouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
-                dataKey="id" filterDisplay="menu" :pt="{
+                dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
                     table: { style: 'min-width: 50rem' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
@@ -87,16 +112,25 @@ onMounted(async () => {
                 <Column expander style="width: 1%" />
                 <Column field="invoiceDate" header="F. emisión">
                     <template #body="{ data }">
-                        {{ data.invoiceDate }}
+                        {{ dateFormat(data.invoiceDate) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceDate" autocomplete="off"
                             class="p-column-filter" placeholder="Buscar por F. emisión" />
                     </template>
                 </Column>
+                <Column field="invoicePaymentDate" header="F. vencimiento">
+                    <template #body="{ data }">
+                        {{ dateFormat(data.invoicePaymentDate) }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoicePaymentDate" autocomplete="off"
+                            class="p-column-filter" placeholder="Buscar por F. emisión" />
+                    </template>
+                </Column>
                 <Column field="invoiceType" header="T. comp.">
                     <template #body="{ data }">
-                        {{ data.invoiceType }}
+                        {{ data.invoiceType.name }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceType" autocomplete="off"
@@ -105,7 +139,7 @@ onMounted(async () => {
                 </Column>
                 <Column field="invoiceTypeCode" header="T. fac.">
                     <template #body="{ data }">
-                        {{ data.invoiceTypeCode }}
+                        {{ data.invoiceTypeCode.name }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceTypeCode" autocomplete="off"
@@ -114,7 +148,7 @@ onMounted(async () => {
                 </Column>
                 <Column field="invoiceNumber" header="Número">
                     <template #body="{ data }">
-                        {{ data.invoiceNumber }}
+                        {{ invoiceNumberFormat(data.pointOfNumber, 5) + '-' + invoiceNumberFormat(data.invoiceNumber, 8) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceNumber" autocomplete="off"
@@ -123,7 +157,7 @@ onMounted(async () => {
                 </Column>
                 <Column field="debit" header="Débito">
                     <template #body="{ data }">
-                        {{ data.debit }}
+                        {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="debit" autocomplete="off"
@@ -132,7 +166,7 @@ onMounted(async () => {
                 </Column>
                 <Column field="credit" header="Crédito">
                     <template #body="{ data }">
-                        {{ data.credit }}
+                        {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="credit" autocomplete="off"
@@ -141,7 +175,7 @@ onMounted(async () => {
                 </Column>
                 <Column field="balanceDue" header="Saldo adeudado">
                     <template #body="{ data }">
-                        {{ data.balanceDue }}
+                        {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="balanceDue" autocomplete="off"
@@ -155,16 +189,21 @@ onMounted(async () => {
                                 <button v-tooltip="'Comprobantes'"><i class="pi pi-book text-green-500 text-lg font-extrabold"
                                         @click="Vouchers(data)"></i></button>
                             </template>
-                            <template v-if="hasPermission('edit suppliers')">
+    <template v-if="hasPermission('edit suppliers')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="editSupplier(data)"></i></button>
                             </template>
-                            <template v-if="hasPermission('view users')">
+    <template v-if="hasPermission('view users')">
                                 <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data, data.id)"></i></button>
                             </template>
-                        </div> -->
+    </div> -->
                     </template>
                 </Column>
+                <template #expansion="{ data }">
+                    <DataTable :value="data.items" scrollable>
+                        {{ slots }}
+                    </DataTable>
+                </template>
             </DataTable>
         </template>
     </Card>

@@ -11,6 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('vouchers', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('idSupplier');
             $table->unsignedBigInteger('idType');
             $table->unsignedBigInteger('idSubtype');
             $table->unsignedBigInteger('idExpense');
@@ -27,6 +28,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
 
+            $table->index('idSupplier');
             $table->index('idType');
             $table->index('idSubtype');
             $table->index('idExpense');
@@ -35,6 +37,12 @@ return new class extends Migration {
             $table->index('idPC');
             $table->index('idUserCreated');
             $table->index('idUserUpdated');
+
+            $table->foreign('idSupplier')
+                ->references('id')
+                ->on('suppliers')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
 
             $table->foreign('idType')
                 ->references('id')
@@ -91,6 +99,7 @@ return new class extends Migration {
      */
     public function down(): void {
         Schema::table('vouchers', function (Blueprint $table) {
+            $table->dropForeign(['idSupplier']);
             $table->dropForeign(['idType']);
             $table->dropForeign(['idSubtype']);
             $table->dropForeign(['idExpense']);

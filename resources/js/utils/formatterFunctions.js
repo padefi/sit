@@ -21,3 +21,7 @@ export const percentNumber = (data) => {
 export const dateFormat = (data) => {
     return format(data, "DD/MM/YYYY", "es");
 };
+
+export const invoiceNumberFormat = (data, length) => {
+    return String(data).padStart(length, '0');
+};
