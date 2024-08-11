@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();
+            $table->boolean('status')->default(true);
 
             $table->index('idSupplier');
             $table->index('idType');

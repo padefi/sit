@@ -21,7 +21,9 @@ class VoucherController extends Controller {
         $this->middleware('check.permission:view vouchers')->only('index');
         $this->middleware('check.permission:create vouchers')->only('store');
         $this->middleware('check.permission:edit vouchers')->only('update');
-        $this->middleware('check.permission:view users')->only('typesRelated');
+        $this->middleware('check.permission:view vouchers')->only('typesRelated');
+        $this->middleware('check.permission:view vouchers')->only('invoiceTypesRelated');
+        $this->middleware('check.permission:edit vouchers')->only('voidVoucher');
     }
 
     /**
@@ -131,6 +133,7 @@ class VoucherController extends Controller {
             'totalAmount' => $request->totalAmount,
             'idUserUpdated' => auth()->user()->id,
             'updated_at' => now(),
+            'status' => true,
         ]);
 
         /* Deleting items */
@@ -174,6 +177,24 @@ class VoucherController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Comprobante modificado exitosamente.',
+                'voucher' => $voucher,
+            ],
+            'success' => true,
+        ]);
+    }
+
+    public function voidVoucher(Voucher $voucher) {
+        $voucher->update([
+            'status' => false,
+        ]);
+
+        $voucher->load('userCreated', 'userUpdated', 'items');
+        event(new VoucherEvent($voucher, $voucher->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobante aunlado exitosamente.',
                 'voucher' => $voucher,
             ],
             'success' => true,

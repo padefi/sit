@@ -301,11 +301,11 @@ onMounted(async () => {
         form.voucherType = data.voucherType.id;
 
         await loadVoucherSubtypeData(data.voucherType.id);
-        form.voucherSubtype = data.voucherSubtype.id;
+        form.voucherSubtype = voucherSubtypes.value.find((subtype) => subtype.id === data.voucherSubtype.id) ? data.voucherSubtype.id : undefined;
 
         setTimeout(async () => {
             await loadVoucherExpenseData(data.voucherSubtype.id);
-            form.voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+            form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === data.voucherExpense.id) ? data.voucherExpense.id : undefined;
         }, 1);
 
         form.invoiceType = data.invoiceType.id;

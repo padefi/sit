@@ -5,12 +5,15 @@ import { useDialog } from 'primevue/usedialog';
 import { currencyNumber, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { FilterMatchMode, FilterOperator } from "primevue/api";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
+import { useForm } from "@inertiajs/vue3";
 import voucherModal from './VoucherModal.vue';
 
 const { hasPermission } = usePermissions();
 const vouchersArray = ref([]);
 const expandedRows = ref([]);
 const toast = useToast();
+const confirm = useConfirm();
 
 const filters = ref({
     invoiceDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -31,6 +34,10 @@ const onRowExpand = (data) => {
 const onRowCollapse = (data) => {
     delete expandedRows.value[data.id];
 }
+
+const rowClassVoid = (data) => {    
+  return data.status === 0 ? '!text-red-500' : '';
+};
 
 const dialog = useDialog();
 
@@ -89,6 +96,29 @@ const editVoucher = (data) => {
             vatRates: dialogRef.value.data.vatRates,
             voucherData: data,
         }
+    });
+}
+
+const voidVoucher = (event, data) => {
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de anular el comprobante?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            const form = useForm({
+                id: data.id
+            });
+
+            form.put(route("vouchers.void", data.id), {
+                onError: (error) => {
+                    toast.add({
+                        severity: 'error',
+                        detail: error.response.data.message,
+                        life: 3000,
+                    });
+                },
+            });
+        },
     });
 }
 
@@ -188,7 +218,7 @@ const info = (id) => {
                     }
                 }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table" :row-class="rowClassVoid">
                 <template #empty>
                     <div class="text-center text-lg text-red-500">
                         Sin comprobantes cargados
@@ -280,6 +310,11 @@ const info = (id) => {
                             </template>
                             <template v-if="hasPermission('view users')">
                                 <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data.id)"></i></button>
+                            </template>
+                            <template v-if="hasPermission('edit vouchers') && data.status === 1">
+                                <ConfirmPopup></ConfirmPopup>
+                                <button v-tooltip="'Anular'"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
+                                        @click="voidVoucher($event, data)"></i></button>
                             </template>
                         </div>
                     </template>

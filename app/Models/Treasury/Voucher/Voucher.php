@@ -26,6 +26,7 @@ class Voucher extends Model {
         'idUserCreated',
         'idUserUpdated',
         'updated_at',
+        'status',
     ];
 
     public function voucherType() {
