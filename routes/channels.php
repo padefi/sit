@@ -60,3 +60,7 @@ Broadcast::channel('socialSecurityTaxWithholdings', function () {
 Broadcast::channel('vatTaxWithholdings', function () {
     return true;
 });
+
+Broadcast::channel('vouchers', function () {
+    return true;
+});

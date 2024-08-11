@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Treasury\Voucher;
 
+use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherRequest;
@@ -32,6 +33,7 @@ class VoucherController extends Controller {
      */
     public function store(VoucherRequest $request) {
         $VoucherNumber = Voucher::where('idIT', $request->invoiceType)
+            ->where('idSupplier', $request->idSupplier)
             ->where('idITCode', $request->invoiceTypeCode)
             ->where('pointOfNumber', $request->pointOfNumber)
             ->where('invoiceNumber', $request->invoiceNumber)
@@ -47,7 +49,7 @@ class VoucherController extends Controller {
             'idSupplier' => $request->idSupplier,
             'idType' => $request->voucherType,
             'idSubtype' => $request->voucherSubtype,
-            'idExpense' => $request->voucherExpense,
+            'idExpense' => $request->voucherExpense > 0 ? $request->voucherExpense : null,
             'idIT' => $request->invoiceType,
             'idITCode' => $request->invoiceTypeCode,
             'pointOfNumber' => $request->pointOfNumber,
@@ -72,8 +74,8 @@ class VoucherController extends Controller {
             ]);
         }
 
-        // $voucher->load('userCreated', 'userUpdated', 'subtypes.userRelated');
-        // event(new VoucherEvent($voucher, $tempUUID, 'create'));
+        $voucher->load('userCreated', 'userUpdated', 'items');
+        event(new VoucherEvent($voucher, $voucher->id, 'create'));
 
         return Redirect::back()->with([
             'info' => [
@@ -99,8 +101,83 @@ class VoucherController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Voucher $voucher) {
-        //
+    public function update(VoucherRequest $request, Voucher $voucher) {
+        $VoucherNumber = Voucher::where('idIT', $request->invoiceType)
+            ->where('idSupplier', $request->idSupplier)
+            ->where('idITCode', $request->invoiceTypeCode)
+            ->where('pointOfNumber', $request->pointOfNumber)
+            ->where('invoiceNumber', $request->invoiceNumber)
+            ->whereNot('id', $voucher->id)
+            ->first();
+
+        if ($VoucherNumber) {
+            throw ValidationException::withMessages([
+                'message' => trans('El comprobante ya se encuentra ingresado.')
+            ]);
+        }
+
+        $voucher->update([
+            'idType' => $request->voucherType,
+            'idSubtype' => $request->voucherSubtype,
+            'idExpense' => $request->voucherExpense > 0 ? $request->voucherExpense : null,
+            'idIT' => $request->invoiceType,
+            'idITCode' => $request->invoiceTypeCode,
+            'pointOfNumber' => $request->pointOfNumber,
+            'invoiceNumber' => $request->invoiceNumber,
+            'invoiceDate' => date('Y-m-d', strtotime($request->invoiceDate)),
+            'invoicePaymentDate' => date('Y-m-d', strtotime($request->invoicePaymentDate)),
+            'idPC' => $request->payCondition,
+            'notes' => $request->notes,
+            'totalAmount' => $request->totalAmount,
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        /* Deleting items */
+        $itemIds = array_column($request->input('voucherItems', []), 'id');
+        $existingItems = VoucherItem::where('idVoucher', $voucher->id)->get();
+        $existingItemIds = $existingItems->pluck('id')->toArray();
+
+        $idsToDelete = array_diff($existingItemIds, $itemIds);
+        if (!empty($idsToDelete)) {
+            VoucherItem::whereIn('id', $idsToDelete)->delete();
+        }
+        /* Deleting items */
+
+        foreach ($request->input('voucherItems', []) as $item) {
+            $voucherItem = VoucherItem::where('id', $item['id'])
+                ->where('idVoucher', $voucher->id)
+                ->first();
+
+            if ($voucherItem) {
+                $voucherItem->update([
+                    'description' => $item['description'],
+                    'amount' => $item['amount'],
+                    'idVat' => $item['vat'],
+                    'subtotalAmount' => $item['subtotalAmount'],
+                ]);
+            } else {
+                $voucherItem = VoucherItem::create([
+                    'idVoucher' => $voucher->id,
+                    'description' => $item['description'],
+                    'amount' => $item['amount'],
+                    'idVat' => $item['vat'],
+                    'subtotalAmount' => $item['subtotalAmount'],
+                ]);
+            }
+        }
+
+        $voucher->load('userCreated', 'userUpdated', 'items');
+        event(new VoucherEvent($voucher, $voucher->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobante modificado exitosamente.',
+                'voucher' => $voucher,
+            ],
+            'success' => true,
+        ]);
     }
 
     public function typesRelated(VoucherType $voucherType) {
@@ -117,5 +194,17 @@ class VoucherController extends Controller {
         return response()->json([
             'invoiceTypeCodes' => InvoiceTypeCodeResource::collection($invoiceTypeCodes),
         ]);
+    }
+
+    public function info(Voucher $voucher) {
+        $voucher = Voucher::with(['userCreated', 'userUpdated'])->where('id', $voucher->id)->first();
+
+        if (!$voucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+
+        return new VoucherResource($voucher);
     }
 }

@@ -2,7 +2,7 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
-import { percentNumber, currencyNumber } from "@/utils/formatterFunctions";
+import { percentNumber, currencyNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
@@ -41,6 +41,7 @@ const originalVoucherItems = ref([]);
 const newRow = ref([]);
 const editingRows = ref([]);
 const editing = ref(false);
+const editingVoucher = ref(false);
 const confirm = useConfirm();
 const toast = useToast();
 
@@ -259,13 +260,21 @@ const saveVoucher = (event) => {
         message: '¿Está seguro de ingresar el comprobante?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
-            form.voucherItems = voucherItems.value;
+            form.voucherItems = voucherItems.value;            
 
-            form.post(route("vouchers.store"), {
+            if (!editingVoucher.value) {
+                form.post(route("vouchers.store"), {
                 onSuccess: () => {
                     dialogRef.value.close();
                 },
             });
+            } else {
+                form.put(route("vouchers.update", form.id), {
+                    onSuccess: () => {
+                        dialogRef.value.close();
+                    },
+                });
+            }
         },
     });
 };
@@ -276,17 +285,57 @@ const closeDialog = () => {
     dialogRef.value.close();
 }
 
-onMounted(async () => {    
+onMounted(async () => {
     form.idSupplier = dialogRef.value.data.id;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
     vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
         return { label: percentNumber(vatRate.rate), rate: vatRate.rate, id: vatRate.id };
-    });    
+    });
+
+    if (dialogRef.value.data.voucherData) {
+        const data = dialogRef.value.data.voucherData;
+
+        editingVoucher.value = true;
+        form.id = data.id;
+        form.voucherType = data.voucherType.id;
+
+        await loadVoucherSubtypeData(data.voucherType.id);
+        form.voucherSubtype = data.voucherSubtype.id;
+
+        setTimeout(async () => {
+            await loadVoucherExpenseData(data.voucherSubtype.id);
+            form.voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+        }, 1);
+
+        form.invoiceType = data.invoiceType.id;
+
+        await loadInvoiceTypeData(data.invoiceType.id);
+        form.invoiceTypeCode = data.invoiceTypeCode.id;
+        form.voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+
+        form.pointOfNumber = invoiceNumberFormat(data.pointOfNumber, 5);
+        form.invoiceNumber = invoiceNumberFormat(data.invoiceNumber, 8);
+        form.invoiceDate = new Date(data.invoiceDate);
+        form.invoiceDate.setDate(form.invoiceDate.getDate() + 1);
+
+        form.invoicePaymentDate = new Date(data.invoicePaymentDate);
+        form.invoicePaymentDate.setDate(form.invoicePaymentDate.getDate() + 1);
+
+        form.payCondition = data.payCondition.id;
+        form.notes = data.notes || '';
+        voucherItems.value = data.items.map((item) => {
+            return { id: item.id, description: item.description, amount: item.amount, vat: item.VatRate.id, subtotalAmount: item.subtotalAmount, condition: 'editItem' };
+        });
+
+        recalculateAmounts();
+        return;
+    }
+
     addNewItem();
 });
 
-watch(() => form.voucherType, async (voucherTypeId) => {
+const loadVoucherSubtypeData = async (voucherTypeId) => {
     form.voucherSubtype = undefined;
     form.voucherExpense = undefined;
     form.invoiceType = undefined;
@@ -296,39 +345,35 @@ watch(() => form.voucherType, async (voucherTypeId) => {
     invoiceTypes.value = [];
     invoiceTypeCodes.value = [];
 
-    if (!voucherTypeId) {
-        return;
-    }
+    if (!voucherTypeId) return;
 
     try {
-        const subtype = await fetch(`/voucher-subtypes/${voucherTypeId}/data-related`);
-        const invoiceType = await fetch(`/vouchers/${voucherTypeId}/types-related`);
+        const [subtypeResponse, invoiceTypeResponse] = await Promise.all([
+            fetch(`/voucher-subtypes/${voucherTypeId}/data-related`),
+            fetch(`/vouchers/${voucherTypeId}/types-related`)
+        ]);
 
-        if (!subtype.ok) {
-            throw new Error('Error al obtener los subtipos relacionados');
+        if (!subtypeResponse.ok || !invoiceTypeResponse.ok) {
+            throw new Error('Error al obtener los datos relacionados');
         }
 
-        if (!invoiceType.ok) {
-            throw new Error('Error al obtener los tipos de comprobante relacionados');
-        }
+        const [dataSubtype, dataInvoiceType] = await Promise.all([
+            subtypeResponse.json(),
+            invoiceTypeResponse.json()
+        ]);
 
-        const dataSubtype = await subtype.json();
         voucherSubtypes.value = dataSubtype.voucherSubtypes;
-
-        const dataInvoiceType = await invoiceType.json();
         invoiceTypes.value = dataInvoiceType.invoiceTypes;
     } catch (error) {
         console.error(error);
     }
-});
+};
 
-watch(() => form.voucherSubtype, async (voucherSubtype) => {
+const loadVoucherExpenseData = async (voucherSubtype) => {
     form.voucherExpense = undefined;
     voucherExpenses.value = [];
 
-    if (!voucherSubtype) {
-        return;
-    }
+    if (!voucherSubtype) return;
 
     try {
         const response = await fetch(`/voucher-expenses/${voucherSubtype}/data-related`);
@@ -343,15 +388,13 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
     } catch (error) {
         console.error(error);
     }
-});
+}
 
-watch(() => form.invoiceType, async (invoiceTypeId) => {
+const loadInvoiceTypeData = async (invoiceTypeId) => {
     form.invoiceTypeCode = undefined;
     invoiceTypeCodes.value = [];
 
-    if (!invoiceTypeId) {
-        return;
-    }
+    if (!invoiceTypeId) return;
 
     try {
         const response = await fetch(`/vouchers/${invoiceTypeId}/invoice-types-related`);
@@ -365,6 +408,18 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
     } catch (error) {
         console.error(error);
     }
+}
+
+watch(() => form.voucherType, async (voucherTypeId) => {
+    await loadVoucherSubtypeData(voucherTypeId);
+});
+
+watch(() => form.voucherSubtype, async (voucherSubtype) => {
+    await loadVoucherExpenseData(voucherSubtype);
+});
+
+watch(() => form.invoiceType, async (invoiceTypeId) => {
+    await loadInvoiceTypeData(invoiceTypeId);
 });
 </script>
 <style>

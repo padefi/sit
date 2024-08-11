@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idSupplier');
             $table->unsignedBigInteger('idType');
             $table->unsignedBigInteger('idSubtype');
-            $table->unsignedBigInteger('idExpense');
+            $table->unsignedBigInteger('idExpense')->nullable();
             $table->unsignedBigInteger('idIT')->comment('id invoice type');
             $table->unsignedBigInteger('idITCode')->comment('id invoice type code');
             $table->integer('pointOfNumber');

@@ -15,18 +15,23 @@ class VoucherResource extends JsonResource {
         return [
             'id' => $this->id,
             'voucherType' => $this->voucherType ? [
+                'id' => $this->voucherType->id,
                 'name' => $this->voucherType->name,
             ] : null,
             'voucherSubtype' => $this->voucherSubtype ? [
+                'id' => $this->voucherSubtype->id,
                 'name' => $this->voucherSubtype->name,
             ] : null,
             'voucherExpense' => $this->voucherExpense ? [
+                'id' => $this->voucherExpense->id,
                 'name' => $this->voucherExpense->name,
             ] : null,
             'invoiceType' => $this->invoiceType ? [
+                'id' => $this->invoiceType->id,
                 'name' => $this->invoiceType->name,
             ] : null,
             'invoiceTypeCode' => $this->invoiceTypeCode ? [
+                'id' => $this->invoiceTypeCode->id,
                 'name' => $this->invoiceTypeCode->name,
             ] : null,
             'pointOfNumber' => $this->pointOfNumber,
@@ -34,6 +39,7 @@ class VoucherResource extends JsonResource {
             'invoiceDate' => $this->invoiceDate,
             'invoicePaymentDate' => $this->invoicePaymentDate,
             'payCondition' => $this->payCondition ? [
+                'id' => $this->payCondition->id,
                 'name' => $this->payCondition->name,
             ] : null,
             'notes' => $this->notes,

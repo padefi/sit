@@ -19,6 +19,11 @@ class VoucherItem extends Model {
         'subtotalAmount',
     ];
 
+    protected $casts = [
+        'amount' => 'float',
+        'subtotalAmount' => 'float',
+    ];
+
     public function VatRate() {
         return $this->belongsTo(VatRate::class, 'idVat');
     }

@@ -80,6 +80,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
     Route::resource('vouchers', VoucherController::class);
     Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
     Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
+    Route::get('/vouchers/{voucher}/info', [VoucherController::class, 'info'])->name('vouchers.info');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {
