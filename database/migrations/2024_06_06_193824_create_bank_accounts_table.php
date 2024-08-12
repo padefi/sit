@@ -56,13 +56,13 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('banks', function (Blueprint $table) {
+        Schema::table('bank_accounts', function (Blueprint $table) {
             $table->dropForeign(['idBank']);
             $table->dropForeign(['idAT']);
             $table->dropForeign(['idUserCreated']);
             $table->dropForeign(['idUserUpdated']);
         });
 
-        Schema::dropIfExists('banks');
+        Schema::dropIfExists('bank_accounts');
     }
 };

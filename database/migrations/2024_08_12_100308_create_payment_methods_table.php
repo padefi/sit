@@ -9,9 +9,9 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('bank_account_types', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->collation('utf8mb4_general_ci');
+            $table->string('name', 50)->collation('utf8mb4_general_ci');
         });
     }
 
@@ -19,6 +19,6 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('bank_account_types');
+        Schema::dropIfExists('payment_methods');
     }
 };

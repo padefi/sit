@@ -2,6 +2,7 @@
 
 namespace App\Models\Treasury\Voucher;
 
+use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,10 @@ class Voucher extends Model {
         'updated_at',
         'status',
     ];
+
+    public function voucherSupplier() {
+        return $this->belongsTo(Supplier::class, 'idSupplier');
+    }
 
     public function voucherType() {
         return $this->belongsTo(VoucherType::class, 'idType');
