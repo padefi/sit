@@ -72,7 +72,7 @@ const Vouchers = (data) => {
             },
         },
         data: {
-            id: data.id,
+            voucher: data,
             payConditions: props.payConditions,
             voucherTypes: props.voucherTypes,
             vatRates: props.vatRates,

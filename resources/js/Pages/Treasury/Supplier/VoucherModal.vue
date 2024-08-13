@@ -286,7 +286,7 @@ const closeDialog = () => {
 }
 
 onMounted(async () => {
-    form.idSupplier = dialogRef.value.data.id;
+    form.idSupplier = dialogRef.value.data.voucher.id;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
     vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {

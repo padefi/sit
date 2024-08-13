@@ -1,5 +1,5 @@
 <script setup>
-import { inject, onMounted, ref, computed } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
 import { currencyNumber, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
@@ -8,6 +8,7 @@ import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import voucherModal from './VoucherModal.vue';
+import treasuryModal from './TreasuryModal.vue';
 
 const { hasPermission } = usePermissions();
 const vouchersArray = ref([]);
@@ -35,11 +36,12 @@ const onRowCollapse = (data) => {
     delete expandedRows.value[data.id];
 }
 
-const rowClassVoid = (data) => {    
-  return data.status === 0 ? '!text-red-500' : '';
+const rowClassVoid = (data) => {
+    return data.status === 0 ? '!text-red-500' : '';
 };
 
 const dialog = useDialog();
+const dialogRef = inject("dialogRef");
 
 const addNewVoucher = () => {
     dialog.open(voucherModal, {
@@ -60,7 +62,7 @@ const addNewVoucher = () => {
             },
         },
         data: {
-            id: dialogRef.value.data.id,
+            voucher: dialogRef.value.data.voucher,
             payConditions: dialogRef.value.data.payConditions,
             voucherTypes: dialogRef.value.data.voucherTypes,
             vatRates: dialogRef.value.data.vatRates,
@@ -68,7 +70,33 @@ const addNewVoucher = () => {
     });
 };
 
-const VoucherTreasury = (data) => {
+const treasuryVoucher = () => {
+    dialog.open(treasuryModal, {
+        props: {
+            header: dialogRef.value.data.voucher.businessName,
+            style: {
+                width: '80vw',
+                height: '55vh',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true,
+            contentStyle: {
+                padding: '1.25rem',
+                height: '85vh',
+                backgroundColor: 'rgb(var(--surface-50))',
+            },
+        },
+        data: {
+            voucher: dialogRef.value.data.voucher,
+            /* payConditions: dialogRef.value.data.payConditions,
+            voucherTypes: dialogRef.value.data.voucherTypes,
+            vatRates: dialogRef.value.data.vatRates,
+            voucherData: data, */
+        }
+    });
 }
 
 const editVoucher = (data) => {
@@ -90,7 +118,7 @@ const editVoucher = (data) => {
             },
         },
         data: {
-            id: dialogRef.value.data.id,
+            voucher: dialogRef.value.data.voucher,
             payConditions: dialogRef.value.data.payConditions,
             voucherTypes: dialogRef.value.data.voucherTypes,
             vatRates: dialogRef.value.data.vatRates,
@@ -122,11 +150,9 @@ const voidVoucher = (event, data) => {
     });
 }
 
-const dialogRef = inject("dialogRef");
-
 onMounted(async () => {
     try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.id}`);
+        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los comprobantes del proveedor');
@@ -201,9 +227,9 @@ const info = (id) => {
                     <h3 class="uppercase">Comprobantes</h3>
                 </div>
                 <template v-if="hasPermission('create vouchers')">
-                    <div class="align-right">
-                        <Button label="Agregar comprobante" severity="info" outlined icon="pi pi-shopping-cart" size="large"
-                            @click="addNewVoucher($event)" />
+                    <div class="align-right space-x-2">
+                        <Button label="Comprobante" severity="info" outlined icon="pi pi-shopping-cart" size="large" @click="addNewVoucher($event)" />
+                        <Button label="Tesorería" severity="success" outlined icon="pi pi-dollar" size="large" @click="treasuryVoucher($event)" />
                     </div>
                 </template>
             </div>
@@ -270,25 +296,16 @@ const info = (id) => {
                             class="p-column-filter" placeholder="Buscar por número" />
                     </template>
                 </Column>
-                <Column field="debit" header="Débito">
+                <Column field="totalAmount" header="Monto">
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="debit" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por débito" />
+                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="totalAmount" autocomplete="off"
+                            class="p-column-filter" placeholder="Buscar por monto" />
                     </template>
                 </Column>
-                <Column field="credit" header="Crédito">
-                    <template #body="{ data }">
-                        {{ currencyNumber(data.totalAmount) }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="credit" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por crédito" />
-                    </template>
-                </Column>
-                <Column field="balanceDue" header="Saldo adeudado">
+                <Column field="balanceDue" header="Saldo">
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
                     </template>
@@ -300,10 +317,10 @@ const info = (id) => {
                 <Column header="Acciones" style="width: 5%; min-width: 8rem;">
                     <template #body="{ data }">
                         <div class="space-x-2 flex pl-2">
-                            <template v-if="hasPermission('create vouchers')">
+                            <!-- <template v-if="hasPermission('create vouchers')">
                                 <button v-tooltip="'Tesorería'"><i class="pi pi-dollar text-green-500 text-lg font-extrabold"
                                         @click="VoucherTreasury(data)"></i></button>
-                            </template>
+                            </template> -->
                             <template v-if="hasPermission('edit vouchers')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="editVoucher(data)"></i></button>

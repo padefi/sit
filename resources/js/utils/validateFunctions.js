@@ -1,3 +1,5 @@
+import { format, isEqual, isBefore, isAfter } from "@formkit/tempo";
+
 export const validateEmail = (value) => {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
 };
@@ -106,3 +108,33 @@ export const cuitValidator = (data) => {
     return false;
 };
 /* Cuil/Cuit validation */
+
+export const compareDates = (date1, date2, value) => {
+    if (date1 != '') {
+        date1 = new Date(date1);
+        date1.setDate(date1.getDate() + 1);
+    } else {
+        date1 = new Date();
+    }
+
+    if (date2 != '') {
+        date2 = new Date(date2);
+        date2.setDate(date2.getDate() + 1);
+    } else {
+        date2 = new Date();
+    }
+
+    date1 = format(date1, "YYYY-MM-DD");
+    date2 = format(date2, "YYYY-MM-DD");
+
+    switch (value) {
+        case "before":
+            return isBefore(date1, date2);
+        case "after":
+            return isAfter(date1, date2);
+        case "equal":
+            return isEqual(date1, date2);
+        default:
+            break;
+    }
+};
