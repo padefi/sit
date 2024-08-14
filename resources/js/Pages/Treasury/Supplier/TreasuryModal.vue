@@ -58,6 +58,11 @@ const addNewTreasuryVoucher = () => {
                 }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                <template #empty>
+                    <div class="text-center text-lg text-red-500">
+                        Sin comprobantes cargados
+                    </div>
+                </template>
                 <Column field="description" header="Descripción" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
                         <!-- {{ data.description }} -->

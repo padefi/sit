@@ -260,14 +260,14 @@ const saveVoucher = (event) => {
         message: '¿Está seguro de ingresar el comprobante?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
-            form.voucherItems = voucherItems.value;            
+            form.voucherItems = voucherItems.value;
 
             if (!editingVoucher.value) {
                 form.post(route("vouchers.store"), {
-                onSuccess: () => {
-                    dialogRef.value.close();
-                },
-            });
+                    onSuccess: () => {
+                        dialogRef.value.close();
+                    },
+                });
             } else {
                 form.put(route("vouchers.update", form.id), {
                     onSuccess: () => {
@@ -423,7 +423,7 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
 });
 </script>
 <style>
-tbody tr td {
+.thin-td tr td {
     padding: 0.5rem 0.25rem !important;
 }
 
@@ -594,7 +594,7 @@ tbody tr td {
                 <div class="m-3 !mb-0">
                     <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="200px" editMode="row" dataKey="id"
                         @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel"
-                        :pt="{ wrapper: { class: 'datatable-scrollbar' } }">
+                        :pt="{ tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' } }">
                         <Column field="description" header="Descripción" class="rounded-tl-lg min-w-56 max-w-56">
                             <template #body="{ data }">
                                 {{ data.description.toLocaleUpperCase() || '' }}

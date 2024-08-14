@@ -30,6 +30,10 @@ class Voucher extends Model {
         'status',
     ];
 
+    protected $casts = [
+        'totalAmount' => 'float',
+    ];
+
     public function voucherSupplier() {
         return $this->belongsTo(Supplier::class, 'idSupplier');
     }

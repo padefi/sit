@@ -3,6 +3,7 @@ import { inject, onMounted, ref } from "vue";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
 import { currencyNumber, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { compareDates } from "@/utils/validateFunctions";
 import { FilterMatchMode, FilterOperator } from "primevue/api";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
@@ -251,24 +252,6 @@ const info = (id) => {
                     </div>
                 </template>
                 <Column expander style="width: 1%" />
-                <Column field="invoiceDate" header="F. emisión">
-                    <template #body="{ data }">
-                        {{ dateFormat(data.invoiceDate) }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceDate" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por F. emisión" />
-                    </template>
-                </Column>
-                <Column field="invoicePaymentDate" header="F. vencimiento">
-                    <template #body="{ data }">
-                        {{ dateFormat(data.invoicePaymentDate) }}
-                    </template>
-                    <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoicePaymentDate" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por F. emisión" />
-                    </template>
-                </Column>
                 <Column field="invoiceType" header="T. comp.">
                     <template #body="{ data }">
                         {{ data.invoiceType.name }}
@@ -296,13 +279,33 @@ const info = (id) => {
                             class="p-column-filter" placeholder="Buscar por número" />
                     </template>
                 </Column>
-                <Column field="totalAmount" header="Monto">
+                <Column field="invoicePaymentDate" header="F. vencimiento">
+                    <template #body="{ data }">
+                        <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
+                            {{ dateFormat(data.invoicePaymentDate) }}
+                        </span>
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoicePaymentDate" autocomplete="off"
+                            class="p-column-filter" placeholder="Buscar por F. emisión" />
+                    </template>
+                </Column>
+                <Column field="payCondition" header="Cond. Pago">
+                    <template #body="{ data }">
+                        {{ data.payCondition.name }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="payCondition" autocomplete="off"
+                            class="p-column-filter" placeholder="Buscar por cond. pago" />
+                    </template>
+                </Column>
+                <Column field="totalAmount" header="Importe">
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="totalAmount" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por monto" />
+                            class="p-column-filter" placeholder="Buscar por importe" />
                     </template>
                 </Column>
                 <Column field="balanceDue" header="Saldo">
