@@ -1,30 +1,92 @@
 <script setup>
 import { inject, onMounted, ref } from "vue";
-import { usePermissions } from '@/composables/permissions';
+import { useForm } from "@inertiajs/vue3";
 import { currencyNumber, dateFormat, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
+import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
-const { hasPermission } = usePermissions();
+const form = useForm({
+    vouchers: [],
+    totalPaymentAmount: 0,
+});
+
 const treasuryVouchersArray = ref([]);
 const originalTreasuryVouchersArray = ref([]);
+const editing = ref(false);
 const editingRows = ref([]);
+const confirm = useConfirm();
+const toast = useToast();
 const rules = 'Debe completar el campo'
 
 const dialogRef = inject("dialogRef");
 
-const disabledEditButtons = (callback, event, data) => {
-    // editing.value = true;
+const disabledEditButtons = (callback, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de modificar un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    editing.value = true;
     callback(event);
 };
 
 const validateAmount = (event, saveCallback, data) => {
-    saveCallback(event, data);
+    if (!data.paymentAmount) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar el importe.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    editing.value = false;
+    editingRows.value = [];
+    saveCallback(event);
+}
+
+const calculatePaymentAmount = (event, data) => {
+    form.totalPaymentAmount = treasuryVouchersArray.value.reduce((total, voucher) => {
+        if (voucher.id === data.id) {
+            const amount = event.value <= voucher.totalAmount ? event.value || 0 : voucher.totalAmount || 0;
+            return total + amount;
+        }
+
+        if (voucher.checked && voucher.id !== data.id) {
+            return total + (voucher.paymentAmount || 0);
+        }
+
+        return total;
+    }, 0);
+}
+
+const recalculatePaymentAmount = () => {
+    form.totalPaymentAmount = treasuryVouchersArray.value.reduce((total, voucher) => {
+        if (voucher.checked) {
+            return total + (voucher.paymentAmount || 0);
+        }
+
+        return total;
+    }, 0);
+}
+
+const setTotalPaymentAmount = (event, data) => {
+    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.paymentAmount : form.totalPaymentAmount - data.paymentAmount;
+    if (!event.target.checked) data.paymentAmount = data.totalAmount;
 }
 
 const enabledEditButtons = (callback, event) => {
-    /* editing.value = false;
-    editingRows.value = []; */
+    treasuryVouchersArray.value = [...originalTreasuryVouchersArray.value];
+    editing.value = false;
+    editingRows.value = [];
     callback(event);
 }
 
@@ -33,16 +95,65 @@ const onRowEditInit = (event) => {
     editingRows.value = [event.data];
 }
 
-const onRowEditCancel = (event) => {
-    treasuryVouchersArray.value = [...originalTreasuryVouchersArray.value];
-    /* editing.value = false;
-    newRow.value = []; */
-    editingRows.value = [];
+const onRowEditSave = (event) => {
+    let { newData, index } = event;
+    treasuryVouchersArray.value[index] = newData;
+    recalculatePaymentAmount();
+}
+
+const onRowEditCancel = () => {
+    recalculatePaymentAmount();
+}
+
+const saveTreasuryVoucher = (event) => {
+    if (form.totalPaymentAmount === 0) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe agregar al menos un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de agregar un nuevo item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de generar la orden de pago a la tesorería?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
+            
+            form.vouchers = filteredVouchers.map(voucher => ({
+                id: voucher.id,
+                paymentAmount: voucher.paymentAmount
+            }));
+
+            form.put(route("treasuryVouchers.store", form.id), {
+                onSuccess: () => {
+                    dialogRef.value.close();
+                },
+            });
+        },
+    });
+};
+
+const closeDialog = () => {
+    dialogRef.value.close();
 }
 
 onMounted(async () => {
     try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}`);
+        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}/pending-to-pay`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los comprobantes del proveedor');
@@ -50,6 +161,7 @@ onMounted(async () => {
 
         const data = await response.json();
         data.vouchers.map(voucher => {
+            voucher.paymentAmount = voucher.totalAmount;
             voucher.checked = false;
         })
 
@@ -60,9 +172,9 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" editMode="row" scrollable scrollHeight="70vh" dataKey="id"
+    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" editMode="row" scrollable scrollHeight="20vh" dataKey="id"
         filterDisplay="menu" :pt="{
-        table: { style: 'min-width: 50rem' },
+        table: { style: 'min-width: 50rem' }, wrapper: { class: 'datatable-scrollbar' },
         paginator: {
             root: { class: 'p-paginator-custom' },
             current: { class: 'p-paginator-current' },
@@ -70,7 +182,7 @@ onMounted(async () => {
     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table uppercase" @row-edit-init="onRowEditInit($event)"
-        @row-edit-cancel="onRowEditCancel($event)">
+        @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel">
         <template #empty>
             <div class="text-center text-lg text-red-500">
                 Sin comprobantes cargados
@@ -99,16 +211,17 @@ onMounted(async () => {
                 {{ data.payCondition.name }}
             </template>
         </Column>
-        <Column field="totalAmount" header="Importe">
+        <Column field="paymentAmount" header="Importe" class="min-w-36 max-w-36">
             <template #body="{ data }">
-                {{ currencyNumber(data.totalAmount) }}
+                {{ currencyNumber(data.paymentAmount) }}
             </template>
             <template #editor="{ data, field }">
                 <FloatLabel>
-                    <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="totalAmount" mode="currency" currency="ARS" locale="es-AR"
-                        id="totalAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999" :minFractionDigits="2"
-                        :invalid="data[field] === null" />
-                    <label for="totalAmount">Importe</label>
+                    <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'paymentAmount' + '_' + (new Date()).getTime()" mode="currency"
+                        currency="ARS" locale="es-AR" id="paymentAmount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
+                        :class="data[field] !== null ? 'filled' : ''" :min="0" :max="data.totalAmount" :minFractionDigits="2"
+                        @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null" />
+                    <label for="paymentAmount">Importe</label>
                 </FloatLabel>
                 <InputError :message="data[field] === null ? rules : ''" />
             </template>
@@ -121,8 +234,8 @@ onMounted(async () => {
         <Column field="checked" header="Acciones" style="width: 5%; min-width: 1rem;" bodyStyle="text-align:center">
             <template #body="{ editorInitCallback, data }">
                 <div class="space-x-4 flex pl-7">
-                    <Checkbox v-model="data.checked" binary />
-                    <template v-if="data.checked">
+                    <Checkbox v-model="data.checked" binary @click="setTotalPaymentAmount($event, data)" />
+                    <template v-if="data.checked && data.payCondition.id === 2">
                         <button class="bottom-[0.2rem] relative" v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                 @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                     </template>
@@ -139,4 +252,20 @@ onMounted(async () => {
             </template>
         </Column>
     </DataTable>
+
+    <div class="flex flex-col mx-3 my-4">
+        <div class="flex md:w-2/5">
+            <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+            <div class="w-full text-left font-bold">{{ currencyNumber(form.totalPaymentAmount) }}</div>
+        </div>
+    </div>
+
+    <Divider class="!my-0" type="dashed" />
+
+    <div class="flex p-3 justify-between">
+        <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
+        <ConfirmPopup></ConfirmPopup>
+        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || editing"
+            @click="saveTreasuryVoucher($event)" />
+    </div>
 </template>

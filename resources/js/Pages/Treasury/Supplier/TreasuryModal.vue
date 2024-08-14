@@ -15,7 +15,7 @@ const addNewTreasuryVoucher = () => {
         props: {
             header: 'Comprobantes',
             style: {
-                width: '70vw',
+                width: '75vw',
                 height: '45vh',
             },
             breakpoints: {

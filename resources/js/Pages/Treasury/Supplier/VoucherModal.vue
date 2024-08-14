@@ -38,7 +38,6 @@ const vatRates = ref([]);
 
 const voucherItems = ref([]);
 const originalVoucherItems = ref([]);
-const newRow = ref([]);
 const editingRows = ref([]);
 const editing = ref(false);
 const editingVoucher = ref(false);
@@ -126,7 +125,6 @@ const validate = (event, saveCallback, data) => {
     editing.value = false;
     editingRows.value = [];
     saveCallback(event);
-
 }
 /* End add new voucher item */
 

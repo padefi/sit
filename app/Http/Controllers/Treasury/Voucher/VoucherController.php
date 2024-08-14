@@ -24,6 +24,7 @@ class VoucherController extends Controller {
         $this->middleware('check.permission:view vouchers')->only('typesRelated');
         $this->middleware('check.permission:view vouchers')->only('invoiceTypesRelated');
         $this->middleware('check.permission:edit vouchers')->only('voidVoucher');
+        $this->middleware('check.permission:view vouchers')->only('vouchersPendingToPay');
     }
 
     /**
@@ -198,6 +199,17 @@ class VoucherController extends Controller {
                 'voucher' => $voucher,
             ],
             'success' => true,
+        ]);
+    }
+
+    public function vouchersPendingToPay(string $id) {
+        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
+            ->where('idSupplier', $id)
+            ->where('status', true)
+            ->get();
+
+        return response()->json([
+            'vouchers' => VoucherResource::collection($vouchers),
         ]);
     }
 

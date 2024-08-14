@@ -82,6 +82,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
     Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
     Route::get('/vouchers/{voucher}/info', [VoucherController::class, 'info'])->name('vouchers.info');
     Route::put('/vouchers/{voucher}/void', [VoucherController::class, 'voidVoucher'])->name('vouchers.void');
+    Route::get('/vouchers/{voucher}/pending-to-pay', [VoucherController::class, 'vouchersPendingToPay'])->name('vouchers.pending-to-pay');
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {
