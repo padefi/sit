@@ -135,10 +135,11 @@ const saveTreasuryVoucher = (event) => {
             
             form.vouchers = filteredVouchers.map(voucher => ({
                 id: voucher.id,
+                idSupplier: dialogRef.value.data.voucher.id,
                 paymentAmount: voucher.paymentAmount
             }));
 
-            form.put(route("treasuryVouchers.store", form.id), {
+            form.post(route("vouchers.voucher-to-treasury"), {
                 onSuccess: () => {
                     dialogRef.value.close();
                 },
@@ -213,13 +214,13 @@ onMounted(async () => {
         </Column>
         <Column field="paymentAmount" header="Importe" class="min-w-36 max-w-36">
             <template #body="{ data }">
-                {{ currencyNumber(data.paymentAmount) }}
+                {{ currencyNumber(data.pendingToPay) }}
             </template>
             <template #editor="{ data, field }">
                 <FloatLabel>
                     <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'paymentAmount' + '_' + (new Date()).getTime()" mode="currency"
                         currency="ARS" locale="es-AR" id="paymentAmount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
-                        :class="data[field] !== null ? 'filled' : ''" :min="0" :max="data.totalAmount" :minFractionDigits="2"
+                        :class="data[field] !== null ? 'filled' : ''" :min="0"  :minFractionDigits="2"
                         @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null" />
                     <label for="paymentAmount">Importe</label>
                 </FloatLabel>
@@ -228,7 +229,7 @@ onMounted(async () => {
         </Column>
         <Column header="Saldo">
             <template #body="{ data }">
-                {{ currencyNumber(data.totalAmount) }}
+                {{ currencyNumber(data.pendingToPay) }}
             </template>
         </Column>
         <Column field="checked" header="Acciones" style="width: 5%; min-width: 1rem;" bodyStyle="text-align:center">

@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idTV')->comment('id treasury voucher');
             $table->decimal('amount', 10, 2);
             $table->unsignedBigInteger('idUserSent');
-            $table->timestamp('related_at')->nullable();
+            $table->timestamp('related_at');
 
             $table->index('idVoucher');
             $table->index('idTV');

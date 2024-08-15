@@ -22,7 +22,7 @@ class VoucherToTreasury extends Model {
     ];
 
     public function vouchers() {
-        return $this->hasMany(Voucher::class, 'idVoucher');
+        return $this->belongsTo (Voucher::class, 'idVoucher');
     }
 
     public function treasuryVoucher() {

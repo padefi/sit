@@ -13,6 +13,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
+use App\Http\Controllers\Treasury\Voucher\TreasuryVoucherController;
 use App\Http\Controllers\Treasury\Voucher\VoucherController;
 
 /*
@@ -83,7 +84,13 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
     Route::get('/vouchers/{voucher}/info', [VoucherController::class, 'info'])->name('vouchers.info');
     Route::put('/vouchers/{voucher}/void', [VoucherController::class, 'voidVoucher'])->name('vouchers.void');
     Route::get('/vouchers/{voucher}/pending-to-pay', [VoucherController::class, 'vouchersPendingToPay'])->name('vouchers.pending-to-pay');
+    Route::post('/vouchers/voucher-to-treasury', [VoucherController::class, 'voucherToTreasury'])->name('vouchers.voucher-to-treasury');
 });
+
+Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
+    Route::resource('treasury-vouchers', TreasuryVoucherController::class);
+});
+
 
 Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {
     Route::get('/taxes', function () {

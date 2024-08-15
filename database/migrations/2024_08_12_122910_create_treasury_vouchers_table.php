@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('idType')->comment('id voucher type');
             $table->unsignedBigInteger('idSupplier');
-            $table->unsignedBigInteger('idPM')->comment('id payment method');
+            $table->unsignedBigInteger('idPM')->nullable()->comment('id payment method');
             $table->unsignedBigInteger('idBA')->nullable()->comment('id bank account');
             $table->unsignedBigInteger('idVS')->comment('id voucher status');
             $table->decimal('amount', 10, 2);

@@ -5,7 +5,7 @@ namespace App\Http\Resources\Treasury\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TreasuryToVoucherResource extends JsonResource {
+class VoucherToTreasuryResource extends JsonResource {
     /**
      * Transform the resource into an array.
      *

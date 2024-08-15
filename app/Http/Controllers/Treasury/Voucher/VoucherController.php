@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Treasury\Voucher;
 
 use App\Events\Treasury\Voucher\VoucherEvent;
+use App\Events\Treasury\Voucher\VoucherToTreasuryEvent;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherRequest;
@@ -10,7 +11,9 @@ use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use App\Models\Treasury\Voucher\InvoiceType;
+use App\Models\Treasury\Voucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\VoucherItem;
+use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -24,7 +27,8 @@ class VoucherController extends Controller {
         $this->middleware('check.permission:view vouchers')->only('typesRelated');
         $this->middleware('check.permission:view vouchers')->only('invoiceTypesRelated');
         $this->middleware('check.permission:edit vouchers')->only('voidVoucher');
-        $this->middleware('check.permission:view vouchers')->only('vouchersPendingToPay');
+        $this->middleware('check.permission:view treasury vouchers')->only('vouchersPendingToPay');
+        $this->middleware('check.permission:create treasury vouchers')->only('voucherToTreasury');
     }
 
     /**
@@ -68,7 +72,7 @@ class VoucherController extends Controller {
         ]);
 
         foreach ($request->input('voucherItems', []) as $item) {
-            $voucherItem = VoucherItem::create([
+            VoucherItem::create([
                 'idVoucher' => $voucher->id,
                 'description' => $item['description'],
                 'amount' => $item['amount'],
@@ -202,14 +206,99 @@ class VoucherController extends Controller {
         ]);
     }
 
+    public function voucherToTreasury(Request $request) {
+        $totalAmountTreasuryVoucher = 0;
+
+        foreach ($request->input('vouchers', []) as $item) {
+            $voucher = Voucher::where('id', $item['id'])
+                ->where('idSupplier', $item['idSupplier'])
+                ->with('voucherToTreasury.treasuryVoucher')
+                ->first();
+
+            if (!$voucher) {
+                throw ValidationException::withMessages([
+                    'message' => trans('Comprobante no encontrado.')
+                ]);
+            }
+
+            if ($item['paymentAmount'] > $voucher->totalAmount) {
+                throw ValidationException::withMessages([
+                    'message' => trans('El importe a pagar es mayor al saldo del comprobante.')
+                ]);
+            }
+
+            $amountTreasuryVoucher = 0;
+            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                    $amountTreasuryVoucher += $voucherToTreasury->treasuryVoucher->amount;
+                }
+            }
+
+            if ($amountTreasuryVoucher >= $item['paymentAmount']) {
+                throw ValidationException::withMessages([
+                    'message' => trans('El importe a pagar es mayor al saldo del comprobante enviado a la tesorería.')
+                ]);
+            }
+
+            $totalAmountTreasuryVoucher += $item['paymentAmount'];
+        }
+
+        $treasuryVoucher = TreasuryVoucher::create([
+            'idType' => $voucher->idType,
+            'idSupplier' => $voucher->idSupplier,
+            'idVS' => 1,
+            'amount' => $totalAmountTreasuryVoucher,
+            'totalAmount' => $totalAmountTreasuryVoucher,
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
+
+        foreach ($request->input('vouchers', []) as $item) {
+            $voucherToTreasury =  VoucherToTreasury::create([
+                'idVoucher' => $item['id'],
+                'idTV' => $treasuryVoucher->id,
+                'amount' => $item['paymentAmount'],
+                'idUserSent' => auth()->user()->id,
+                'related_at' => now(),
+            ]);
+        }
+
+        $treasuryVoucher->load('userCreated', 'userUpdated');
+        event(new VoucherToTreasuryEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobantes enviados a tesorería correctamente.',
+                'treasuryVoucher' => $treasuryVoucher,
+            ],
+            'success' => true,
+        ]);
+    }
+
     public function vouchersPendingToPay(string $id) {
         $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
             ->where('idSupplier', $id)
             ->where('status', true)
+            ->with('voucherToTreasury.treasuryVoucher')
             ->get();
 
+        $filteredVouchers = $vouchers->filter(function ($voucher) {
+            $amountTreasuryVoucher = 0;
+
+            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                    $amountTreasuryVoucher += $voucherToTreasury->treasuryVoucher->amount;
+                }
+            }
+
+            $voucher->pendingToPay = $voucher->totalAmount - $amountTreasuryVoucher;
+            return $amountTreasuryVoucher < $voucher->totalAmount;
+        });
+
         return response()->json([
-            'vouchers' => VoucherResource::collection($vouchers),
+            'vouchers' => VoucherResource::collection($filteredVouchers),
         ]);
     }
 

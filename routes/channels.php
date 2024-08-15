@@ -64,3 +64,7 @@ Broadcast::channel('vatTaxWithholdings', function () {
 Broadcast::channel('vouchers', function () {
     return true;
 });
+
+Broadcast::channel('voucherToTreasury', function () {
+    return true;
+});

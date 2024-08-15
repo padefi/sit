@@ -53,6 +53,7 @@ class VoucherResource extends JsonResource {
                 ];
             }),
             'totalAmount' => $this->totalAmount,
+            'pendingToPay' => $this->pendingToPay ?? $this->totalAmount,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,

@@ -230,7 +230,9 @@ const info = (id) => {
                 <template v-if="hasPermission('create vouchers')">
                     <div class="align-right space-x-2">
                         <Button label="Comprobante" severity="info" outlined icon="pi pi-shopping-cart" size="large" @click="addNewVoucher($event)" />
-                        <Button label="Tesorería" severity="success" outlined icon="pi pi-dollar" size="large" @click="treasuryVoucher($event)" />
+                        <template v-if="hasPermission('view treasury vouchers')">
+                            <Button label="Tesorería" severity="success" outlined icon="pi pi-dollar" size="large" @click="treasuryVoucher($event)" />
+                        </template>
                     </div>
                 </template>
             </div>
@@ -320,10 +322,6 @@ const info = (id) => {
                 <Column header="Acciones" style="width: 5%; min-width: 8rem;">
                     <template #body="{ data }">
                         <div class="space-x-2 flex pl-2">
-                            <!-- <template v-if="hasPermission('create vouchers')">
-                                <button v-tooltip="'Tesorería'"><i class="pi pi-dollar text-green-500 text-lg font-extrabold"
-                                        @click="VoucherTreasury(data)"></i></button>
-                            </template> -->
                             <template v-if="hasPermission('edit vouchers')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="editVoucher(data)"></i></button>

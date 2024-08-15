@@ -28,6 +28,14 @@ class TreasuryVoucher extends Model {
         'updated_at',
     ];
 
+    protected $casts = [
+        'amount' => 'float',
+        'incomeTaxAmount' => 'float',
+        'socialTaxAmount' => 'float',
+        'vatTaxAmount' => 'float',
+        'totalAmount' => 'float',
+    ];
+
     public function voucherType() {
         return $this->belongsTo(VoucherType::class, 'idType');
     }
