@@ -24,8 +24,23 @@ const filters = ref({
     invoiceNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     debit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     credit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    balanceDue: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
+
+const getVouchers = async () => {
+    try {
+        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los comprobantes del proveedor');
+        }
+
+        const data = await response.json();
+        vouchersArray.value = data.vouchers;
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 const onRowExpand = (data) => {
     const originalExpandedRows = { ...expandedRows.value };
@@ -152,18 +167,7 @@ const voidVoucher = (event, data) => {
 }
 
 onMounted(async () => {
-    try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}`);
-
-        if (!response.ok) {
-            throw new Error('Error al obtener los comprobantes del proveedor');
-        }
-
-        const data = await response.json();
-        vouchersArray.value = data.vouchers;
-    } catch (error) {
-        console.error(error);
-    }
+    await getVouchers();
 
     Echo.channel('vouchers')
         .listen('Treasury\\Voucher\\VoucherEvent', (e) => {
@@ -179,6 +183,10 @@ onMounted(async () => {
                 if (index !== -1) {
                     vouchersArray.value[index] = e.voucher;
                 }
+            } else if (e.type === 'voucherToTreasury') {
+                setTimeout(async () => {
+                    await getVouchers();
+                }, 200);
             }
         });
 });
@@ -310,13 +318,13 @@ const info = (id) => {
                             class="p-column-filter" placeholder="Buscar por importe" />
                     </template>
                 </Column>
-                <Column field="balanceDue" header="Saldo">
+                <Column field="pendingToPay" header="Saldo">
                     <template #body="{ data }">
-                        {{ currencyNumber(data.totalAmount) }}
+                        {{ currencyNumber(data.pendingToPay) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="balanceDue" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por saldo adeudado" />
+                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="pendingToPay" autocomplete="off"
+                            class="p-column-filter" placeholder="Buscar por saldo" />
                     </template>
                 </Column>
                 <Column header="Acciones" style="width: 5%; min-width: 8rem;">
@@ -329,7 +337,7 @@ const info = (id) => {
                             <template v-if="hasPermission('view users')">
                                 <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data.id)"></i></button>
                             </template>
-                            <template v-if="hasPermission('edit vouchers') && data.status === 1">
+                            <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">
                                 <ConfirmPopup></ConfirmPopup>
                                 <button v-tooltip="'Anular'"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
                                         @click="voidVoucher($event, data)"></i></button>

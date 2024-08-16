@@ -100,6 +100,8 @@ class VoucherController extends Controller {
             ->where('idSupplier', $id)
             ->get();
 
+        $vouchers = $this->calculatePendingToPay($vouchers);
+
         return response()->json([
             'vouchers' => VoucherResource::collection($vouchers),
         ]);
@@ -221,20 +223,22 @@ class VoucherController extends Controller {
                 ]);
             }
 
-            if ($item['paymentAmount'] > $voucher->totalAmount) {
+            /* if ($item['paymentAmount'] > $voucher->totalAmount) {
                 throw ValidationException::withMessages([
                     'message' => trans('El importe a pagar es mayor a la deuda total del comprobante.')
                 ]);
-            }
+            } */
 
-            $amountTreasuryVoucher = 0;
+            /* $amountTreasuryVoucher = 0;
             foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
                 if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
                     $amountTreasuryVoucher += $voucherToTreasury->treasuryVoucher->amount;
                 }
-            }
+            } */
 
-            if ($amountTreasuryVoucher >= $item['paymentAmount']) {
+            $voucher = $this->calculatePendingToPay(collect([$voucher]))->first();
+
+            if ($item['paymentAmount'] > $voucher->pendingToPay) {
                 throw ValidationException::withMessages([
                     'message' => trans('El importe a pagar es mayor al saldo pendiente.')
                 ]);
@@ -254,18 +258,20 @@ class VoucherController extends Controller {
             'updated_at' => null,
         ]);
 
+
         foreach ($request->input('vouchers', []) as $item) {
-            $voucherToTreasury =  VoucherToTreasury::create([
+            VoucherToTreasury::create([
                 'idVoucher' => $item['id'],
                 'idTV' => $treasuryVoucher->id,
                 'amount' => $item['paymentAmount'],
                 'idUserSent' => auth()->user()->id,
                 'related_at' => now(),
             ]);
-        }
+        }        
 
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new VoucherToTreasuryEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
+        event(new VoucherEvent($voucher, $voucher->id, 'voucherToTreasury'));
 
         return Redirect::back()->with([
             'info' => [
@@ -284,18 +290,8 @@ class VoucherController extends Controller {
             ->with('voucherToTreasury.treasuryVoucher')
             ->get();
 
-        $filteredVouchers = $vouchers->filter(function ($voucher) {
-            $amountTreasuryVoucher = 0;
-
-            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
-                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
-                    $amountTreasuryVoucher += $voucherToTreasury->amount;
-                }
-            }
-
-            $voucher->pendingToPay = $voucher->totalAmount - $amountTreasuryVoucher;
-            return $amountTreasuryVoucher < $voucher->totalAmount;
-        });
+        $vouchers = $this->calculatePendingToPay($vouchers);
+        $filteredVouchers = $this->filterPendingToPay($vouchers);
 
         return response()->json([
             'vouchers' => VoucherResource::collection($filteredVouchers),
@@ -328,5 +324,27 @@ class VoucherController extends Controller {
         }
 
         return new VoucherResource($voucher);
+    }
+
+    private function calculatePendingToPay($vouchers) {
+        return $vouchers->map(function ($voucher) {
+            $amountTreasuryVoucher = 0;
+
+            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                    $amountTreasuryVoucher += $voucherToTreasury->amount;
+                }
+            }
+
+            $voucher->pendingToPay = $voucher->totalAmount - $amountTreasuryVoucher;
+
+            return $voucher;
+        });
+    }
+
+    private function filterPendingToPay($vouchers) {
+        return $vouchers->filter(function ($voucher) {
+            return $voucher->pendingToPay > 0;
+        });
     }
 }

@@ -20,6 +20,26 @@ const confirm = useConfirm();
 const toast = useToast();
 const rules = 'Debe completar el campo'
 
+const getVouchers = async () => {
+    try {
+        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}/pending-to-pay`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los comprobantes del proveedor pendientes de pago');
+        }
+
+        const data = await response.json();
+        data.vouchers.map(voucher => {
+            voucher.paymentAmount = voucher.pendingToPay;
+            voucher.checked = false;
+        })
+
+        treasuryVouchersArray.value = data.vouchers;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 const dialogRef = inject("dialogRef");
 
 const disabledEditButtons = (callback, event) => {
@@ -153,23 +173,16 @@ const closeDialog = () => {
 }
 
 onMounted(async () => {
-    try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}/pending-to-pay`);
+    await getVouchers();
 
-        if (!response.ok) {
-            throw new Error('Error al obtener los comprobantes del proveedor');
-        }
-
-        const data = await response.json();
-        data.vouchers.map(voucher => {
-            voucher.paymentAmount = voucher.pendingToPay;
-            voucher.checked = false;
-        })
-
-        treasuryVouchersArray.value = data.vouchers;
-    } catch (error) {
-        console.error(error);
-    }
+    Echo.channel('vouchers')
+        .listen('Treasury\\Voucher\\VoucherEvent', (e) => {
+            if (e.type === 'voucherToTreasury') {
+                setTimeout(async () => {
+                    await getVouchers();
+                }, 200);
+            }
+        });
 });
 </script>
 <template>
