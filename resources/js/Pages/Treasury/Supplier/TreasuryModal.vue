@@ -1,14 +1,26 @@
 <script setup>
 import { inject, onMounted, ref } from "vue";
 import { currencyNumber, dateFormat, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { compareDates } from "@/utils/validateFunctions";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
 
 const { hasPermission } = usePermissions();
 const treasuryVouchersArray = ref([]);
+const expandedRows = ref([]);
 const dialog = useDialog();
 const dialogRef = inject("dialogRef");
+
+const onRowExpand = (data) => {
+    const originalExpandedRows = { ...expandedRows.value };
+    const newExpandedRows = treasuryVouchersArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
+    expandedRows.value = { ...originalExpandedRows, ...newExpandedRows };
+}
+
+const onRowCollapse = (data) => {
+    delete expandedRows.value[data.id];
+}
 
 const addNewTreasuryVoucher = () => {
     dialog.open(treasuryVoucherModal, {
@@ -35,7 +47,6 @@ const addNewTreasuryVoucher = () => {
 }
 
 onMounted(async () => {
-    // treasuryVouchersArray.value = props.suppliers;
     try {
         const response = await fetch(`/treasury-vouchers/${dialogRef.value.data.voucher.id}`);
 
@@ -43,7 +54,7 @@ onMounted(async () => {
             throw new Error('Error al obtener los comprobantes de tesorería del proveedor');
         }
 
-        const data = await response.json();        
+        const data = await response.json();
         treasuryVouchersArray.value = data.treasuryVouchers;
     } catch (error) {
         console.error(error);
@@ -51,7 +62,6 @@ onMounted(async () => {
 
     Echo.channel('voucherToTreasury')
         .listen('Treasury\\Voucher\\VoucherToTreasuryEvent', (e) => {
-            console.log(e);
             if (e.type === 'create') {
                 if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId)) {
                     treasuryVouchersArray.value.unshift(e.treasuryVoucher);
@@ -75,7 +85,8 @@ onMounted(async () => {
             </div>
         </template>
         <template #content>
-            <DataTable :value="treasuryVouchersArray" scrollable scrollHeight="70vh" dataKey="id" filterDisplay="menu" :pt="{
+            <DataTable :value="treasuryVouchersArray" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh" dataKey="id"
+                filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
                     table: { style: 'min-width: 50rem' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
@@ -89,6 +100,7 @@ onMounted(async () => {
                         Sin comprobantes cargados
                     </div>
                 </template>
+                <Column expander style="width: 1%" />
                 <Column field="voucherType" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
                         {{ data.voucherType.name }}
@@ -104,6 +116,38 @@ onMounted(async () => {
                         {{ currencyNumber(data.totalAmount) }}
                     </template>
                 </Column>
+                <template #expansion="{ data }">
+                    <DataTable :value="data.voucherToTreasury" scrollable class="m-3 data-table-expanded">
+                        <template #empty>
+                            <div class="text-center text-lg text-red-500">
+                                Sin comprobantes
+                            </div>
+                        </template>
+                        <Column header="Comprobante">
+                            <template #body="{ data }">
+                                {{ data.voucher.invoiceType.name }}
+                                <span class="font-bold">{{ data.voucher.invoiceTypeCode.name }}</span>
+                            </template>
+                        </Column>
+                        <Column header="Número">
+                            <template #body="{ data }">
+                                {{ invoiceNumberFormat(data.voucher.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.voucher.invoiceNumber, 8) }}
+                            </template>
+                        </Column>
+                        <Column header="F. vencimiento">
+                            <template #body="{ data }">
+                                <span :class="{ 'text-red-500': compareDates(data.voucher.invoicePaymentDate, '', 'before') }">
+                                    {{ dateFormat(data.voucher.invoicePaymentDate) }}
+                                </span>
+                            </template>
+                        </Column>
+                        <Column header="Importe">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.amount) }}
+                            </template>
+                        </Column>
+                    </DataTable>
+                </template>
             </DataTable>
         </template>
     </Card>

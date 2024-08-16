@@ -223,7 +223,7 @@ class VoucherController extends Controller {
 
             if ($item['paymentAmount'] > $voucher->totalAmount) {
                 throw ValidationException::withMessages([
-                    'message' => trans('El importe a pagar es mayor al saldo del comprobante.')
+                    'message' => trans('El importe a pagar es mayor a la deuda total del comprobante.')
                 ]);
             }
 
@@ -236,7 +236,7 @@ class VoucherController extends Controller {
 
             if ($amountTreasuryVoucher >= $item['paymentAmount']) {
                 throw ValidationException::withMessages([
-                    'message' => trans('El importe a pagar es mayor al saldo del comprobante enviado a la tesorería.')
+                    'message' => trans('El importe a pagar es mayor al saldo pendiente.')
                 ]);
             }
 
@@ -289,7 +289,7 @@ class VoucherController extends Controller {
 
             foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
                 if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
-                    $amountTreasuryVoucher += $voucherToTreasury->treasuryVoucher->amount;
+                    $amountTreasuryVoucher += $voucherToTreasury->amount;
                 }
             }
 

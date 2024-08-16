@@ -21,6 +21,10 @@ class VoucherToTreasury extends Model {
         'related_at',
     ];
 
+    protected $casts = [
+        'amount' => 'float',
+    ];
+
     public function vouchers() {
         return $this->belongsTo (Voucher::class, 'idVoucher');
     }

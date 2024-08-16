@@ -34,6 +34,15 @@ class TreasuryVoucherResource extends JsonResource {
             'vatTaxAmount' => $this->vatTaxAmount,
             'totalAmount' => $this->totalAmount,
             'notes' => $this->notes,
+            'voucherToTreasury' => $this->voucherToTreasury ? $this->voucherToTreasury->map(function ($voucherToTreasury) {
+                return [
+                    'id' => $voucherToTreasury->id,
+                    'amount' => $voucherToTreasury->amount,
+                    'idUserSent' => $voucherToTreasury->idUserSent,
+                    'related_at' => $voucherToTreasury->related_at,
+                    'voucher' => $voucherToTreasury->vouchers ? new VoucherResource($voucherToTreasury->vouchers) : null,
+                ];
+            }) : [],
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,

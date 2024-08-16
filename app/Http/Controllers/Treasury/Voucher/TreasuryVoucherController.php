@@ -27,7 +27,7 @@ class TreasuryVoucherController extends Controller {
      * Display the specified resource.
      */
     public function show(string $id) {
-        $treasuryVouchers = TreasuryVoucher::with(['voucherType', 'voucherStatus', 'userCreated'])
+        $treasuryVouchers = TreasuryVoucher::with(['voucherType', 'voucherToTreasury.vouchers', 'voucherStatus', 'userCreated'])
             ->where('idSupplier', $id)
             ->get();
 

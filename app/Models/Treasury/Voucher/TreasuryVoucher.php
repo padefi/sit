@@ -56,6 +56,10 @@ class TreasuryVoucher extends Model {
         return $this->belongsTo(TreasuryVoucherStatus::class, 'idVS');
     }
 
+    public function voucherToTreasury() {
+        return $this->hasMany(VoucherToTreasury::class, 'idTV');
+    }
+
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }

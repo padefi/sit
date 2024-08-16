@@ -56,7 +56,7 @@ const validateAmount = (event, saveCallback, data) => {
 const calculatePaymentAmount = (event, data) => {
     form.totalPaymentAmount = treasuryVouchersArray.value.reduce((total, voucher) => {
         if (voucher.id === data.id) {
-            const amount = event.value <= voucher.totalAmount ? event.value || 0 : voucher.totalAmount || 0;
+            const amount = event.value <= voucher.pendingToPay ? event.value || 0 : voucher.pendingToPay || 0;
             return total + amount;
         }
 
@@ -80,7 +80,7 @@ const recalculatePaymentAmount = () => {
 
 const setTotalPaymentAmount = (event, data) => {
     form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.paymentAmount : form.totalPaymentAmount - data.paymentAmount;
-    if (!event.target.checked) data.paymentAmount = data.totalAmount;
+    if (!event.target.checked) data.paymentAmount = data.pendingToPay;
 }
 
 const enabledEditButtons = (callback, event) => {
@@ -128,7 +128,7 @@ const saveTreasuryVoucher = (event) => {
 
     confirm.require({
         target: event.currentTarget,
-        message: '¿Está seguro de generar la orden de pago a la tesorería?',
+        message: '¿Está seguro de generar la orden de pago?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
             const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
@@ -162,7 +162,7 @@ onMounted(async () => {
 
         const data = await response.json();
         data.vouchers.map(voucher => {
-            voucher.paymentAmount = voucher.totalAmount;
+            voucher.paymentAmount = voucher.pendingToPay;
             voucher.checked = false;
         })
 
@@ -214,7 +214,7 @@ onMounted(async () => {
         </Column>
         <Column field="paymentAmount" header="Importe" class="min-w-36 max-w-36">
             <template #body="{ data }">
-                {{ currencyNumber(data.pendingToPay) }}
+                {{ currencyNumber(data.paymentAmount) }}
             </template>
             <template #editor="{ data, field }">
                 <FloatLabel>
