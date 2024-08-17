@@ -52,7 +52,7 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-const Vouchers = (data) => {    
+const Vouchers = (data) => {
     dialog.open(supplierVoucherModal, {
         props: {
             header: data.businessName,
@@ -72,7 +72,7 @@ const Vouchers = (data) => {
             },
         },
         data: {
-            voucher: data,
+            supplierId: data.id,
             payConditions: props.payConditions,
             voucherTypes: props.voucherTypes,
             vatRates: props.vatRates,
@@ -228,7 +228,7 @@ const info = (data, id) => {
                             Sin proveedores cargados
                         </div>
                     </template>
-                    <Column expander style="width: 1%" v-if="hasPermission('view suppliers')" />
+                    <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view suppliers')" />
                     <Column field="cuit" header="Cuit">
                         <template #body="{ data }">
                             {{ data.cuit }}
@@ -283,7 +283,7 @@ const info = (data, id) => {
                             </div>
                         </template>
                     </Column>
-                    <Column header="Acciones" style="width: 5%; min-width: 8rem;">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                         <template #body="{ data }">
                             <div class="space-x-2 flex pl-2">
                                 <template v-if="hasPermission('create vouchers')">

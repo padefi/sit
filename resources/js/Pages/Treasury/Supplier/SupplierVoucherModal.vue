@@ -14,28 +14,38 @@ import treasuryModal from './TreasuryModal.vue';
 const { hasPermission } = usePermissions();
 const vouchersArray = ref([]);
 const expandedRows = ref([]);
+const invoiceTypesSelect = ref([]);
+const invoiceTypeCodesSelect = ref([]);
+const payConditionsSelect = ref([]);
 const toast = useToast();
 const confirm = useConfirm();
 
 const filters = ref({
+    invoiceTypeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    invoiceTypeCodeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     invoiceDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoiceType: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoiceTypeCode: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     invoiceNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    debit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    credit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    payConditionName: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
 const getVouchers = async () => {
     try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}`);
+        const response = await fetch(`/show-vouchers/${dialogRef.value.data.supplierId}`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los comprobantes del proveedor');
         }
 
         const data = await response.json();
+
+        data.vouchers.map(voucher => {
+            voucher.invoiceTypeName = voucher.invoiceType.name;
+            voucher.invoiceTypeCodeName = voucher.invoiceTypeCode.name;
+            voucher.payConditionName = voucher.payCondition.name;
+        });
+
         vouchersArray.value = data.vouchers;
     } catch (error) {
         console.error(error);
@@ -78,39 +88,10 @@ const addNewVoucher = () => {
             },
         },
         data: {
-            voucher: dialogRef.value.data.voucher,
+            supplierId: dialogRef.value.data.supplierId,
             payConditions: dialogRef.value.data.payConditions,
-            voucherTypes: dialogRef.value.data.voucherTypes,
+            voucherTypes: dialogRef.value.data.supplierIdTypes,
             vatRates: dialogRef.value.data.vatRates,
-        }
-    });
-};
-
-const treasuryVoucher = () => {
-    dialog.open(treasuryModal, {
-        props: {
-            header: dialogRef.value.data.voucher.businessName,
-            style: {
-                width: '80vw',
-                height: '55vh',
-            },
-            breakpoints: {
-                '960px': '75vw',
-                '640px': '90vw'
-            },
-            modal: true,
-            contentStyle: {
-                padding: '1.25rem',
-                height: '85vh',
-                backgroundColor: 'rgb(var(--surface-50))',
-            },
-        },
-        data: {
-            voucher: dialogRef.value.data.voucher,
-            /* payConditions: dialogRef.value.data.payConditions,
-            voucherTypes: dialogRef.value.data.voucherTypes,
-            vatRates: dialogRef.value.data.vatRates,
-            voucherData: data, */
         }
     });
 }
@@ -134,11 +115,11 @@ const editVoucher = (data) => {
             },
         },
         data: {
-            voucher: dialogRef.value.data.voucher,
+            supplierId: dialogRef.value.data.supplierId,
+            voucherId: data.id,
             payConditions: dialogRef.value.data.payConditions,
-            voucherTypes: dialogRef.value.data.voucherTypes,
+            voucherTypes: dialogRef.value.data.supplierIdTypes,
             vatRates: dialogRef.value.data.vatRates,
-            voucherData: data,
         }
     });
 }
@@ -166,8 +147,45 @@ const voidVoucher = (event, data) => {
     });
 }
 
+const treasuryVoucher = () => {
+    dialog.open(treasuryModal, {
+        props: {
+            header: 'Comprobantes',
+            style: {
+                width: '80vw',
+                height: '55vh',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true,
+            contentStyle: {
+                padding: '1.25rem',
+                height: '85vh',
+                backgroundColor: 'rgb(var(--surface-50))',
+            },
+        },
+        data: {
+            supplierId: dialogRef.value.data.supplierId,
+        }
+    });
+}
+
 onMounted(async () => {
     await getVouchers();
+    
+    /* invoiceTypesSelect.value = dialogRef.value.data.invoiceTypes.map((invoiceType) => {
+        return { label: invoiceType.name, value: invoiceType.name };
+    });
+
+    invoiceTypeCodesSelect.value = dialogRef.value.data.invoiceTypeCodes.map((invoiceTypeCode) => {
+        return { label: invoiceTypeCode.name, value: invoiceTypeCode.name };
+    }); */
+
+    payConditionsSelect.value = dialogRef.value.data.payConditions.map((payCondition) => {
+        return { label: payCondition.name, value: payCondition.name };
+    });    
 
     Echo.channel('vouchers')
         .listen('Treasury\\Voucher\\VoucherEvent', (e) => {
@@ -261,23 +279,23 @@ const info = (id) => {
                         Sin comprobantes cargados
                     </div>
                 </template>
-                <Column expander style="width: 1%" />
-                <Column field="invoiceType" header="T. comp.">
+                <Column expander class="min-w-2 w-2 !px-0" />
+                <Column field="invoiceTypeName" header="T. comp.">
                     <template #body="{ data }">
-                        {{ data.invoiceType.name }}
+                        {{ data.invoiceTypeName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceType" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por T. comp." />
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="invoiceTypesSelect" placeholder="T. Comp"
+                            class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
                     </template>
                 </Column>
-                <Column field="invoiceTypeCode" header="T. fac.">
+                <Column field="invoiceTypeCodeName" header="T. fac.">
                     <template #body="{ data }">
-                        {{ data.invoiceTypeCode.name }}
+                        {{ data.invoiceTypeCodeName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceTypeCode" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por T. fac." />
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="invoiceTypeCodesSelect" placeholder="T. Fac."
+                            class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
                     </template>
                 </Column>
                 <Column field="invoiceNumber" header="Número">
@@ -300,13 +318,13 @@ const info = (id) => {
                             class="p-column-filter" placeholder="Buscar por F. emisión" />
                     </template>
                 </Column>
-                <Column field="payCondition" header="Cond. Pago">
+                <Column field="payConditionName" header="Cond. Pago">
                     <template #body="{ data }">
-                        {{ data.payCondition.name }}
+                        {{ data.payConditionName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="payCondition" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por cond. pago" />
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="payConditionsSelect" placeholder="Cond. pago"
+                            class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
                     </template>
                 </Column>
                 <Column field="totalAmount" header="Importe">
@@ -327,15 +345,16 @@ const info = (id) => {
                             class="p-column-filter" placeholder="Buscar por saldo" />
                     </template>
                 </Column>
-                <Column header="Acciones" style="width: 5%; min-width: 8rem;">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                     <template #body="{ data }">
-                        <div class="space-x-2 flex pl-2">
-                            <template v-if="hasPermission('edit vouchers')">
+                        <div class="space-x-2">
+                            <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="editVoucher(data)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data.id)"></i></button>
+                                <button v-tooltip="'+Info'" class="top-0.5 relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                        @click="info(data.id)"></i></button>
                             </template>
                             <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">
                                 <ConfirmPopup></ConfirmPopup>

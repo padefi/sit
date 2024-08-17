@@ -283,16 +283,16 @@ const closeDialog = () => {
     dialogRef.value.close();
 }
 
-onMounted(async () => {
-    form.idSupplier = dialogRef.value.data.voucher.id;
+onMounted(async () => {    
+    form.idSupplier = dialogRef.value.data.supplierId;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
     vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
         return { label: percentNumber(vatRate.rate), rate: vatRate.rate, id: vatRate.id };
     });
 
-    if (dialogRef.value.data.voucherData) {
-        const data = dialogRef.value.data.voucherData;
+    if (dialogRef.value.data.voucherId) {
+        const data = await getVhoucher(dialogRef.value.data.voucherId);
 
         editingVoucher.value = true;
         form.id = data.id;
@@ -332,6 +332,21 @@ onMounted(async () => {
 
     addNewItem();
 });
+
+const getVhoucher = async (voucherId) => {
+    try {
+        const response = await fetch(`/vouchers/${voucherId}`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener el comprobante');
+        }
+
+        const data = await response.json();
+        return data.voucher[0];
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 const loadVoucherSubtypeData = async (voucherTypeId) => {
     form.voucherSubtype = undefined;
@@ -647,7 +662,7 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                                 {{ currencyNumber(data.subtotalAmount) }}
                             </template>
                         </Column>
-                        <Column header="Acciones" :rowEditor="true" class="min-w-28 max-w-28 !text-center">
+                        <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                             <template #body="{ editorInitCallback, data }">
                                 <div class="space-x-4 text-center">
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"

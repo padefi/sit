@@ -61,6 +61,21 @@ ul[data-pc-section="submenu"] {
     div[data-pc-name="rowperpagedropdown"] {
         margin-left: 1%;
     }
+
+    .btn-info {
+        position: relative;
+        top: 0.2rem
+    }
+
+    .btn-plus {
+        position: relative;
+        top: 0.1rem
+    }
+
+    .action-column div[data-pc-section="headercontent"] {
+        justify-content: center;
+    }
+
 }
 
 .data-table-expanded,

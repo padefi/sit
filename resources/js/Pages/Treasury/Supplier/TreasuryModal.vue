@@ -41,14 +41,14 @@ const addNewTreasuryVoucher = () => {
             },
         },
         data: {
-            voucher: dialogRef.value.data.voucher,
+            supplierId: dialogRef.value.data.supplierId,
         }
     });
 }
 
 onMounted(async () => {
     try {
-        const response = await fetch(`/treasury-vouchers/${dialogRef.value.data.voucher.id}`);
+        const response = await fetch(`/treasury-vouchers/${dialogRef.value.data.supplierId}`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los comprobantes de tesorería del proveedor');
@@ -100,7 +100,7 @@ onMounted(async () => {
                         Sin comprobantes cargados
                     </div>
                 </template>
-                <Column expander style="width: 1%" />
+                <Column expander class="min-w-2 w-2 !px-0" />
                 <Column field="voucherType" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
                         {{ data.voucherType.name }}
@@ -114,6 +114,16 @@ onMounted(async () => {
                 <Column field="totalAmount" header="Importe" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
+                    </template>
+                </Column>
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                    <template #body="{ data }">
+                        <div>
+                            <template v-if="hasPermission('view users')">
+                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                        @click="info(data.id)"></i></button>
+                            </template>
+                        </div>
                     </template>
                 </Column>
                 <template #expansion="{ data }">

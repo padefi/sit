@@ -260,9 +260,8 @@ const info = (data) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="voucherExpensesArray"
-                    scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
-                    :globalFilterFields="['name', 'status']" @row-edit-init="onRowEditInit($event)"
+                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="voucherExpensesArray" scrollable scrollHeight="70vh"
+                    editMode="row" dataKey="id" filterDisplay="menu" :globalFilterFields="['name', 'status']" @row-edit-init="onRowEditInit($event)"
                     @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
@@ -277,58 +276,53 @@ const info = (data) => {
                             Sin gastos cargados
                         </div>
                     </template>
-                    <Column field="name" header="Descripción" style="width: 10%;" sortable>
+                    <Column field="name" header="Descripción" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por descripción" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por descripción" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion"
-                                style="width: 100%;" maxlength="100" />
+                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Descripcion" style="width: 100%;" maxlength="100" />
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="status" header="Estado" style="width: 10%;" sortable>
+                    <Column field="status" header="Estado" sortable>
                         <template #body="{ data }">
-                            <Tag :value="data.status" class="!text-sm uppercase"
-                                :severity="getStatusLabel(data.status)" />
+                            <Tag :value="data.status" class="!text-sm uppercase" :severity="getStatusLabel(data.status)" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses"
-                                placeholder="Estado" class="p-column-filter" optionLabel="label" optionValue="value"
-                                style="min-width: 12rem" :showClear="true">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses" placeholder="Estado"
+                                class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true">
                                 <template #option="slotProps">
-                                    <Tag :value="slotProps.option.value" name="is_active"
-                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                    <Tag :value="slotProps.option.value" name="is_active" :severity="getStatusLabel(slotProps.option.value)"
+                                        class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
-                                optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses" optionLabel="label" optionValue="value"
+                                placeholder="Seleccione un estado">
                                 <template #option="slotProps">
-                                    <Tag :value="slotProps.option.value"
-                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                    <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)"
+                                        class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                         <template #body="{ editorInitCallback, data }">
-                            <div class="space-x-4 flex pl-6">
+                            <div class="space-x-2">
                                 <template v-if="hasPermission('edit voucher expenses')">
-                                    <button v-tooltip="'Editar'"><i
-                                            class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                    <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view users')">
-                                    <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
-                                            @click="info(data)"></i></button>
+                                    <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
                                 </template>
                             </div>
                         </template>

@@ -39,14 +39,14 @@ class VoucherController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(VoucherRequest $request) {
-        $VoucherNumber = Voucher::where('idIT', $request->invoiceType)
+        $voucherNumber = Voucher::where('idIT', $request->invoiceType)
             ->where('idSupplier', $request->idSupplier)
             ->where('idITCode', $request->invoiceTypeCode)
             ->where('pointOfNumber', $request->pointOfNumber)
             ->where('invoiceNumber', $request->invoiceNumber)
             ->first();
 
-        if ($VoucherNumber) {
+        if ($voucherNumber) {
             throw ValidationException::withMessages([
                 'message' => trans('El comprobante ya se encuentra ingresado.')
             ]);
@@ -94,24 +94,22 @@ class VoucherController extends Controller {
         ]);
     }
 
-
     public function show(string $id) {
-        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
-            ->where('idSupplier', $id)
+        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items'])
+            ->where('id', $id)
             ->get();
 
-        $vouchers = $this->calculatePendingToPay($vouchers);
-
         return response()->json([
-            'vouchers' => VoucherResource::collection($vouchers),
+            'voucher' => VoucherResource::collection($vouchers),
         ]);
     }
+    
 
     /**
      * Update the specified resource in storage.
      */
     public function update(VoucherRequest $request, Voucher $voucher) {
-        $VoucherNumber = Voucher::where('idIT', $request->invoiceType)
+        $voucherNumber = Voucher::where('idIT', $request->invoiceType)
             ->where('idSupplier', $request->idSupplier)
             ->where('idITCode', $request->invoiceTypeCode)
             ->where('pointOfNumber', $request->pointOfNumber)
@@ -119,9 +117,29 @@ class VoucherController extends Controller {
             ->whereNot('id', $voucher->id)
             ->first();
 
-        if ($VoucherNumber) {
+        if ($voucherNumber) {
             throw ValidationException::withMessages([
                 'message' => trans('El comprobante ya se encuentra ingresado.')
+            ]);
+        }
+
+        $voucherExist = Voucher::where('id', $voucher->id)->first();
+
+        if (!$voucherExist) {
+            throw ValidationException::withMessages([
+                'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+
+        $treasuryVoucher = VoucherToTreasury::where('idVoucher', $voucher->id)
+            ->whereHas('treasuryVoucher', function ($query) {
+                $query->where('idVS', '!=', 3);
+            })
+            ->first();
+
+        if ($treasuryVoucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('El comprobante ya ha sido enviado a la tesorería.')
             ]);
         }
 
@@ -191,6 +209,26 @@ class VoucherController extends Controller {
     }
 
     public function voidVoucher(Voucher $voucher) {
+        $voucherExist = Voucher::where('id', $voucher->id)->first();
+
+        if (!$voucherExist) {
+            throw ValidationException::withMessages([
+                'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+        
+        $treasuryVoucher = VoucherToTreasury::where('idVoucher', $voucher->id)
+            ->whereHas('treasuryVoucher', function ($query) {
+                $query->where('idVS', '!=', 3);
+            })
+            ->first();
+
+        if ($treasuryVoucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('El comprobante ya ha sido enviado a la tesorería.')
+            ]);
+        }
+
         $voucher->update([
             'status' => false,
         ]);
@@ -205,6 +243,18 @@ class VoucherController extends Controller {
                 'voucher' => $voucher,
             ],
             'success' => true,
+        ]);
+    }
+
+    public function showVouchers(string $id) {
+        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
+            ->where('idSupplier', $id)
+            ->get();
+
+        $vouchers = $this->calculatePendingToPay($vouchers);
+
+        return response()->json([
+            'vouchers' => VoucherResource::collection($vouchers),
         ]);
     }
 
@@ -267,7 +317,7 @@ class VoucherController extends Controller {
                 'idUserSent' => auth()->user()->id,
                 'related_at' => now(),
             ]);
-        }        
+        }
 
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new VoucherToTreasuryEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));

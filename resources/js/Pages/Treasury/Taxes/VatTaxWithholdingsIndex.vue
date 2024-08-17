@@ -352,7 +352,7 @@ div[data-pc-section="columnfilter"] {
                 Sin rubros cargados
             </div>
         </template>
-        <Column expander style="width: 1%" v-if="hasPermission('view social security tax withholdings')" />
+        <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view social security tax withholdings')" />
         <Column field="name" header="Rubro">
             <template #body="{ data }">
                 {{ data.name }}
@@ -368,7 +368,7 @@ div[data-pc-section="columnfilter"] {
                     class="rounded-full" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
-        <Column header="Acciones" style="width: 5%; min-width: 8rem;">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
             <template #body="{ data }">
                 <div class="text-center">
                     <template
@@ -462,13 +462,13 @@ div[data-pc-section="columnfilter"] {
                 </Column>
                 <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem;">
                     <template #body="{ editorInitCallback, data }">
-                        <div class="space-x-4 flex pl-6">
+                        <div class="space-x-2">
                             <template v-if="hasPermission('edit social security tax withholdings')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
+                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

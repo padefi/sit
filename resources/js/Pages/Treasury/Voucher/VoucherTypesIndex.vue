@@ -169,12 +169,12 @@ onMounted(() => {
                             Sin tipos cargados
                         </div>
                     </template>
-                    <Column field="name" header="Descripción" style="width: 10%;">
+                    <Column field="name" header="Descripción">
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
                     </Column>
-                    <Column header="Subtipos relacionados" style="width: 10%;">
+                    <Column header="Subtipos relacionados">
                         <template #body="{ data }">
                             <Button severity="info" raised rounded outlined @click="related(data, $event)">{{
                     data.subtypes.length }}</Button>
@@ -184,8 +184,8 @@ onMounted(() => {
 
                 <OverlayPanel ref="subtypesPanel" appendTo="body" :dismissable="false" @hide="handleHide">
                     <div @mousedown.stop="onContentMouseDown">
-                        <DataTable v-model:filters="subtypesFilters" :value="voucherSubtypesArray" paginator :rows="5"
-                            dataKey="id" filterDisplay="menu" :globalFilterFields="['name']">
+                        <DataTable v-model:filters="subtypesFilters" :value="voucherSubtypesArray" paginator :rows="5" dataKey="id"
+                            filterDisplay="menu" :globalFilterFields="['name']">
                             <template #empty>
                                 <div class="text-center text-lg text-red-500">
                                     Sin subtipos cargados
@@ -198,15 +198,14 @@ onMounted(() => {
                                     </span>
                                 </template>
                                 <template #filter="{ filterModel, filterCallback }">
-                                    <InputText v-model="filterModel.value" type="text" @input="filterCallback()"
-                                        name="subtypeName" autocomplete="off" class="p-column-filter"
-                                        placeholder="Buscar por subtipo" />
+                                    <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="subtypeName" autocomplete="off"
+                                        class="p-column-filter" placeholder="Buscar por subtipo" />
                                 </template>
                             </Column>
-                            <Column field="related" header="Relacionado" dataType="boolean"
-                                style="width: 5%; min-width: 8rem;">
+                            <Column field="related" header="Relacionado" dataType="boolean" class="action-column text-center"
+                                headerClass="min-w-28 w-28">
                                 <template #body="{ data }">
-                                    <div class="space-x-6 flex pl-6">
+                                    <div class="space-x-4">
                                         <template v-if="!hasPermission('relationship voucher types')">
                                             <i class="pi top-1 relative"
                                                 :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"
@@ -215,13 +214,12 @@ onMounted(() => {
                                         </template>
                                         <template v-if="hasPermission('relationship voucher types')">
                                             <ConfirmPopup></ConfirmPopup>
-                                            <button v-tooltip="data.related ? 'Quitar relación' : 'Relacionar'"><i
-                                                    class="pi text-blue-300"
+                                            <button v-tooltip="data.related ? 'Quitar relación' : 'Relacionar'"><i class="pi text-blue-300"
                                                     :class="{ 'pi-plus-circle text-green-500': !data.related, 'pi-minus-circle text-red-400': data.related }"
                                                     @click="relateButton($event, data)"></i></button>
                                         </template>
                                         <template v-if="hasPermission('view users') && data.related">
-                                            <i class="pi pi-id-card text-cyan-500 text-2xl"
+                                            <i class="pi pi-id-card text-cyan-500 text-2xl top-1 relative"
                                                 v-tooltip="`Usuario: ${data.relatedData.userRelated.surname} ${data.relatedData.userRelated.name} \n Fecha: ${data.relatedData.related_at}`"></i>
                                         </template>
                                     </div>

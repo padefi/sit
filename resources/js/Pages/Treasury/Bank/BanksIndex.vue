@@ -531,8 +531,8 @@ const info = (route, data, id) => {
                             Sin bancos cargados
                         </div>
                     </template>
-                    <Column expander style="width: 1%" v-if="hasPermission('view bank accounts')" />
-                    <Column field="name" header="Nombre" style="width: 10%;" sortable>
+                    <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view bank accounts')" />
+                    <Column field="name" header="Nombre" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
@@ -546,7 +546,7 @@ const info = (route, data, id) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="address" header="Dirección" style="width: 10%;" sortable>
+                    <Column field="address" header="Dirección" sortable>
                         <template #body="{ data }">
                             {{ data.address }}
                         </template>
@@ -560,7 +560,7 @@ const info = (route, data, id) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="phone" header="Teléfono" style="width: 10%;" sortable>
+                    <Column field="phone" header="Teléfono" sortable>
                         <template #body="{ data }">
                             {{ data.phone }}
                         </template>
@@ -576,7 +576,7 @@ const info = (route, data, id) => {
                             <InputError :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email" style="width: 15%;" sortable>
+                    <Column field="email" header="Email" sortable>
                         <template #body="{ data }">
                             {{ data.email }}
                         </template>
@@ -592,19 +592,19 @@ const info = (route, data, id) => {
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
-                    <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
                         <template #body="{ editorInitCallback, data }">
-                            <div class="space-x-4 flex pl-6">
+                            <div class="space-x-2">
                                 <template v-if="hasPermission('edit banks')">
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event, 'banks')"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view users')">
-                                    <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                    <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                             @click="info('banks', data, data.id)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view bank accounts') && hasPermission('create bank accounts')">
-                                    <button v-tooltip="'Agregar cuenta'"><i class="pi pi-plus-circle text-green-500 text-2xl"
+                                    <button v-tooltip="'Agregar cuenta'" class="btn-plus"><i class="pi pi-plus-circle text-green-500 text-xl"
                                             @click="addNewBankAccount(data)"></i></button>
                                 </template>
                             </div>
@@ -685,15 +685,15 @@ const info = (route, data, id) => {
                                         <InputError :message="!data[field] ? rules : ''" />
                                     </template>
                                 </Column>
-                                <Column header="Acciones" :rowEditor="true">
+                                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                                     <template #body="{ editorInitCallback, data }">
-                                        <div class="space-x-4 flex pl-6">
+                                        <div class="space-x-2">
                                             <template v-if="hasPermission('edit banks')">
                                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                                         @click="disabledEditButtons(editorInitCallback, $event, 'bankAccounts')"></i></button>
                                             </template>
                                             <template v-if="hasPermission('view users')">
-                                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                                         @click="info('bankAccounts', data, data.idBankAccount)"></i></button>
                                             </template>
                                         </div>

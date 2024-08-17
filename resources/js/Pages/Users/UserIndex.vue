@@ -320,7 +320,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             Sin usuarios cargados
                         </div>
                     </template>
-                    <Column field="surname" header="Apellido" style="width: 10%;" class="rounded-tl-lg" sortable>
+                    <Column field="surname" header="Apellido" sortable>
                         <template #body="{ data }">
                             {{ data.surname }}
                         </template>
@@ -334,7 +334,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="name" header="Nombre" style="width: 10%;" sortable>
+                    <Column field="name" header="Nombre" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
@@ -348,7 +348,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email" style="width: 15%;" sortable>
+                    <Column field="email" header="Email" sortable>
                         <template #body="{ data }">
                             {{ data.email }}
                         </template>
@@ -364,7 +364,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
-                    <Column field="username" header="Usuario" style="width: 10%;" sortable>
+                    <Column field="username" header="Usuario" sortable>
                         <template #body="{ data }">
                             {{ data.username }}
                         </template>
@@ -373,7 +373,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                                 autocomplete="off" class="p-column-filter" placeholder="Buscar por usuario" />
                         </template>
                     </Column>
-                    <Column field="role" header="Rol" style="width: 10%;">
+                    <Column field="role" header="Rol">
                         <template #body="{ data }">
                             <Tag :value="data.role"
                                 class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
@@ -399,7 +399,7 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="is_active" header="Estado" style="width: 10%;">
+                    <Column field="is_active" header="Estado">
                         <template #body="{ data }">
                             <Tag :value="data.is_active" class="!text-sm uppercase"
                                 :severity="getStatusLabel(data.is_active)" />
@@ -425,9 +425,9 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column header="Acciones" style="width: 5%; min-width: 8rem;" :rowEditor="true">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                         <template #body="{ editorInitCallback, data }">
-                            <div class="space-x-4 flex pl-6" v-if="data.username != username() && data.role != 'admin'">
+                            <div class="space-x-2" v-if="data.username != username() && data.role != 'admin'">
                                 <template v-if="hasPermission('edit users')">
                                     <button v-tooltip="'Editar'"><i
                                             class="pi pi-pencil text-orange-500 text-lg font-extrabold"

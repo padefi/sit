@@ -79,6 +79,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], func
 
 Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], function () {
     Route::resource('vouchers', VoucherController::class);
+    Route::get('/show-vouchers/{supplier}', [VoucherController::class, 'showVouchers'])->name('vouchers.show-vouchers');
     Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
     Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
     Route::get('/vouchers/{voucher}/info', [VoucherController::class, 'info'])->name('vouchers.info');

@@ -462,7 +462,7 @@ div[data-pc-section="columnfilter"] {
                 Sin rubros cargados
             </div>
         </template>
-        <Column expander style="width: 1%" v-if="hasPermission('view bank accounts')" />
+        <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view bank accounts')" />
         <Column field="name" header="Rubro">
             <template #body="{ data }">
                 {{ data.name }}
@@ -478,7 +478,7 @@ div[data-pc-section="columnfilter"] {
                     v-tooltip="data.scale === 1 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
-        <Column header="Acciones" style="width: 5%; min-width: 8rem;">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
             <template #body="{ data }">
                 <div class="text-center">
                     <template v-if="hasPermission('view income tax withholdings') && hasPermission('create income tax withholdings')">
@@ -583,15 +583,15 @@ div[data-pc-section="columnfilter"] {
                         <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
-                <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem;">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
                     <template #body="{ editorInitCallback, data }">
-                        <div class="space-x-4 flex pl-6">
+                        <div class="space-x-2">
                             <template v-if="hasPermission('edit income tax withholdings')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
+                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

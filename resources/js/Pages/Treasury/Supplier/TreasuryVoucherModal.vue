@@ -14,6 +14,7 @@ const form = useForm({
 
 const treasuryVouchersArray = ref([]);
 const originalTreasuryVouchersArray = ref([]);
+const isProcessing = ref(false);
 const editing = ref(false);
 const editingRows = ref([]);
 const confirm = useConfirm();
@@ -22,7 +23,7 @@ const rules = 'Debe completar el campo'
 
 const getVouchers = async () => {
     try {
-        const response = await fetch(`/vouchers/${dialogRef.value.data.voucher.id}/pending-to-pay`);
+        const response = await fetch(`/vouchers/${dialogRef.value.data.supplierId}/pending-to-pay`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los comprobantes del proveedor pendientes de pago');
@@ -151,11 +152,12 @@ const saveTreasuryVoucher = (event) => {
         message: '¿Está seguro de generar la orden de pago?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
+            isProcessing.value = true;
             const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
-            
+
             form.vouchers = filteredVouchers.map(voucher => ({
                 id: voucher.id,
-                idSupplier: dialogRef.value.data.voucher.id,
+                idSupplier: dialogRef.value.data.supplierId,
                 paymentAmount: voucher.paymentAmount
             }));
 
@@ -233,8 +235,8 @@ onMounted(async () => {
                 <FloatLabel>
                     <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'paymentAmount' + '_' + (new Date()).getTime()" mode="currency"
                         currency="ARS" locale="es-AR" id="paymentAmount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
-                        :class="data[field] !== null ? 'filled' : ''" :min="0"  :minFractionDigits="2"
-                        @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null" />
+                        :class="data[field] !== null ? 'filled' : ''" :min="0" :minFractionDigits="2" @input="calculatePaymentAmount($event, data)"
+                        :invalid="data[field] === null" />
                     <label for="paymentAmount">Importe</label>
                 </FloatLabel>
                 <InputError :message="data[field] === null ? rules : ''" />
@@ -245,9 +247,9 @@ onMounted(async () => {
                 {{ currencyNumber(data.pendingToPay) }}
             </template>
         </Column>
-        <Column field="checked" header="Acciones" style="width: 5%; min-width: 1rem;" bodyStyle="text-align:center">
+        <Column field="checked" header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
             <template #body="{ editorInitCallback, data }">
-                <div class="space-x-4 flex pl-7">
+                <div class="space-x-4 flex justify-center">
                     <Checkbox v-model="data.checked" binary @click="setTotalPaymentAmount($event, data)" />
                     <template v-if="data.checked && data.payCondition.id === 2">
                         <button class="bottom-[0.2rem] relative" v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
@@ -256,7 +258,7 @@ onMounted(async () => {
                 </div>
             </template>
             <template #editor="{ data, editorSaveCallback, editorCancelCallback }">
-                <div class="space-x-4 flex pl-7">
+                <div class="space-x-4 flex justify-center">
                     <ConfirmPopup></ConfirmPopup>
                     <button><i class="pi pi-check text-primary-500 text-lg font-extrabold"
                             @click="validateAmount($event, editorSaveCallback, data)"></i></button>
@@ -279,7 +281,7 @@ onMounted(async () => {
     <div class="flex p-3 justify-between">
         <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
         <ConfirmPopup></ConfirmPopup>
-        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || editing"
+        <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || editing || isProcessing"
             @click="saveTreasuryVoucher($event)" />
     </div>
 </template>
