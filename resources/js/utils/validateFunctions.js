@@ -1,4 +1,5 @@
 import { format, isEqual, isBefore, isAfter } from "@formkit/tempo";
+import { addDate } from "@/utils/formatterFunctions";
 
 export const validateEmail = (value) => {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
@@ -111,15 +112,13 @@ export const cuitValidator = (data) => {
 
 export const compareDates = (date1, date2, value) => {
     if (date1 != '') {
-        date1 = new Date(date1);
-        date1.setDate(date1.getDate() + 1);
+        date1 = addDate(date1, 1);
     } else {
         date1 = new Date();
     }
 
     if (date2 != '') {
-        date2 = new Date(date2);
-        date2.setDate(date2.getDate() + 1);
+        date2 = addDate(date2, 1);
     } else {
         date2 = new Date();
     }

@@ -414,11 +414,12 @@ const info = (data) => {
                     </Column>
                     <Column header="Gastos relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="related(data, $event)">{{
-                        data.expenses.length }}</Button>
+                            <Button severity="info" raised rounded outlined @click="related(data, $event)">
+                                {{ data.expenses.length }}
+                            </Button>
                         </template>
                     </Column>
-                    <Column field="status" header="Estado" sortable>
+                    <Column field="status" header="Estado">
                         <template #body="{ data }">
                             <Tag :value="data.status" class="!text-sm uppercase" :severity="getStatusLabel(data.status)" />
                         </template>

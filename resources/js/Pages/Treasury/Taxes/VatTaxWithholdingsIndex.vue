@@ -5,7 +5,7 @@ import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3';
-import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
+import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
 const { hasPermission } = usePermissions();
@@ -41,11 +41,8 @@ const categoryVatTaxWithholdings = (categories, vatTaxWithholdings) => {
         const tax = vatTaxWithholdings
             .filter(tax => tax.idCat === category.id)
             .map(t => {
-                const startAt = new Date(t.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(t.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(t.startAt, 1);
+                const endAt = addDate(t.endAt, 1);
 
                 return {
                     ...t,
@@ -258,11 +255,8 @@ onMounted(() => {
             const indexCategory = categoriesArray.value.findIndex(category => category.id === e.vatTaxWithholding.category.id);
 
             const vatTaxEventDataStructure = (indexCategory, vatTaxWithholding) => {
-                const startAt = new Date(vatTaxWithholding.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(vatTaxWithholding.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(vatTaxWithholding.startAt, 1);
+                const endAt = addDate(vatTaxWithholding.endAt, 1);
 
                 return {
                     ...vatTaxWithholding,
@@ -364,8 +358,8 @@ div[data-pc-section="columnfilter"] {
         </Column>
         <Column header="Cant.">
             <template #body="{ data }">
-                <Badge :value="data.vatTax.length" size="large" :severity="data.vatTax.length === 0 ? 'danger' : 'success'"
-                    class="rounded-full" @click="onRowExpand(data)"></Badge>
+                <Badge :value="data.vatTax.length" size="large" :severity="data.vatTax.length === 0 ? 'danger' : 'success'" class="rounded-full"
+                    @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
@@ -468,7 +462,8 @@ div[data-pc-section="columnfilter"] {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
+                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                        @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

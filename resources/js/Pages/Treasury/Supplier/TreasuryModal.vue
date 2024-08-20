@@ -5,12 +5,61 @@ import { compareDates } from "@/utils/validateFunctions";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
+import { FilterMatchMode, FilterOperator } from "primevue/api";
 
 const { hasPermission } = usePermissions();
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const voucherTypesSelect = ref([]);
+const voucherStatusSelect = ref([]);
 const dialog = useDialog();
 const dialogRef = inject("dialogRef");
+
+const filters = ref({
+    voucherTypeName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    voucherStatusName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+});
+
+const getTreasuryVoucherStatusData = async () => {
+    try {
+        const response = await fetch('/treasury-voucher-status');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de los tipos de comprobantes');
+        }
+
+        const data = await response.json();
+        voucherStatusSelect.value = data.treasuryVoucherStatus.map((treasuryVoucherStatus) => {
+            return { label: treasuryVoucherStatus.name, value: treasuryVoucherStatus.name };
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const getTreasuryVouchers = async () => {
+    try {
+        const response = await fetch(`/treasury-vouchers/${dialogRef.value.data.supplierId}`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los comprobantes de tesorería del proveedor');
+        }
+
+        const data = await response.json();
+        treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+const treasuryVoucherDataStructure = (treasuryVoucher) => {
+    return {
+        ...treasuryVoucher,
+        voucherTypeName: treasuryVoucher.voucherType.name,
+        voucherStatusName: treasuryVoucher.voucherStatus.name,
+    }
+}
 
 const onRowExpand = (data) => {
     const originalExpandedRows = { ...expandedRows.value };
@@ -47,24 +96,19 @@ const addNewTreasuryVoucher = () => {
 }
 
 onMounted(async () => {
-    try {
-        const response = await fetch(`/treasury-vouchers/${dialogRef.value.data.supplierId}`);
+    await getTreasuryVoucherStatusData();
+    await getTreasuryVouchers();
 
-        if (!response.ok) {
-            throw new Error('Error al obtener los comprobantes de tesorería del proveedor');
-        }
-
-        const data = await response.json();
-        treasuryVouchersArray.value = data.treasuryVouchers;
-    } catch (error) {
-        console.error(error);
-    }
+    voucherTypesSelect.value = dialogRef.value.data.voucherTypes.map((voucherType) => {
+        return { label: voucherType.name, value: voucherType.name };
+    });
 
     Echo.channel('voucherToTreasury')
         .listen('Treasury\\Voucher\\VoucherToTreasuryEvent', (e) => {
             if (e.type === 'create') {
                 if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId)) {
-                    treasuryVouchersArray.value.unshift(e.treasuryVoucher);
+                    const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
+                    treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
                 }
             }
         });
@@ -85,8 +129,8 @@ onMounted(async () => {
             </div>
         </template>
         <template #content>
-            <DataTable :value="treasuryVouchersArray" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh" dataKey="id"
-                filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+            <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
+                dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
                     table: { style: 'min-width: 50rem' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
@@ -101,19 +145,31 @@ onMounted(async () => {
                     </div>
                 </template>
                 <Column expander class="min-w-2 w-2 !px-0" />
-                <Column field="voucherType" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column field="voucherTypeName" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
-                        {{ data.voucherType.name }}
+                        {{ data.voucherTypeName }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherTypesSelect" placeholder="Tipo" name="voucherTypeName" 
+                            class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true" style="min-width: 12rem" />
                     </template>
                 </Column>
-                <Column field="voucherStatus" header="Estado" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column field="voucherStatusName" header="Estado" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
-                        {{ data.voucherStatus.name }}
+                        {{ data.voucherStatusName }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherStatusSelect" placeholder="Estado" name="voucherStatusName" 
+                            class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true" style="min-width: 12rem" />
                     </template>
                 </Column>
-                <Column field="totalAmount" header="Importe" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column field="totalAmount" header="Importe" dataType="numeric" class="rounded-tl-lg min-w-56 max-w-56">
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
+                    </template>
+                    <template #filter="{ filterModel, filterCallback }">
+                        <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
+                            locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2" />
                     </template>
                 </Column>
                 <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">

@@ -2,7 +2,7 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
-import { percentNumber, currencyNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { percentNumber, addDate, currencyNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
@@ -314,11 +314,8 @@ onMounted(async () => {
 
         form.pointOfNumber = invoiceNumberFormat(data.pointOfNumber, 5);
         form.invoiceNumber = invoiceNumberFormat(data.invoiceNumber, 8);
-        form.invoiceDate = new Date(data.invoiceDate);
-        form.invoiceDate.setDate(form.invoiceDate.getDate() + 1);
-
-        form.invoicePaymentDate = new Date(data.invoicePaymentDate);
-        form.invoicePaymentDate.setDate(form.invoicePaymentDate.getDate() + 1);
+        form.invoiceDate = addDate(data.invoiceDate, 1);
+        form.invoicePaymentDate = addDate(data.invoicePaymentDate, 1);
 
         form.payCondition = data.payCondition.id;
         form.notes = data.notes || '';

@@ -5,7 +5,7 @@ import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3';
-import { percentNumber, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
+import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
 const { hasPermission } = usePermissions();
@@ -41,11 +41,8 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
         const tax = incomeTaxWithholdings
             .filter(tax => tax.idCat === category.id)
             .map(t => {
-                const startAt = new Date(t.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(t.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(t.startAt, 1);
+                const endAt = addDate(t.endAt, 1);
 
                 return {
                     ...t,
@@ -61,11 +58,8 @@ const categoryIncomeTaxWithholdings = (categories, incomeTaxWithholdings, income
         const taxScale = incomeTaxWithholdingScales
             .filter(tax => tax.idCat === category.id)
             .map(t => {
-                const startAt = new Date(t.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(t.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(t.startAt, 1);
+                const endAt = addDate(t.endAt, 1);
 
                 return {
                     ...t,
@@ -322,11 +316,8 @@ onMounted(() => {
             const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholding.category.id);
 
             const incomeTaxEventDataStructure = (indexCategory, incomeTaxWithholding) => {
-                const startAt = new Date(incomeTaxWithholding.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(incomeTaxWithholding.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(incomeTaxWithholding.startAt, 1);
+                const endAt = addDate(incomeTaxWithholding.endAt, 1);
 
                 return {
                     ...incomeTaxWithholding,
@@ -362,11 +353,8 @@ onMounted(() => {
             const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholdingScale.category.id);
 
             const incomeTaxEventDataStructure = (indexCategory, incomeTaxWithholdingScale) => {
-                const startAt = new Date(incomeTaxWithholdingScale.startAt);
-                startAt.setDate(startAt.getDate() + 1);
-
-                const endAt = new Date(incomeTaxWithholdingScale.endAt);
-                endAt.setDate(endAt.getDate() + 1);
+                const startAt = addDate(incomeTaxWithholdingScale.startAt,1 );
+                const endAt = addDate(incomeTaxWithholdingScale.endAt,1 );
 
                 return {
                     ...incomeTaxWithholdingScale,
@@ -591,7 +579,8 @@ div[data-pc-section="columnfilter"] {
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>
                             <template v-if="hasPermission('view users')">
-                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
+                                <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                        @click="info(data)"></i></button>
                             </template>
                         </div>
                     </template>

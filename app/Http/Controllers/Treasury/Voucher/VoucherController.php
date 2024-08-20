@@ -11,6 +11,7 @@ use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use App\Models\Treasury\Voucher\InvoiceType;
+use App\Models\Treasury\Voucher\InvoiceTypeCode;
 use App\Models\Treasury\Voucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
@@ -22,8 +23,10 @@ use Illuminate\Validation\ValidationException;
 class VoucherController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view vouchers')->only('index');
+        $this->middleware('check.permission:view vouchers')->only('show');
         $this->middleware('check.permission:create vouchers')->only('store');
         $this->middleware('check.permission:edit vouchers')->only('update');
+        $this->middleware('check.permission:view vouchers')->only('invoiceTypes');
         $this->middleware('check.permission:view vouchers')->only('typesRelated');
         $this->middleware('check.permission:view vouchers')->only('invoiceTypesRelated');
         $this->middleware('check.permission:edit vouchers')->only('voidVoucher');
@@ -103,7 +106,7 @@ class VoucherController extends Controller {
             'voucher' => VoucherResource::collection($vouchers),
         ]);
     }
-    
+
 
     /**
      * Update the specified resource in storage.
@@ -216,7 +219,7 @@ class VoucherController extends Controller {
                 'message' => trans('Comprobante no encontrado.')
             ]);
         }
-        
+
         $treasuryVoucher = VoucherToTreasury::where('idVoucher', $voucher->id)
             ->whereHas('treasuryVoucher', function ($query) {
                 $query->where('idVS', '!=', 3);
@@ -255,6 +258,16 @@ class VoucherController extends Controller {
 
         return response()->json([
             'vouchers' => VoucherResource::collection($vouchers),
+        ]);
+    }
+
+    public function invoiceTypes() {
+        $invoiceTypes = InvoiceType::orderBy('id', 'asc')->get();
+        $invoiceTypeCodes = InvoiceTypeCode::orderBy('id', 'asc')->get();
+
+        return response()->json([
+            'invoiceTypes' => InvoiceTypeResource::collection($invoiceTypes),
+            'invoiceTypeCodes' => InvoiceTypeCodeResource::collection($invoiceTypeCodes),
         ]);
     }
 

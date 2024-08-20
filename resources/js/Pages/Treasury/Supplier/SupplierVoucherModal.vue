@@ -2,7 +2,7 @@
 import { inject, onMounted, ref } from "vue";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
-import { currencyNumber, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { currencyNumber, addDate, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
 import { FilterMatchMode, FilterOperator } from "primevue/api";
 import { useToast } from "primevue/usetoast";
@@ -21,14 +21,36 @@ const toast = useToast();
 const confirm = useConfirm();
 
 const filters = ref({
-    invoiceTypeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoiceTypeCodeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoiceDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoiceNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    payConditionName: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-    totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    invoiceTypeName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    invoiceTypeCodeName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    invoiceFullNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    invoicePaymentDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
+    payConditionName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
 });
+
+const getInvoiceTypeData = async () => {
+    try {
+        const response = await fetch('/invoice-types');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de los tipos de comprobantes');
+        }
+
+        const data = await response.json();
+
+        invoiceTypesSelect.value = data.invoiceTypes.map((invoiceType) => {
+            return { label: invoiceType.name, value: invoiceType.name };
+        });
+
+        invoiceTypeCodesSelect.value = data.invoiceTypeCodes.map((invoiceTypeCode) => {
+            return { label: invoiceTypeCode.name, value: invoiceTypeCode.name };
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 const getVouchers = async () => {
     try {
@@ -39,18 +61,22 @@ const getVouchers = async () => {
         }
 
         const data = await response.json();
-
-        data.vouchers.map(voucher => {
-            voucher.invoiceTypeName = voucher.invoiceType.name;
-            voucher.invoiceTypeCodeName = voucher.invoiceTypeCode.name;
-            voucher.payConditionName = voucher.payCondition.name;
-        });
-
-        vouchersArray.value = data.vouchers;
+        vouchersArray.value = data.vouchers.map(voucher => voucherDataStructure(voucher));
     } catch (error) {
         console.error(error);
     }
 };
+
+const voucherDataStructure = (voucher) => {
+    return {
+        ...voucher,
+        invoiceTypeName: voucher.invoiceType.name,
+        invoiceTypeCodeName: voucher.invoiceTypeCode.name,
+        invoiceFullNumber: invoiceNumberFormat(voucher.pointOfNumber, 5) + '-' + invoiceNumberFormat(voucher.invoiceNumber, 8),
+        payConditionName: voucher.payCondition.name,
+        invoicePaymentDate: addDate(voucher.invoicePaymentDate, 1),
+    }
+}
 
 const onRowExpand = (data) => {
     const originalExpandedRows = { ...expandedRows.value };
@@ -90,7 +116,7 @@ const addNewVoucher = () => {
         data: {
             supplierId: dialogRef.value.data.supplierId,
             payConditions: dialogRef.value.data.payConditions,
-            voucherTypes: dialogRef.value.data.supplierIdTypes,
+            voucherTypes: dialogRef.value.data.voucherTypes,
             vatRates: dialogRef.value.data.vatRates,
         }
     });
@@ -118,7 +144,7 @@ const editVoucher = (data) => {
             supplierId: dialogRef.value.data.supplierId,
             voucherId: data.id,
             payConditions: dialogRef.value.data.payConditions,
-            voucherTypes: dialogRef.value.data.supplierIdTypes,
+            voucherTypes: dialogRef.value.data.voucherTypes,
             vatRates: dialogRef.value.data.vatRates,
         }
     });
@@ -168,24 +194,18 @@ const treasuryVoucher = () => {
         },
         data: {
             supplierId: dialogRef.value.data.supplierId,
+            voucherTypes: dialogRef.value.data.voucherTypes,
         }
     });
 }
 
 onMounted(async () => {
+    await getInvoiceTypeData();
     await getVouchers();
-    
-    /* invoiceTypesSelect.value = dialogRef.value.data.invoiceTypes.map((invoiceType) => {
-        return { label: invoiceType.name, value: invoiceType.name };
-    });
-
-    invoiceTypeCodesSelect.value = dialogRef.value.data.invoiceTypeCodes.map((invoiceTypeCode) => {
-        return { label: invoiceTypeCode.name, value: invoiceTypeCode.name };
-    }); */
 
     payConditionsSelect.value = dialogRef.value.data.payConditions.map((payCondition) => {
         return { label: payCondition.name, value: payCondition.name };
-    });    
+    });
 
     Echo.channel('vouchers')
         .listen('Treasury\\Voucher\\VoucherEvent', (e) => {
@@ -193,7 +213,8 @@ onMounted(async () => {
                 if (!vouchersArray.value.some(voucher => voucher.id === e.voucherId)) {
                     e.voucher.voucherIndex = 0;
                     e.voucher.accounts = [];
-                    vouchersArray.value.unshift(e.voucher);
+                    const dataVoucher = voucherDataStructure(e.voucher);
+                    vouchersArray.value.unshift(dataVoucher);
                 }
             } else if (e.type === 'update') {
                 const index = vouchersArray.value.findIndex(voucher => voucher.id === e.voucher.id);
@@ -298,24 +319,24 @@ const info = (id) => {
                             class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
                     </template>
                 </Column>
-                <Column field="invoiceNumber" header="Número">
+                <Column field="invoiceFullNumber" header="Número">
                     <template #body="{ data }">
-                        {{ invoiceNumberFormat(data.pointOfNumber, 5) + '-' + invoiceNumberFormat(data.invoiceNumber, 8) }}
+                        {{ data.invoiceFullNumber }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoiceNumber" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por número" />
+                        <InputMask v-model="filterModel.value" type="text" @blur="filterCallback();" name="invoiceFullNumber" autocomplete="off"
+                            mask="99999-99999999" class="p-column-filter" placeholder="Buscar por número" />
                     </template>
                 </Column>
-                <Column field="invoicePaymentDate" header="F. vencimiento">
+                <Column field="invoicePaymentDate" header="F. vencimiento" dataType="date" sortable>
                     <template #body="{ data }">
                         <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
                             {{ dateFormat(data.invoicePaymentDate) }}
                         </span>
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="invoicePaymentDate" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por F. emisión" />
+                        <Calendar v-model="filterModel.value" @blur="filterCallback();" dateFormat="dd/mm/yy" placeholder="dd/mm/yyyy"
+                            mask="99/99/9999" name="invoicePaymentDate" class="p-column-filter" />
                     </template>
                 </Column>
                 <Column field="payConditionName" header="Cond. Pago">
@@ -327,22 +348,22 @@ const info = (id) => {
                             class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
                     </template>
                 </Column>
-                <Column field="totalAmount" header="Importe">
+                <Column field="totalAmount" header="Importe" dataType="numeric" sortable>
                     <template #body="{ data }">
                         {{ currencyNumber(data.totalAmount) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="totalAmount" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por importe" />
+                        <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
+                            locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2" />
                     </template>
                 </Column>
-                <Column field="pendingToPay" header="Saldo">
+                <Column field="pendingToPay" header="Saldo" dataType="numeric" sortable>
                     <template #body="{ data }">
                         {{ currencyNumber(data.pendingToPay) }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="pendingToPay" autocomplete="off"
-                            class="p-column-filter" placeholder="Buscar por saldo" />
+                        <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
+                            locale="es-AR" name="pendingToPay" :min="0" :max="99999999" :minFractionDigits="2" />
                     </template>
                 </Column>
                 <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">

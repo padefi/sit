@@ -79,6 +79,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], func
 
 Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], function () {
     Route::resource('vouchers', VoucherController::class);
+    Route::get('/invoice-types', [VoucherController::class, 'invoiceTypes'])->name('vouchers.invoice-types');
     Route::get('/show-vouchers/{supplier}', [VoucherController::class, 'showVouchers'])->name('vouchers.show-vouchers');
     Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
     Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
@@ -90,6 +91,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
 
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
     Route::resource('treasury-vouchers', TreasuryVoucherController::class);
+    Route::get('/treasury-voucher-status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.treasury-voucher-status');
 });
 
 

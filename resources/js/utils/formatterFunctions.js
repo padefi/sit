@@ -18,6 +18,12 @@ export const percentNumber = (data) => {
     }).format(data / 100);
 };
 
+export const addDate = (date, days) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
+
 export const dateFormat = (data) => {
     return format(data, "DD/MM/YYYY", "es");
 };

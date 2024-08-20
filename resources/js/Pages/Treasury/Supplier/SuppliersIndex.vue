@@ -229,7 +229,7 @@ const info = (data, id) => {
                         </div>
                     </template>
                     <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view suppliers')" />
-                    <Column field="cuit" header="Cuit">
+                    <Column field="cuit" header="Cuit" sortable>
                         <template #body="{ data }">
                             {{ data.cuit }}
                         </template>
@@ -238,7 +238,7 @@ const info = (data, id) => {
                                 class="p-column-filter" placeholder="Buscar por CUIT" />
                         </template>
                     </Column>
-                    <Column field="name" header="Razón social">
+                    <Column field="name" header="Razón social" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
@@ -247,7 +247,7 @@ const info = (data, id) => {
                                 class="p-column-filter" placeholder="Buscar por razón social" />
                         </template>
                     </Column>
-                    <Column field="businessName" header="Nombre fantasía">
+                    <Column field="businessName" header="Nombre fantasía" sortable>
                         <template #body="{ data }">
                             {{ data.businessName }}
                         </template>

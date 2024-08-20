@@ -290,7 +290,7 @@ const info = (data) => {
                             <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="status" header="Estado" sortable>
+                    <Column field="status" header="Estado">
                         <template #body="{ data }">
                             <Tag :value="data.status" class="!text-sm uppercase" :severity="getStatusLabel(data.status)" />
                         </template>
