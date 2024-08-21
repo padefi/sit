@@ -92,6 +92,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
     Route::resource('treasury-vouchers', TreasuryVoucherController::class);
     Route::get('/treasury-voucher-status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.treasury-voucher-status');
+    Route::get('/treasury-vouchers/{treasury_voucher}/info', [TreasuryVoucherController::class, 'info'])->name('treasury-vouchers.info');
 });
 
 

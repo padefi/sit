@@ -11,7 +11,7 @@ import { useForm } from "@inertiajs/vue3";
 import voucherModal from './VoucherModal.vue';
 import treasuryModal from './TreasuryModal.vue';
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const vouchersArray = ref([]);
 const expandedRows = ref([]);
 const invoiceTypesSelect = ref([]);
@@ -366,7 +366,8 @@ const info = (id) => {
                             locale="es-AR" name="pendingToPay" :min="0" :max="99999999" :minFractionDigits="2" />
                     </template>
                 </Column>
-                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
+                    v-if="hasPermissionColumn(['edit vouchers', 'view users'])">
                     <template #body="{ data }">
                         <div class="space-x-2">
                             <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">

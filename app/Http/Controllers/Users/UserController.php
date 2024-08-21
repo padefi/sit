@@ -9,6 +9,7 @@ use App\Http\Resources\Users\RoleResource;
 use App\Http\Resources\Users\UserResource;
 use App\Models\Users\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -30,11 +31,18 @@ class UserController extends Controller {
     }
 
     public function index(): Response {
-        $userPermissions = User::with('permissions')->get();
+        $users = User::with('permissions')->get();
         $roles = Role::with('permissions')->get();
+        $userRole = Auth::user()->roles->first();
+
+        if ($userRole->name !== 'admin') {
+            $users = $users->filter(function ($user) {
+                return !$user->hasRole('admin');
+            });
+        }
 
         return Inertia::render('Users/UserIndex', [
-            'users' => UserResource::collection($userPermissions),
+            'users' => UserResource::collection($users),
             'roles' => RoleResource::collection($roles),
         ]);
     }

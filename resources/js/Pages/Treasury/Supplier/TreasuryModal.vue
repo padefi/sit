@@ -7,7 +7,7 @@ import { useDialog } from 'primevue/usedialog';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
 import { FilterMatchMode, FilterOperator } from "primevue/api";
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
 const voucherTypesSelect = ref([]);
@@ -113,6 +113,41 @@ onMounted(async () => {
             }
         });
 });
+
+/*  */
+import infoModal from '@/Components/InfoModal.vue';
+
+const dialogInfo = useDialog();
+
+const info = (id) => {
+    axios.get(`/treasury-vouchers/${id}/info`)
+        .then((response) => {
+            const header = 'Información del comprobante de tesorería';
+
+            dialogInfo.open(infoModal, {
+                props: {
+                    header: header,
+                    style: {
+                        width: '50vw',
+                    },
+                    breakpoints: {
+                        '960px': '75vw',
+                        '640px': '90vw'
+                    },
+                    modal: true
+                },
+                data: response.data
+            });
+        })
+        .catch((error) => {
+            toast.add({
+                severity: 'error',
+                detail: error.response.data.message,
+                life: 3000,
+            });
+        });
+}
+/*  */
 </script>
 <template>
     <Card class="mt-5 mx-4 uppercase">
@@ -150,8 +185,9 @@ onMounted(async () => {
                         {{ data.voucherTypeName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherTypesSelect" placeholder="Tipo" name="voucherTypeName" 
-                            class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true" style="min-width: 12rem" />
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherTypesSelect" placeholder="Tipo"
+                            name="voucherTypeName" class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true"
+                            style="min-width: 12rem" />
                     </template>
                 </Column>
                 <Column field="voucherStatusName" header="Estado" class="rounded-tl-lg min-w-56 max-w-56">
@@ -159,8 +195,9 @@ onMounted(async () => {
                         {{ data.voucherStatusName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherStatusSelect" placeholder="Estado" name="voucherStatusName" 
-                            class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true" style="min-width: 12rem" />
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherStatusSelect" placeholder="Estado"
+                            name="voucherStatusName" class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true"
+                            style="min-width: 12rem" />
                     </template>
                 </Column>
                 <Column field="totalAmount" header="Importe" dataType="numeric" class="rounded-tl-lg min-w-56 max-w-56">
@@ -172,7 +209,7 @@ onMounted(async () => {
                             locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2" />
                     </template>
                 </Column>
-                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
                     <template #body="{ data }">
                         <div>
                             <template v-if="hasPermission('view users')">

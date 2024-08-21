@@ -40,7 +40,7 @@ const props = defineProps({
     },
 });
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const suppliersArray = ref([]);
 const expandedRows = ref([]);
@@ -283,10 +283,11 @@ const info = (data, id) => {
                             </div>
                         </template>
                     </Column>
-                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
+                        v-if="hasPermissionColumn(['view vouchers', 'edit suppliers', 'view users'])">
                         <template #body="{ data }">
                             <div class="space-x-2 flex pl-2">
-                                <template v-if="hasPermission('create vouchers')">
+                                <template v-if="hasPermission('view vouchers')">
                                     <button v-tooltip="'Comprobantes'"><i class="pi pi-book text-green-500 text-lg font-extrabold"
                                             @click="Vouchers(data)"></i></button>
                                 </template>

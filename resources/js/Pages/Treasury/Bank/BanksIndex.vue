@@ -27,7 +27,7 @@ const props = defineProps({
     },
 });
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const bankAccountTypesSelect = ref([]);
 const newRow = ref([]);
@@ -592,7 +592,8 @@ const info = (route, data, id) => {
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
                     </Column>
-                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+                        v-if="hasPermissionColumn(['edit banks', 'create bank accounts', 'view users'])">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-2">
                                 <template v-if="hasPermission('edit banks')">
@@ -685,7 +686,8 @@ const info = (route, data, id) => {
                                         <InputError :message="!data[field] ? rules : ''" />
                                     </template>
                                 </Column>
-                                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
+                                    v-if="hasPermissionColumn(['edit banks', 'view users'])">
                                     <template #body="{ editorInitCallback, data }">
                                         <div class="space-x-2">
                                             <template v-if="hasPermission('edit banks')">

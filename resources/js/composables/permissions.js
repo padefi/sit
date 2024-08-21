@@ -5,6 +5,7 @@ export function usePermissions() {
     const username = () => usePage().props.auth.user.username;
     const hasRole = (name) => usePage().props.auth.user.roles.includes(name);
     const hasPermission = (name) => usePage().props.auth.user.permissions.includes(name);
+    const hasPermissionColumn = (dataArray) => dataArray.some(data => hasPermission(data));
 
-    return { user, username, hasRole, hasPermission };
+    return { user, username, hasRole, hasPermission, hasPermissionColumn };
 }

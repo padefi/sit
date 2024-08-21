@@ -8,7 +8,7 @@ import { useForm } from '@inertiajs/vue3';
 import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const categoriesArray = ref([]);
 const originalCategoriesArray = ref([]);
@@ -134,9 +134,9 @@ const addNewVatTaxWithholding = async (data) => {
     editingRows.value = [newVatTax];
     onRowExpand(data);
 }
-/* End add new social security tax withholdings */
+/* End add new vat tax withholdings */
 
-/* Editing social security tax withholdings  */
+/* Editing vat tax withholdings  */
 const onRowEditInitVatTaxWithholding = (event) => {
     originalCategoriesArray.value = [...categoriesArray.value[event.data.categoryIndex].vatTax];
     editingRows.value = [event.data];
@@ -246,7 +246,7 @@ const onRowEditSaveVatTaxWithholding = (event) => {
         }
     });
 }
-/* End editing social security tax withholdings */
+/* End editing vat tax withholdings */
 onMounted(() => {
     fetchVatWithholdings();
 
@@ -346,7 +346,7 @@ div[data-pc-section="columnfilter"] {
                 Sin rubros cargados
             </div>
         </template>
-        <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view social security tax withholdings')" />
+        <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view vat tax withholdings')" />
         <Column field="name" header="Rubro">
             <template #body="{ data }">
                 {{ data.name }}
@@ -362,11 +362,12 @@ div[data-pc-section="columnfilter"] {
                     @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
-        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+            v-if="hasPermissionColumn(['edit vat tax withholdings', 'create vat tax withholdings', 'view users'])">
             <template #body="{ data }">
                 <div class="text-center">
                     <template
-                        v-if="hasPermission('view social security tax withholdings') && hasPermission('create social security tax withholdings') && data.vatTax.length === 0">
+                        v-if="hasPermission('view vat tax withholdings') && hasPermission('create vat tax withholdings') && data.vatTax.length === 0">
                         <ConfirmPopup></ConfirmPopup>
                         <button v-tooltip="'Agregar retención'"><i class="pi pi-plus-circle text-green-500 text-2xl"
                                 @click="addNewVatTaxWithholding(data)"></i></button>
@@ -454,10 +455,11 @@ div[data-pc-section="columnfilter"] {
                         <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
-                <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem;">
+                <Column header="Acciones" :rowEditor="true" style="width: 5%; min-width: 8rem;"
+                    v-if="hasPermissionColumn(['edit vat tax withholdings', 'view users'])">
                     <template #body="{ editorInitCallback, data }">
                         <div class="space-x-2">
-                            <template v-if="hasPermission('edit social security tax withholdings')">
+                            <template v-if="hasPermission('edit vat tax withholdings')">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                             </template>

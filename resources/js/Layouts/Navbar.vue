@@ -1,11 +1,11 @@
 <script setup>
-import { ref } from "vue";
-import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from "vue";
+import { Link } from '@inertiajs/vue3';
 import { usePermissions } from '@/composables/permissions'
 
-const { user, username, hasRole, hasPermission } = usePermissions();
+const { user, hasPermission } = usePermissions();
 
-const items = ref([
+const allItems = ref([
     {
         label: 'Home',
         icon: 'pi pi-home',
@@ -20,45 +20,29 @@ const items = ref([
                 label: 'Comprobantes',
                 icon: 'pi pi-shop',
                 method: 'get',
-                route: 'voucher-subtypes.index',
+                route: 'treasury-vouchers.index',
+                name: 'treasury vouchers',
             },
             {
                 label: 'Bancos',
                 icon: 'pi pi-building-columns',
                 method: 'get',
                 route: 'banks.index',
+                name: 'banks',
             },
             {
                 label: 'Retenciones',
                 icon: 'pi pi-book',
                 method: 'get',
                 route: 'taxes.index',
-                /* items: [
-                    {
-                        label: 'Ganancias',
-                        icon: 'pi pi-dollar',
-                        method: 'get',
-                        // route: 'taxes.index',
-                    },
-                    {
-                        label: 'Suss',
-                        icon: 'pi pi-users',
-                        method: 'get',
-                        // route: 'taxes.index',
-                    },
-                    {
-                        label: 'I.V.A.',
-                        icon: 'pi pi-percentage text-sm',
-                        method: 'get',
-                        // route: 'taxes.index',
-                    },
-                ] */
+                name: 'taxes',
             },
             {
                 label: 'Proveedores',
                 icon: 'pi pi-truck',
                 method: 'get',
                 route: 'suppliers.index',
+                name: 'suppliers',
             },
             {
                 label: 'Relaciones',
@@ -69,18 +53,21 @@ const items = ref([
                         icon: 'pi pi-list',
                         method: 'get',
                         route: 'voucher-types.index',
+                        name: 'voucher types',
                     },
                     {
                         label: 'Subtipos',
                         icon: 'pi pi-share-alt',
                         method: 'get',
                         route: 'voucher-subtypes.index',
+                        name: 'voucher subtypes',
                     },
                     {
                         label: 'Gastos',
                         icon: 'pi pi-sitemap',
                         method: 'get',
                         route: 'voucher-expenses.index',
+                        name: 'voucher expenses',
                     },
                 ]
             },
@@ -90,7 +77,8 @@ const items = ref([
         label: 'Usuarios',
         icon: 'pi pi-users',
         method: 'get',
-        route: 'users.index'
+        route: 'users.index',
+        name: 'users',
     },
     {
         label: user(),
@@ -115,6 +103,31 @@ const userItems = ref([
         route: 'logout',
     },
 ]);
+
+const filterItems = (items) => {
+    return items.reduce((acc, item) => {
+        if (item.items) {
+            // If the item has sub-items, we need to filter them recursively
+            const filteredSubItems = filterItems(item.items);
+            if (filteredSubItems.length > 0 || (item.name && hasPermission('view ' + item.name))) {
+                acc.push({ ...item, items: filteredSubItems });
+            }
+        } else if (item.name) {
+            // If the item has no sub-items, we need to check if it has permission
+            if (hasPermission('view ' + item.name)) {
+                acc.push(item);
+            }
+        } else {
+            // If the item has no sub-items and no name, we just include it
+            acc.push(item);
+        }
+        return acc;
+    }, []);
+};
+
+const items = computed(() => {
+    return filterItems(allItems.value);
+});
 </script>
 <template>
     <Menubar :model="items" class="menubar">
@@ -137,8 +150,7 @@ const userItems = ref([
             </a>
         </template>
         <template #end>
-            <Link v-for="userItem in userItems" v-ripple :href="route(userItem.route)" :method="userItem.method"
-                as="button"
+            <Link v-for="userItem in userItems" v-ripple :href="route(userItem.route)" :method="userItem.method" as="button"
                 class="px-4 py-3 flex items-center space-x-4 rounded-md text-gray-600 group hover:text-white-400">
             <span :class="userItem.icon"></span>
             <span class="ml-2">{{ userItem.label }}</span>

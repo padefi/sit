@@ -8,7 +8,7 @@ import { useForm } from '@inertiajs/vue3';
 import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const categoriesArray = ref([]);
 const originalCategoriesArray = ref([]);
@@ -362,7 +362,8 @@ div[data-pc-section="columnfilter"] {
                     class="rounded-full" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
-        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+            v-if="hasPermissionColumn(['edit social security tax withholdings', 'create social security tax withholdings', 'view users'])">
             <template #body="{ data }">
                 <div class="text-center">
                     <template
@@ -454,7 +455,8 @@ div[data-pc-section="columnfilter"] {
                         <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
-                <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+                    v-if="hasPermissionColumn(['edit social security tax withholdings', 'view users'])">
                     <template #body="{ editorInitCallback, data }">
                         <div class="space-x-2">
                             <template v-if="hasPermission('edit social security tax withholdings')">

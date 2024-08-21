@@ -8,7 +8,7 @@ import { useForm } from '@inertiajs/vue3';
 import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
 import InputError from '@/Components/InputError.vue';
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const categoriesArray = ref([]);
 const originalCategoriesArray = ref([]);
@@ -353,8 +353,8 @@ onMounted(() => {
             const indexCategory = categoriesArray.value.findIndex(category => category.id === e.incomeTaxWithholdingScale.category.id);
 
             const incomeTaxEventDataStructure = (indexCategory, incomeTaxWithholdingScale) => {
-                const startAt = addDate(incomeTaxWithholdingScale.startAt,1 );
-                const endAt = addDate(incomeTaxWithholdingScale.endAt,1 );
+                const startAt = addDate(incomeTaxWithholdingScale.startAt, 1);
+                const endAt = addDate(incomeTaxWithholdingScale.endAt, 1);
 
                 return {
                     ...incomeTaxWithholdingScale,
@@ -466,7 +466,8 @@ div[data-pc-section="columnfilter"] {
                     v-tooltip="data.scale === 1 ? 'Sobre escala' : 'Sin escala'" @click="onRowExpand(data)"></Badge>
             </template>
         </Column>
-        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+            v-if="hasPermissionColumn(['view income tax withholdings', 'create income tax withholdings'])">
             <template #body="{ data }">
                 <div class="text-center">
                     <template v-if="hasPermission('view income tax withholdings') && hasPermission('create income tax withholdings')">
@@ -571,7 +572,8 @@ div[data-pc-section="columnfilter"] {
                         <InputError :message="data[field] === null ? rules : ''" />
                     </template>
                 </Column>
-                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
+                    v-if="hasPermissionColumn(['edit income tax withholdings', 'view users'])">
                     <template #body="{ editorInitCallback, data }">
                         <div class="space-x-2">
                             <template v-if="hasPermission('edit income tax withholdings')">

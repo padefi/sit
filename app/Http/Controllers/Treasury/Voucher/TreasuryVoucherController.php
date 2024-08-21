@@ -9,18 +9,24 @@ use App\Http\Resources\Treasury\Voucher\TreasuryVoucherStatusResource;
 use App\Models\Treasury\Voucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\TreasuryVoucherStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Inertia\Response;
+use Inertia\Inertia;
 
 class TreasuryVoucherController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view treasury vouchers')->only('show');
         $this->middleware('check.permission:view treasury vouchers')->only('treasuryVoucherStatus');
+        $this->middleware('check.permission:view users')->only('info');
     }
 
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        //
+    public function index(): Response {
+
+        return Inertia::render('Treasury/Voucher/TreasuryVouchersIndex', [
+        ]);
     }
 
     /**
@@ -56,5 +62,17 @@ class TreasuryVoucherController extends Controller {
         return response()->json([
             'treasuryVoucherStatus' => TreasuryVoucherStatusResource::collection($treasuryVoucherStatus),
         ]);
+    }
+
+    public function info(TreasuryVoucher $treasuryVoucher) {
+        $treasuryVoucher = TreasuryVoucher::with(['userCreated', 'userUpdated'])->where('id', $treasuryVoucher->id)->first();
+
+        if (!$treasuryVoucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+
+        return new TreasuryVoucherResource($treasuryVoucher);
     }
 }

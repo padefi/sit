@@ -17,7 +17,7 @@ const props = defineProps({
     },
 });
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const voucherExpensesArray = ref([]);
 const originalVoucherExpensesArray = ref([]);
 const toast = useToast();
@@ -314,7 +314,8 @@ const info = (data) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
+                        v-if="hasPermissionColumn(['edit voucher expenses', 'view users'])">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-2">
                                 <template v-if="hasPermission('edit voucher expenses')">
@@ -322,7 +323,8 @@ const info = (data) => {
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view users')">
-                                    <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl" @click="info(data)"></i></button>
+                                    <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
+                                            @click="info(data)"></i></button>
                                 </template>
                             </div>
                         </template>

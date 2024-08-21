@@ -23,7 +23,7 @@ const props = defineProps({
     },
 });
 
-const { hasPermission } = usePermissions();
+const { hasPermission, hasPermissionColumn } = usePermissions();
 const voucherSubtypesArray = ref([]);
 const originalVoucherSubtypesArray = ref([]);
 const voucherExpensesArray = ref([]);
@@ -443,7 +443,7 @@ const info = (data) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32" v-if="hasPermissionColumn(['edit voucher subtypes', 'view users'])">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
                                 <template v-if="hasPermission('edit voucher subtypes')">
