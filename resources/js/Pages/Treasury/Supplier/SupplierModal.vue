@@ -25,6 +25,7 @@ const form = useForm({
 });
 
 const rules = 'Debe completar el campo'
+const loading = ref(true);
 const addressArray = ref([]);
 const selectedAddress = ref(null);
 const invalidAddress = ref(false);
@@ -140,17 +141,19 @@ onMounted(async () => {
         form.address.floor = dialogRef.value.data.supplierData.floor;
         form.address.apartment = dialogRef.value.data.supplierData.apartment;
         form.phone = dialogRef.value.data.supplierData.phone !== '' ? dialogRef.value.data.supplierData.phone : null;
-        form.email = dialogRef.value.data.supplierData.email;
-        form.cbu = dialogRef.value.data.supplierData.cbu;
+        form.email = dialogRef.value.data.supplierData.email !== '' ? dialogRef.value.data.supplierData.email : null;
+        form.cbu = dialogRef.value.data.supplierData.cbu !== '' ? dialogRef.value.data.supplierData.cbu : null;
         form.idVC = dialogRef.value.data.supplierData.idVC;
         form.idCat = dialogRef.value.data.supplierData.idCat;
-        form.incomeTaxWithholding = dialogRef.value.data.supplierData.incomeTaxWithholding === 1 ? true: false;
-        form.socialTax = dialogRef.value.data.supplierData.socialTax === 1 ? true: false;
-        form.vatTax = dialogRef.value.data.supplierData.vatTax === 1 ? true: false;
+        form.incomeTaxWithholding = dialogRef.value.data.supplierData.incomeTaxWithholding === 1 ? true : false;
+        form.socialTax = dialogRef.value.data.supplierData.socialTax === 1 ? true : false;
+        form.vatTax = dialogRef.value.data.supplierData.vatTax === 1 ? true : false;
         form.notes = dialogRef.value.data.supplierData.notes;
 
         editing.value = true;
     }
+
+    loading.value = false;
 });
 </script>
 <template>
@@ -163,103 +166,143 @@ onMounted(async () => {
                             justify-center font-medium">
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-1/5">
-                                    <FloatLabel>
-                                        <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off" class="w-full"
-                                            :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
-                                        <label for="cuit">CUIT</label>
-                                    </FloatLabel>
-                                    <InputError
-                                        :message="form.cuitDisplay === '' ? rules : form.cuitDisplay && !cuitValidator(form.cuitDisplay) ? 'Cuit invalido' : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off" class="w-full"
+                                                :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
+                                            <label for="cuit">CUIT</label>
+                                        </FloatLabel>
+                                        <InputError
+                                            :message="form.cuitDisplay === '' ? rules : form.cuitDisplay && !cuitValidator(form.cuitDisplay) ? 'Cuit invalido' : ''" />
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-2/5">
-                                    <FloatLabel>
-                                        <InputText id="name" v-model="form.name" autocomplete="off" class="w-full uppercase"
-                                            :invalid="form.name && (form.name.trim() === '' || form.name === '')" />
-                                        <label for="name">Razón Social</label>
-                                    </FloatLabel>
-                                    <InputError :message="form.name && form.name.trim() === '' || form.name === '' ? rules : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText id="name" v-model="form.name" autocomplete="off" class="w-full uppercase"
+                                                :invalid="form.name && (form.name.trim() === '' || form.name === '')" />
+                                            <label for="name">Razón Social</label>
+                                        </FloatLabel>
+                                        <InputError :message="form.name && form.name.trim() === '' || form.name === '' ? rules : ''" />
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-2/5">
-                                    <FloatLabel>
-                                        <InputText id="businessName" v-model="form.businessName" autocomplete="off" class="w-full uppercase"
-                                            :invalid="form.businessName && (form.businessName.trim() === '' || form.businessName === '')" />
-                                        <label for="businessName">Nombre de fantasía</label>
-                                    </FloatLabel>
-                                    <InputError
-                                        :message="form.businessName && form.businessName.trim() === '' || form.businessName === '' ? rules : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText id="businessName" v-model="form.businessName" autocomplete="off" class="w-full uppercase"
+                                                :invalid="form.businessName && (form.businessName.trim() === '' || form.businessName === '')" />
+                                            <label for="businessName">Nombre de fantasía</label>
+                                        </FloatLabel>
+                                        <InputError
+                                            :message="form.businessName && form.businessName.trim() === '' || form.businessName === '' ? rules : ''" />
+                                    </template>
                                 </div>
                             </div>
 
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-[88%]">
-                                    <FloatLabel>
-                                        <AutoComplete v-model="form.address.display_name" inputId="address" ref="autoCompleteAddress"
-                                            :suggestions="addressArray" @complete="search" @item-select="selectData" @blur="cleanIfEmpty()"
-                                            class="w-full uppercase" :invalid="invalidAddress" :class="dropdownClasses(form.address.display_name)">
-                                            <template #option="slotProps">
-                                                <div class="flex items-center">
-                                                    <div>{{ slotProps.option.display_name }}</div>
-                                                </div>
-                                            </template>
-                                        </AutoComplete>
-                                        <label for="address">Domicilio</label>
-                                    </FloatLabel>
-                                    <InputError :message="invalidAddress ? rules : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <AutoComplete v-model="form.address.display_name" inputId="address" ref="autoCompleteAddress"
+                                                :suggestions="addressArray" @complete="search" @item-select="selectData" @blur="cleanIfEmpty()"
+                                                class="w-full uppercase" :invalid="invalidAddress"
+                                                :class="dropdownClasses(form.address.display_name)">
+                                                <template #option="slotProps">
+                                                    <div class="flex items-center">
+                                                        <div>{{ slotProps.option.display_name }}</div>
+                                                    </div>
+                                                </template>
+                                            </AutoComplete>
+                                            <label for="address">Domicilio</label>
+                                        </FloatLabel>
+                                        <InputError :message="invalidAddress ? rules : ''" />
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-[6%]">
-                                    <FloatLabel>
-                                        <InputText id="floor" v-model="form.address.floor" autocomplete="off" class="w-full uppercase"
-                                            maxlength="2" />
-                                        <label for="floor">Piso</label>
-                                    </FloatLabel>
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText id="floor" v-model="form.address.floor" autocomplete="off" class="w-full uppercase"
+                                                maxlength="2" />
+                                            <label for="floor">Piso</label>
+                                        </FloatLabel>
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-[6%]">
-                                    <FloatLabel>
-                                        <InputText id="apartment" v-model="form.address.apartment" autocomplete="off" class="w-full uppercase"
-                                            maxlength="2" />
-                                        <label for="apartment">Dto</label>
-                                    </FloatLabel>
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText id="apartment" v-model="form.address.apartment" autocomplete="off" class="w-full uppercase"
+                                                maxlength="2" />
+                                            <label for="apartment">Dto</label>
+                                        </FloatLabel>
+                                    </template>
                                 </div>
                             </div>
 
                             <div class="flex w-5/5 gap-3 m-3">
                                 <div class="w-full md:w-2/5">
-                                    <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.email" id="email" autocomplete="off" maxlength="100"
-                                            class="w-full"
-                                            :invalid="form.email && (form.email.trim() === '' || form.email === '') || form.email && !validateEmail(form.email)" />
-                                        <label for="email">Email</label>
-                                    </FloatLabel>
-                                    <InputError
-                                        :message="form.email && form.email.trim() === '' || form.email === '' ? rules : form.email && !validateEmail(form.email) ? 'Dirección de mail invalida' : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText :class="'uppercase'" v-model="form.email" id="email" autocomplete="off" maxlength="100"
+                                                class="w-full" :invalid="form.email && !validateEmail(form.email) ? true : false" />
+                                            <label for="email">Email</label>
+                                        </FloatLabel>
+                                        <InputError :message="form.email && !validateEmail(form.email) ? 'Dirección de mail invalida' : ''" />
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-1/5">
-                                    <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.phone" id="phone" autocomplete="off" maxlength="13"
-                                            class="w-full"
-                                            :invalid="form.phone && (form.phone.trim() === '' || form.phone === '') || form.phone && !validatePhoneNumber(form.phone)"
-                                            onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
-                                        <label for="phone">Teléfono</label>
-                                    </FloatLabel>
-                                    <InputError
-                                        :message="form.phone && form.phone.trim() === '' || form.phone === '' ? rules : form.phone && !validatePhoneNumber(form.phone) ? rules : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText :class="'uppercase'" v-model="form.phone" id="phone" autocomplete="off" maxlength="13"
+                                                class="w-full" :invalid="form.phone && !validatePhoneNumber(form.phone) ? true : false"
+                                                onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
+                                            <label for="phone">Teléfono</label>
+                                        </FloatLabel>
+                                        <InputError :message="form.phone && !validatePhoneNumber(form.phone) ? rules : ''" />
+                                    </template>
                                 </div>
 
                                 <div class="w-full md:w-2/5">
-                                    <FloatLabel>
-                                        <InputText :class="'uppercase'" v-model="form.cbu" id="cbu" autocomplete="off" :minlength="22" :maxlength="22"
-                                            class="w-full"
-                                            :invalid="form.cbu && (form.cbu.trim() === '' || form.cbu === '') || form.cbu && !validateCBU(form.cbu)"
-                                            onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
-                                        <label for="cbu">CBU</label>
-                                    </FloatLabel>
-                                    <InputError
-                                        :message="form.cbu && form.cbu.trim() === '' || form.cbu === '' ? rules : form.cbu && !validateCBU(form.cbu) ? 'CBU invalido' : ''" />
+                                    <template v-if="loading">
+                                        <Skeleton class="mb-2"></Skeleton>
+                                    </template>
+                                    <template v-if="!loading">
+                                        <FloatLabel>
+                                            <InputText :class="'uppercase'" v-model="form.cbu" id="cbu" autocomplete="off" :minlength="22"
+                                                :maxlength="22" class="w-full" :invalid="form.cbu && !validateCBU(form.cbu) ? true : false"
+                                                onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
+                                            <label for="cbu">CBU</label>
+                                        </FloatLabel>
+                                        <InputError :message="form.cbu && !validateCBU(form.cbu) ? 'CBU invalido' : ''" />
+                                    </template>
                                 </div>
                             </div>
                         </div>

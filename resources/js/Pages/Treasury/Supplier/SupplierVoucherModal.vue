@@ -11,8 +11,10 @@ import { useForm } from "@inertiajs/vue3";
 import voucherModal from './VoucherModal.vue';
 import treasuryModal from './TreasuryModal.vue';
 
+
 const { hasPermission, hasPermissionColumn } = usePermissions();
-const vouchersArray = ref([]);
+const vouchersArray = ref();
+const loading = ref(true);
 const expandedRows = ref([]);
 const invoiceTypesSelect = ref([]);
 const invoiceTypeCodesSelect = ref([]);
@@ -202,6 +204,7 @@ const treasuryVoucher = () => {
 onMounted(async () => {
     await getInvoiceTypeData();
     await getVouchers();
+    loading.value = false;
 
     payConditionsSelect.value = dialogRef.value.data.payConditions.map((payCondition) => {
         return { label: payCondition.name, value: payCondition.name };
@@ -220,7 +223,7 @@ onMounted(async () => {
                 const index = vouchersArray.value.findIndex(voucher => voucher.id === e.voucher.id);
 
                 if (index !== -1) {
-                    vouchersArray.value[index] = e.voucher;
+                    vouchersArray.value[index] = voucherDataStructure(e.voucher);
                 }
             } else if (e.type === 'voucherToTreasury') {
                 setTimeout(async () => {
@@ -285,8 +288,8 @@ const info = (id) => {
             </div>
         </template>
         <template #content>
-            <DataTable :value="vouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
-                dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+            <DataTable :value="vouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
+                scrollHeight="70vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
                     table: { style: 'min-width: 50rem' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
@@ -296,14 +299,20 @@ const info = (id) => {
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table" :row-class="rowClassVoid">
                 <template #empty>
-                    <div class="text-center text-lg text-red-500">
-                        Sin comprobantes cargados
+                    <div :class="loading ? 'py-4' : ''">
+                        <template v-if="!loading">
+                            Sin comprobantes cargados
+                        </template>
                     </div>
+                </template>
+                <template #loading>
+                    <ProgressSpinner class="!w-10 !h-10" />
                 </template>
                 <Column expander class="min-w-2 w-2 !px-0" />
                 <Column field="invoiceTypeName" header="T. comp.">
                     <template #body="{ data }">
                         {{ data.invoiceTypeName }}
+
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="invoiceTypesSelect" placeholder="T. Comp"

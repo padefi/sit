@@ -76,6 +76,10 @@ ul[data-pc-section="submenu"] {
         justify-content: center;
     }
 
+    td[data-pc-section="emptymessagecell"] {
+        text-align: center;
+        color: red;
+    }
 }
 
 .data-table-expanded,

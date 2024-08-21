@@ -28,6 +28,7 @@ const form = useForm({
 });
 
 const rules = 'Debe completar el campo';
+const loading = ref(true);
 const voucherTypes = ref([]);
 const voucherSubtypes = ref([]);
 const voucherExpenses = ref([]);
@@ -283,7 +284,7 @@ const closeDialog = () => {
     dialogRef.value.close();
 }
 
-onMounted(async () => {    
+onMounted(async () => {
     form.idSupplier = dialogRef.value.data.supplierId;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
@@ -301,10 +302,10 @@ onMounted(async () => {
         await loadVoucherSubtypeData(data.voucherType.id);
         form.voucherSubtype = voucherSubtypes.value.find((subtype) => subtype.id === data.voucherSubtype.id) ? data.voucherSubtype.id : undefined;
 
-        setTimeout(async () => {
-            await loadVoucherExpenseData(data.voucherSubtype.id);
-            form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === data.voucherExpense.id) ? data.voucherExpense.id : undefined;
-        }, 1);
+        // setTimeout(async () => {
+        await loadVoucherExpenseData(data.voucherSubtype.id);
+        form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === data.voucherExpense.id) ? data.voucherExpense.id : undefined;
+        // }, 1);
 
         form.invoiceType = data.invoiceType.id;
 
@@ -324,10 +325,12 @@ onMounted(async () => {
         });
 
         recalculateAmounts();
+        loading.value = false;
         return;
     }
 
     addNewItem();
+    loading.value = false;
 });
 
 const getVhoucher = async (voucherId) => {
@@ -451,42 +454,57 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                 class="flex flex-col border-2 border-dashed border-surface-200 dark:border-surface-700 rounded-md bg-surface-0 dark:bg-surface-950 justify-center font-medium">
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
                     <div class="min-w-40">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherType" v-model="form.voucherType" :options="voucherTypes" filter showClear resetFilterOnHide
-                                :invalid="form.voucherType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
-                                :class="dropdownClasses(form.voucherType)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherType">Tipo</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherType === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="voucherType" v-model="form.voucherType" :options="voucherTypes" filter showClear resetFilterOnHide
+                                    :invalid="form.voucherType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                    :class="dropdownClasses(form.voucherType)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="voucherType">Tipo</label>
+                            </FloatLabel>
+                            <InputError :message="form.voucherType === null ? rules : ''" />
+                        </template>
                     </div>
 
                     <div class="min-w-72">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherSubtype" v-model="form.voucherSubtype" :options="voucherSubtypes" filter showClear
-                                resetFilterOnHide :invalid="form.voucherSubtype === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherSubtype">Subtipo</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherSubtype === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="voucherSubtype" v-model="form.voucherSubtype" :options="voucherSubtypes" filter showClear
+                                    resetFilterOnHide :invalid="form.voucherSubtype === null" optionLabel="name" optionValue="id"
+                                    class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherSubtype)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="voucherSubtype">Subtipo</label>
+                            </FloatLabel>
+                            <InputError :message="form.voucherSubtype === null ? rules : ''" />
+                        </template>
                     </div>
 
                     <div class="min-w-56">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
-                                resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="voucherExpense">Gasto</label>
-                        </FloatLabel>
-                        <InputError :message="form.voucherExpense === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
+                                    resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
+                                    class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="voucherExpense">Gasto</label>
+                            </FloatLabel>
+                            <InputError :message="form.voucherExpense === null ? rules : ''" />
+                        </template>
                     </div>
                 </div>
 
@@ -494,107 +512,143 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
 
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
                     <div class="min-w-64">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
-                                :invalid="form.invoiceType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
-                                :class="dropdownClasses(form.invoiceType)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="invoiceType">T. comp.</label>
-                        </FloatLabel>
-                        <InputError :message="form.invoiceType === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="invoiceType" v-model="form.invoiceType" :options="invoiceTypes" filter showClear resetFilterOnHide
+                                    :invalid="form.invoiceType === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
+                                    :class="dropdownClasses(form.invoiceType)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="invoiceType">T. comp.</label>
+                            </FloatLabel>
+                            <InputError :message="form.invoiceType === null ? rules : ''" />
+                        </template>
                     </div>
 
                     <div class="min-w-44">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear
-                                resetFilterOnHide :invalid="form.invoiceTypeCode === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceTypeCode)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="invoiceTypeCode">T. fac.</label>
-                        </FloatLabel>
-                        <InputError :message="form.invoiceTypeCode === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="invoiceTypeCode" v-model="form.invoiceTypeCode" :options="invoiceTypeCodes" filter showClear
+                                    resetFilterOnHide :invalid="form.invoiceTypeCode === null" optionLabel="name" optionValue="id"
+                                    class="w-full !focus:border-primary-500" :class="dropdownClasses(form.invoiceTypeCode)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="invoiceTypeCode">T. fac.</label>
+                            </FloatLabel>
+                            <InputError :message="form.invoiceTypeCode === null ? rules : ''" />
+                        </template>
                     </div>
 
-                    <div class="flex min-w-52 gap-1">
-                        <div class="max-w-24">
-                            <FloatLabel>
-                                <InputText v-model="form.pointOfNumber" autocomplete="off" inputId="pointOfNumber" id="pointOfNumber"
-                                    class="w-full :not(:focus)::placeholder:text-transparent" minlength="5" maxlength="5"
-                                    :invalid="form.pointOfNumber && (form.pointOfNumber.trim() === '' || form.pointOfNumber === '')"
-                                    @blur="handleInvoiceNumber('pointOfNumber', 5)" />
-                                <label for="pointOfNumber">Pto Vta</label>
-                            </FloatLabel>
-                            <InputError :message="form.pointOfNumber && form.pointOfNumber.trim() === '' || form.pointOfNumber === '' ? rules : ''" />
-                        </div>
-
-                        <div class="relative !top-2.5">-</div>
-
-                        <div class="flex gap-3 flex-wrap justify-center">
-                            <div class="max-w-32">
+                    <div class="flex min-w-60 gap-1">
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <div class="max-w-24">
                                 <FloatLabel>
-                                    <InputText v-model="form.invoiceNumber" autocomplete="off" inputId="invoiceNumber" id="invoiceNumber"
-                                        class="w-full :not(:focus)::placeholder:text-transparent" minlength="8" maxlength="8"
-                                        :invalid="form.invoiceNumber && (form.invoiceNumber.trim() === '' || form.invoiceNumber === '')"
-                                        @blur="handleInvoiceNumber('invoiceNumber', 8)" />
-                                    <label for="invoiceNumber">Número</label>
+                                    <InputText v-model="form.pointOfNumber" autocomplete="off" inputId="pointOfNumber" id="pointOfNumber"
+                                        class="w-full :not(:focus)::placeholder:text-transparent" minlength="5" maxlength="5"
+                                        :invalid="form.pointOfNumber && (form.pointOfNumber.trim() === '' || form.pointOfNumber === '')"
+                                        @blur="handleInvoiceNumber('pointOfNumber', 5)" />
+                                    <label for="pointOfNumber">Pto Vta</label>
                                 </FloatLabel>
                                 <InputError
-                                    :message="form.invoiceNumber && form.invoiceNumber.trim() === '' || form.invoiceNumber === '' ? rules : ''" />
+                                    :message="form.pointOfNumber && form.pointOfNumber.trim() === '' || form.pointOfNumber === '' ? rules : ''" />
                             </div>
-                        </div>
+
+                            <div class="relative !top-2.5">-</div>
+
+                            <div class="flex gap-3 flex-wrap justify-center">
+                                <div class="max-w-32">
+                                    <FloatLabel>
+                                        <InputText v-model="form.invoiceNumber" autocomplete="off" inputId="invoiceNumber" id="invoiceNumber"
+                                            class="w-full :not(:focus)::placeholder:text-transparent" minlength="8" maxlength="8"
+                                            :invalid="form.invoiceNumber && (form.invoiceNumber.trim() === '' || form.invoiceNumber === '')"
+                                            @blur="handleInvoiceNumber('invoiceNumber', 8)" />
+                                        <label for="invoiceNumber">Número</label>
+                                    </FloatLabel>
+                                    <InputError
+                                        :message="form.invoiceNumber && form.invoiceNumber.trim() === '' || form.invoiceNumber === '' ? rules : ''" />
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
                 <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
 
                 <div class="flex gap-3 m-3 flex-wrap justify-center">
-                    <div class="max-w-48">
-                        <FloatLabel>
-                            <Calendar v-model="form.invoiceDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDate" class="w-full"
-                                :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''" inputClass="w-full"
-                                :invalid="form.invoiceDate === null" :maxDate="new Date()" />
-                            <label for="invoiceDate">F. emisión</label>
-                        </FloatLabel>
-                        <InputError :message="form.invoiceDate === null ? rules : ''" />
+                    <div class="min-w-48 max-w-48">
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel>
+                                <Calendar v-model="form.invoiceDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDate" class="w-full"
+                                    :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''" inputClass="w-full"
+                                    :invalid="form.invoiceDate === null" :maxDate="new Date()" />
+                                <label for="invoiceDate">F. emisión</label>
+                            </FloatLabel>
+                            <InputError :message="form.invoiceDate === null ? rules : ''" />
+                        </template>
                     </div>
 
-                    <div class="max-w-48">
-                        <FloatLabel>
-                            <Calendar v-model="form.invoicePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invoicePaymentDate" class="w-full"
-                                :class="form.invoicePaymentDate !== null && form.invoicePaymentDate !== undefined ? 'filled' : ''" inputClass="w-full"
-                                :invalid="form.invoicePaymentDate === null" :minDate="form.invoiceDate" />
-                            <label for="invoicePaymentDate">F. vencimiento</label>
-                        </FloatLabel>
-                        <InputError :message="form.invoicePaymentDate === null ? rules : ''" />
+                    <div class="min-w-48 max-w-48">
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel>
+                                <Calendar v-model="form.invoicePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invoicePaymentDate"
+                                    class="w-full" :class="form.invoicePaymentDate !== null && form.invoicePaymentDate !== undefined ? 'filled' : ''"
+                                    inputClass="w-full" :invalid="form.invoicePaymentDate === null" :minDate="form.invoiceDate" />
+                                <label for="invoicePaymentDate">F. vencimiento</label>
+                            </FloatLabel>
+                            <InputError :message="form.invoicePaymentDate === null ? rules : ''" />
+                        </template>
                     </div>
 
                     <div class="min-w-72">
-                        <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="payCondition" v-model="form.payCondition" :options="payConditions" filter showClear resetFilterOnHide
-                                :invalid="form.payCondition === null" optionLabel="name" optionValue="id" class="w-full !focus:border-primary-500"
-                                :class="dropdownClasses(form.payCondition)" />
-                            <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
-                            </template>
-                            <label for="payCondition">Cond. pago</label>
-                        </FloatLabel>
-                        <InputError :message="form.payCondition === null ? rules : ''" />
+                        <template v-if="loading">
+                            <Skeleton class="mb-2"></Skeleton>
+                        </template>
+                        <template v-if="!loading">
+                            <FloatLabel class="!top-[2px]">
+                                <Dropdown inputId="payCondition" v-model="form.payCondition" :options="payConditions" filter showClear
+                                    resetFilterOnHide :invalid="form.payCondition === null" optionLabel="name" optionValue="id"
+                                    class="w-full !focus:border-primary-500" :class="dropdownClasses(form.payCondition)" />
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                </template>
+                                <label for="payCondition">Cond. pago</label>
+                            </FloatLabel>
+                            <InputError :message="form.payCondition === null ? rules : ''" />
+                        </template>
                     </div>
                 </div>
 
                 <Divider align="center" type="dashed" class="text-lg text-primary-700 !m-0" />
 
-                <div class="flex my-3 mx-6">
-                    <FloatLabel class="w-full !top-[2px]">
-                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full resize-none peer uppercase"
-                            :class="dropdownClasses(form.notes)" />
-                        <label for="notes" class="peer-focus:!top-[-0.75rem]"
-                            :class="{ '!top-5': form.notes.trim() === '', '!top-[-0.75rem]': form.notes.trim() !== '' }">Observación</label>
-                    </FloatLabel>
+                <div class="flex my-3 mx-3 ">
+                    <template v-if="loading">
+                        <Skeleton class="mb-2"></Skeleton>
+                    </template>
+                    <template v-if="!loading">
+                        <FloatLabel class="w-full !top-[2px]">
+                            <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full resize-none peer uppercase"
+                                :class="dropdownClasses(form.notes)" />
+                            <label for="notes" class="peer-focus:!top-[-0.75rem]"
+                                :class="{ '!top-5': form.notes.trim() === '', '!top-[-0.75rem]': form.notes.trim() !== '' }">Observación</label>
+                        </FloatLabel>
+                    </template>
                 </div>
 
                 <Divider align="center" type="solid" class="text-lg text-primary-700 !m-0">
@@ -602,9 +656,19 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                 </Divider>
 
                 <div class="m-3 !mb-0">
-                    <DataTable v-model:editingRows="editingRows" :value="voucherItems" scrollable scrollHeight="200px" editMode="row" dataKey="id"
-                        @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel"
-                        :pt="{ tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' } }">
+                    <DataTable v-model:editingRows="editingRows" :value="voucherItems" :loading="loading" scrollable scrollHeight="200px"
+                        editMode="row" dataKey="id" @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
+                        @row-edit-cancel="onRowEditCancel" :pt="{ tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' } }">
+                        <template #empty>
+                            <div :class="loading ? 'py-4' : ''">
+                                <template v-if="!loading">
+                                    Sin item cargados
+                                </template>
+                            </div>
+                        </template>
+                        <template #loading>
+                            <ProgressSpinner class="!w-10 !h-10 mt-14" />
+                        </template>
                         <Column field="description" header="Descripción" class="rounded-tl-lg min-w-56 max-w-56">
                             <template #body="{ data }">
                                 {{ data.description.toLocaleUpperCase() || '' }}
@@ -691,17 +755,32 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                     <div class="flex flex-col gap-3 m-3">
                         <div class="flex md:w-2/5">
                             <div class="w-full text-left text-surface-900/60 font-bold">Neto ARS: </div>
-                            <div class="w-full text-left font-bold">{{ currencyNumber(form.netAmount) }}</div>
+                            <template v-if="loading">
+                                <Skeleton class="mb-2"></Skeleton>
+                            </template>
+                            <template v-if="!loading">
+                                <div class="w-full text-left font-bold">{{ currencyNumber(form.netAmount) }}</div>
+                            </template>
                         </div>
 
                         <div class="flex md:w-2/5">
                             <div class="w-full text-left text-surface-900/60 font-bold">Total IVA: </div>
-                            <div class="w-full text-left font-bold">{{ currencyNumber(form.vatAmount) }}</div>
+                            <template v-if="loading">
+                                <Skeleton class="mb-2"></Skeleton>
+                            </template>
+                            <template v-if="!loading">
+                                <div class="w-full text-left font-bold">{{ currencyNumber(form.vatAmount) }}</div>
+                            </template>
                         </div>
 
                         <div class="flex md:w-2/5">
                             <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
-                            <div class="w-full text-left font-bold">{{ currencyNumber(form.totalAmount) }}</div>
+                            <template v-if="loading">
+                                <Skeleton class="mb-2"></Skeleton>
+                            </template>
+                            <template v-if="!loading">
+                                <div class="w-full text-left font-bold">{{ currencyNumber(form.totalAmount) }}</div>
+                            </template>
                         </div>
                     </div>
 

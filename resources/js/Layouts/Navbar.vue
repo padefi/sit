@@ -35,7 +35,11 @@ const allItems = ref([
                 icon: 'pi pi-book',
                 method: 'get',
                 route: 'taxes.index',
-                name: 'taxes',
+                name: [
+                    'income tax withholdings',
+                    'social security tax withholdings',
+                    'social vat tax withholdings',
+                ]
             },
             {
                 label: 'Proveedores',
@@ -109,12 +113,12 @@ const filterItems = (items) => {
         if (item.items) {
             // If the item has sub-items, we need to filter them recursively
             const filteredSubItems = filterItems(item.items);
-            if (filteredSubItems.length > 0 || (item.name && hasPermission('view ' + item.name))) {
+            if (filteredSubItems.length > 0 || (item.name && hasPermissionForName(item.name))) {
                 acc.push({ ...item, items: filteredSubItems });
             }
         } else if (item.name) {
             // If the item has no sub-items, we need to check if it has permission
-            if (hasPermission('view ' + item.name)) {
+            if (hasPermissionForName(item.name)) {
                 acc.push(item);
             }
         } else {
@@ -123,6 +127,14 @@ const filterItems = (items) => {
         }
         return acc;
     }, []);
+};
+
+const hasPermissionForName = (name) => {
+    if (Array.isArray(name)) {
+        return name.some(n => hasPermission('view ' + n));
+    } else {
+        return hasPermission('view ' + name);
+    }
 };
 
 const items = computed(() => {

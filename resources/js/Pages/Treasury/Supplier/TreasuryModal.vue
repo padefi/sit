@@ -9,9 +9,10 @@ import { FilterMatchMode, FilterOperator } from "primevue/api";
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const treasuryVouchersArray = ref([]);
+const loading = ref(true);
 const expandedRows = ref([]);
 const voucherTypesSelect = ref([]);
-const voucherStatusSelect = ref([]);
+const voucherStatusesSelect = ref([]);
 const dialog = useDialog();
 const dialogRef = inject("dialogRef");
 
@@ -30,7 +31,7 @@ const getTreasuryVoucherStatusData = async () => {
         }
 
         const data = await response.json();
-        voucherStatusSelect.value = data.treasuryVoucherStatus.map((treasuryVoucherStatus) => {
+        voucherStatusesSelect.value = data.treasuryVoucherStatus.map((treasuryVoucherStatus) => {
             return { label: treasuryVoucherStatus.name, value: treasuryVoucherStatus.name };
         });
     } catch (error) {
@@ -98,6 +99,7 @@ const addNewTreasuryVoucher = () => {
 onMounted(async () => {
     await getTreasuryVoucherStatusData();
     await getTreasuryVouchers();
+    loading.value = false;
 
     voucherTypesSelect.value = dialogRef.value.data.voucherTypes.map((voucherType) => {
         return { label: voucherType.name, value: voucherType.name };
@@ -164,8 +166,8 @@ const info = (id) => {
             </div>
         </template>
         <template #content>
-            <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
-                dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+            <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
+                scrollHeight="70vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
                     table: { style: 'min-width: 50rem' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
@@ -175,9 +177,14 @@ const info = (id) => {
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
                 <template #empty>
-                    <div class="text-center text-lg text-red-500">
-                        Sin comprobantes cargados
+                    <div :class="loading ? 'py-4' : ''">
+                        <template v-if="!loading">
+                            Sin comprobantes cargados
+                        </template>
                     </div>
+                </template>
+                <template #loading>
+                    <ProgressSpinner class="!w-10 !h-10" />
                 </template>
                 <Column expander class="min-w-2 w-2 !px-0" />
                 <Column field="voucherTypeName" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">

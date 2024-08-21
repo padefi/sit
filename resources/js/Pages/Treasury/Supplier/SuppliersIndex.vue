@@ -223,11 +223,6 @@ const info = (data, id) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
-                    <template #empty>
-                        <div class="text-center text-lg text-red-500">
-                            Sin proveedores cargados
-                        </div>
-                    </template>
                     <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view suppliers')" />
                     <Column field="cuit" header="Cuit" sortable>
                         <template #body="{ data }">

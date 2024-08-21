@@ -14,6 +14,7 @@ const form = useForm({
 
 const treasuryVouchersArray = ref([]);
 const originalTreasuryVouchersArray = ref([]);
+const loading = ref(true);
 const isProcessing = ref(false);
 const editing = ref(false);
 const editingRows = ref([]);
@@ -100,7 +101,9 @@ const recalculatePaymentAmount = () => {
 }
 
 const setTotalPaymentAmount = (event, data) => {
-    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.paymentAmount : form.totalPaymentAmount - data.paymentAmount;
+    const paymentAmount = (data.voucherType.id === 2) ? data.paymentAmount : data.paymentAmount * -1;
+
+    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + paymentAmount : form.totalPaymentAmount - paymentAmount;
     if (!event.target.checked) data.paymentAmount = data.pendingToPay;
 }
 
@@ -176,6 +179,7 @@ const closeDialog = () => {
 
 onMounted(async () => {
     await getVouchers();
+    loading.value = false;
 
     Echo.channel('vouchers')
         .listen('Treasury\\Voucher\\VoucherEvent', (e) => {
@@ -188,8 +192,8 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" editMode="row" scrollable scrollHeight="20vh" dataKey="id"
-        filterDisplay="menu" :pt="{
+    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" :loading="loading" editMode="row" scrollable scrollHeight="20vh"
+        dataKey="id" filterDisplay="menu" :pt="{
         table: { style: 'min-width: 50rem' }, wrapper: { class: 'datatable-scrollbar' },
         paginator: {
             root: { class: 'p-paginator-custom' },
@@ -200,9 +204,14 @@ onMounted(async () => {
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table uppercase" @row-edit-init="onRowEditInit($event)"
         @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel">
         <template #empty>
-            <div class="text-center text-lg text-red-500">
-                Sin comprobantes cargados
+            <div :class="loading ? 'py-4' : ''">
+                <template v-if="!loading">
+                    Sin comprobantes cargados
+                </template>
             </div>
+        </template>
+        <template #loading>
+            <ProgressSpinner class="!w-10 !h-10" />
         </template>
         <Column header="Comprobante">
             <template #body="{ data }">
