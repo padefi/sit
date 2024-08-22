@@ -58,7 +58,7 @@ const Vouchers = (data) => {
             header: data.businessName,
             style: {
                 width: '95vw',
-                height: '70vh',
+                minHeight: '60vh',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -67,7 +67,7 @@ const Vouchers = (data) => {
             modal: true,
             contentStyle: {
                 padding: '1.25rem',
-                height: '85vh',
+                minHeight: '60vh',
                 backgroundColor: 'rgb(var(--surface-50))',
             },
         },
@@ -213,9 +213,9 @@ const info = (data, id) => {
                 </div>
             </template>
             <template #content>
-                <DataTable :value="suppliersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="70vh"
+                <DataTable :value="suppliersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="60vh"
                     dataKey="id" filterDisplay="menu" :pt="{
-                        table: { style: 'min-width: 50rem' },
+                        table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
                             current: { class: 'p-paginator-current' },

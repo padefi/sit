@@ -180,8 +180,8 @@ const treasuryVoucher = () => {
         props: {
             header: 'Comprobantes',
             style: {
-                width: '80vw',
-                height: '55vh',
+                width: '85vw',
+                minHeight: '50vh',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -190,7 +190,7 @@ const treasuryVoucher = () => {
             modal: true,
             contentStyle: {
                 padding: '1.25rem',
-                height: '85vh',
+                minHeight: '50vh',
                 backgroundColor: 'rgb(var(--surface-50))',
             },
         },
@@ -289,8 +289,8 @@ const info = (id) => {
         </template>
         <template #content>
             <DataTable :value="vouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
-                scrollHeight="70vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
-                    table: { style: 'min-width: 50rem' },
+                scrollHeight="30vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+                    table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
                     paginator: {
                         root: { class: 'p-paginator-custom' },
                         current: { class: 'p-paginator-current' },

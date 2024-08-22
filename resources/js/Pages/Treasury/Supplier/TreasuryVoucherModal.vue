@@ -192,9 +192,9 @@ onMounted(async () => {
 });
 </script>
 <template>
-    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" :loading="loading" editMode="row" scrollable scrollHeight="20vh"
+    <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" :loading="loading" editMode="row" scrollable scrollHeight="25vh"
         dataKey="id" filterDisplay="menu" :pt="{
-        table: { style: 'min-width: 50rem' }, wrapper: { class: 'datatable-scrollbar' },
+        table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
         paginator: {
             root: { class: 'p-paginator-custom' },
             current: { class: 'p-paginator-current' },
@@ -278,7 +278,7 @@ onMounted(async () => {
         </Column>
     </DataTable>
 
-    <div class="flex flex-col mx-3 my-4">
+    <div class="flex flex-col mx-3 my-4 ">
         <div class="flex md:w-2/5">
             <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
             <div class="w-full text-left font-bold">{{ currencyNumber(form.totalPaymentAmount) }}</div>
