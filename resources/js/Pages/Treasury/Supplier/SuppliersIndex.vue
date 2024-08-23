@@ -43,6 +43,7 @@ const props = defineProps({
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const toast = useToast();
 const suppliersArray = ref([]);
+const loading = ref(true);
 const expandedRows = ref([]);
 const OverlayPanelMap = ref();
 
@@ -141,6 +142,7 @@ const viewOnMap = async (data, event) => {
 
 onMounted(() => {
     suppliersArray.value = props.suppliers;
+    loading.value = false;
 
     Echo.channel('suppliers')
         .listen('Treasury\\Supplier\\SupplierEvent', (e) => {
@@ -213,8 +215,8 @@ const info = (data, id) => {
                 </div>
             </template>
             <template #content>
-                <DataTable :value="suppliersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" scrollable scrollHeight="60vh"
-                    dataKey="id" filterDisplay="menu" :pt="{
+                <DataTable :value="suppliersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
+                    scrollHeight="60vh" dataKey="id" filterDisplay="menu" :pt="{
                         table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
@@ -223,6 +225,16 @@ const info = (data, id) => {
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                    <template #empty>
+                        <div :class="loading ? 'py-4' : ''">
+                            <template v-if="!loading">
+                                Sin comprobantes cargados
+                            </template>
+                        </div>
+                    </template>
+                    <template #loading>
+                        <ProgressSpinner class="!w-10 !h-10" />
+                    </template>
                     <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view suppliers')" />
                     <Column field="cuit" header="Cuit" sortable>
                         <template #body="{ data }">

@@ -24,7 +24,7 @@ const filters = ref({
 
 const getTreasuryVoucherStatusData = async () => {
     try {
-        const response = await fetch('/treasury-voucher-status');
+        const response = await fetch('/treasury-vouchers/status');
 
         if (!response.ok) {
             throw new Error('Error al obtener los datos de los tipos de comprobantes');
@@ -202,7 +202,7 @@ const info = (id) => {
                         {{ data.voucherStatusName }}
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
-                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherStatusSelect" placeholder="Estado"
+                        <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="voucherStatusesSelect" placeholder="Estado"
                             name="voucherStatusName" class="p-column-filter" optionLabel="label" optionValue="value" :showClear="true"
                             style="min-width: 12rem" />
                     </template>

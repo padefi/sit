@@ -60,7 +60,7 @@ function handleTabChange(e) {
                             <SocialSecurityTaxWithholdingsIndex ref="socialSecurityTaxomponentRef" />
                         </TabPanel>
                     </template>
-                    <TabPanel header="I.V.A.">
+                    <TabPanel header="I.V.A." v-if="hasPermission('view vat tax withholdings')">
                         <VatTaxWithholdingsIndex ref="vatTaxomponentRef" />
                     </TabPanel>
                 </TabView>

@@ -43,42 +43,41 @@ Route::get('/home', function () {
 }); */
 
 Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
-    Route::resource('users', UserController::class);
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
+    Route::resource('users', UserController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {
-    Route::resource('banks', BankController::class);
     Route::get('/banks/{bank}/info', [BankController::class, 'info'])->name('banks.info');
-    Route::resource('bankAccounts', BankAccountController::class);
+    Route::resource('banks', BankController::class);
     Route::get('/bankAccounts/{bankAccount}/info', [BankAccountController::class, 'info'])->name('bankAccounts.info');
+    Route::resource('bankAccounts', BankAccountController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher types']], function () {
-    Route::resource('voucher-types', VoucherTypeController::class);
     Route::post('/voucher-types/{voucher_type}/relate', [VoucherTypeController::class, 'relate'])->name('voucher-types.relate');
+    Route::resource('voucher-types', VoucherTypeController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher subtypes']], function () {
-    Route::resource('voucher-subtypes', VoucherSubtypeController::class);
     Route::get('/voucher-subtypes/{voucher_subtype}/info', [VoucherSubtypeController::class, 'info'])->name('voucher-subtypes.info');
     Route::post('/voucher-subtypes/{voucher_subtype}/relate', [VoucherSubtypeController::class, 'relate'])->name('voucher-subtypes.relate');
+    Route::resource('voucher-subtypes', VoucherSubtypeController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']], function () {
-    Route::resource('voucher-expenses', VoucherExpenseController::class);
     Route::get('/voucher-expenses/{voucher_expense}/info', [VoucherExpenseController::class, 'info'])->name('voucher-expenses.info');
+    Route::resource('voucher-expenses', VoucherExpenseController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
-    Route::resource('suppliers', SupplierController::class);
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
     Route::get('/voucher-subtypes/{voucher_type}/data-related', [VoucherSubtypeController::class, 'dataRelated'])->name('voucher-subtypes.data-related');
     Route::get('/voucher-expenses/{voucher_subtype}/data-related', [VoucherExpenseController::class, 'dataRelated'])->name('voucher-expenses.data-related');
+    Route::resource('suppliers', SupplierController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], function () {
-    Route::resource('vouchers', VoucherController::class);
     Route::get('/invoice-types', [VoucherController::class, 'invoiceTypes'])->name('vouchers.invoice-types');
     Route::get('/show-vouchers/{supplier}', [VoucherController::class, 'showVouchers'])->name('vouchers.show-vouchers');
     Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
@@ -87,12 +86,15 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
     Route::put('/vouchers/{voucher}/void', [VoucherController::class, 'voidVoucher'])->name('vouchers.void');
     Route::get('/vouchers/{voucher}/pending-to-pay', [VoucherController::class, 'vouchersPendingToPay'])->name('vouchers.pending-to-pay');
     Route::post('/vouchers/voucher-to-treasury', [VoucherController::class, 'voucherToTreasury'])->name('vouchers.voucher-to-treasury');
+    Route::resource('vouchers', VoucherController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
-    Route::resource('treasury-vouchers', TreasuryVoucherController::class);
-    Route::get('/treasury-voucher-status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.treasury-voucher-status');
+    Route::get('/treasury-vouchers/status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.status');
+    Route::get('/treasury-vouchers/{voucher_type}/{voucher_status}', [TreasuryVoucherController::class, 'treasuryVouchers'])->name('treasury-vouchers.get-treasury-vouchers');
     Route::get('/treasury-vouchers/{treasury_voucher}/info', [TreasuryVoucherController::class, 'info'])->name('treasury-vouchers.info');
+    Route::put('/treasury-vouchers/{treasury_voucher}/void', [TreasuryVoucherController::class, 'voidTreasuryVoucher'])->name('treasury-vouchers.void');
+    Route::resource('treasury-vouchers', TreasuryVoucherController::class);
 });
 
 
@@ -101,17 +103,17 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
         return Inertia::render('Treasury/Taxes/Taxes');
     })->name('taxes.index');
 
-    Route::resource('incomeTaxWithholdings', IncomeTaxWithholdingController::class);
     Route::get('/incomeTaxWithholdings/{incomeTaxWithholding}/info', [IncomeTaxWithholdingController::class, 'info'])->name('incomeTaxWithholdings.info');
+    Route::resource('incomeTaxWithholdings', IncomeTaxWithholdingController::class);
 
-    Route::resource('incomeTaxWithholdingScales', IncomeTaxWithholdingScaleController::class);
     Route::get('/incomeTaxWithholdingScales/{incomeTaxWithholdingScale}/info', [IncomeTaxWithholdingScaleController::class, 'info'])->name('incomeTaxWithholdingScale.info');
+    Route::resource('incomeTaxWithholdingScales', IncomeTaxWithholdingScaleController::class);
 
-    Route::resource('socialSecurityTaxWithholdings', SocialSecurityTaxWithholdingController::class);
     Route::get('/socialSecurityTaxWithholdings/{socialSecurityTaxWithholding}/info', [SocialSecurityTaxWithholdingController::class, 'info'])->name('socialSecurityTaxWithholdings.info');
+    Route::resource('socialSecurityTaxWithholdings', SocialSecurityTaxWithholdingController::class);
 
-    Route::resource('vatTaxWithholdings', VatTaxWithholdingController::class);
     Route::get('/vatTaxWithholdings/{vatTaxWithholding}/info', [VatTaxWithholdingController::class, 'info'])->name('vatTaxWithholdings.info');
+    Route::resource('vatTaxWithholdings', VatTaxWithholdingController::class);
 });
 
 Route::middleware('auth')->group(function () {

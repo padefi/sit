@@ -68,3 +68,7 @@ Broadcast::channel('vouchers', function () {
 Broadcast::channel('voucherToTreasury', function () {
     return true;
 });
+
+Broadcast::channel('treasuryVouchers', function () {
+    return true;
+});
