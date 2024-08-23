@@ -24,8 +24,10 @@ class TreasuryVoucherController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): Response {
+        $treasuryVoucherStatus = TreasuryVoucher::orderBy('id', 'asc')->get();
 
         return Inertia::render('Treasury/Voucher/TreasuryVouchersIndex', [
+            'treasuryVoucher' => TreasuryVoucherResource::collection($treasuryVoucherStatus),
         ]);
     }
 

@@ -307,20 +307,22 @@ class VoucherController extends Controller {
                 ]);
             }
 
-            $totalAmountTreasuryVoucher += $item['paymentAmount'];
+            $totalAmountTreasuryVoucher = $item['idType'] == 2 ? $totalAmountTreasuryVoucher + $item['paymentAmount'] : $totalAmountTreasuryVoucher - $item['paymentAmount'];
         }
 
+        $idType = $totalAmountTreasuryVoucher >= 0 ? 2 : 1;
+        $amount = $totalAmountTreasuryVoucher >= 0 ? $totalAmountTreasuryVoucher : $totalAmountTreasuryVoucher * -1;
+
         $treasuryVoucher = TreasuryVoucher::create([
-            'idType' => $voucher->idType,
+            'idType' => $idType,
             'idSupplier' => $voucher->idSupplier,
             'idVS' => 1,
-            'amount' => $totalAmountTreasuryVoucher,
-            'totalAmount' => $totalAmountTreasuryVoucher,
+            'amount' => $amount,
+            'totalAmount' => $amount,
             'idUserCreated' => auth()->user()->id,
             'created_at' => now(),
             'updated_at' => null,
         ]);
-
 
         foreach ($request->input('vouchers', []) as $item) {
             VoucherToTreasury::create([
