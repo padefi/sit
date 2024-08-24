@@ -23,9 +23,12 @@ const filters = ref({
 });
 
 
-const fetchIncomeTreasuryVouchers = async () => {
+const fetchIncomeTreasuryVouchers = async (type, status) => {
+    treasuryVouchersArray.value = [];
+    loading.value = true;
+
     try {
-        const response = await fetch('/treasury-vouchers/1/1');
+        const response = await fetch(`/treasury-vouchers/${type}/${status}`);
 
         if (!response.ok) {
             throw new Error('Error al obtener datos de comprobates a ingresar');
@@ -36,6 +39,8 @@ const fetchIncomeTreasuryVouchers = async () => {
     } catch (error) {
         console.error(error);
     }
+
+    loading.value = false;
 }
 
 const onRowExpand = (data) => {
@@ -93,8 +98,23 @@ const voidTreasuryVoucher = (event, data) => {
 }
 
 onMounted(async () => {
-    await fetchIncomeTreasuryVouchers();
-    loading.value = false;
+    Echo.channel('treasuryVouchers')
+        .listen('Treasury\\Voucher\\TreasuryVoucherEvent', (e) => {
+            if (e.type === 'create') {
+                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId) && e.treasuryVoucher.voucherStatus.id === selectStatus.value) {
+                    const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
+                    treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
+                }
+            } else if (e.type === 'update') {
+                const index = treasuryVouchersArray.value.findIndex(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucher.id);
+
+                if (index !== -1) treasuryVouchersArray.value.splice(index, 1);
+                else {
+                    const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
+                    treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
+                }
+            }
+        });
 });
 
 /*  */
@@ -103,7 +123,7 @@ import infoModal from '@/Components/InfoModal.vue';
 const dialogInfo = useDialog();
 
 const info = (id) => {
-    axios.get(`/treasury-vouchers/${id}/info`)
+    axios.get(`/treasury-voucher/${id}/info`)
         .then((response) => {
             const data = response.data;
             const header = 'Información del comprobante';
@@ -175,14 +195,16 @@ defineExpose({ fetchIncomeTreasuryVouchers });
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
             <template #body="{ data }">
                 <div class="space-x-4 flex justify-center">
-                    <Checkbox v-model="data.checked" binary />
+                    <template v-if="data.status === 1">
+                        <Checkbox v-model="data.checked" binary />
+                    </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                 @click="info(data.id)"></i></button>
                     </template>
                     <template v-if="hasPermission('edit treasury vouchers') && data.status === 1">
                         <ConfirmPopup></ConfirmPopup>
-                        <button v-tooltip="'Anular'"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
+                        <button v-tooltip="'Anular'" class="bottom-[0.2rem] relative"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
                                 @click="voidTreasuryVoucher($event, data)"></i></button>
                     </template>
                 </div>

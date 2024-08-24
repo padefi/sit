@@ -9,7 +9,7 @@ toastService();
 
 const activeIndex = ref(0);
 const voucherStatusesSelect = ref([]);
-const status = ref();
+const status = ref(0);
 const incomeTreasuryVouchersRef = ref(null);
 const expenseTreasuryVouchersRef = ref(null);
 
@@ -18,13 +18,14 @@ function handleTabChange(e) {
 
     switch (e.index) {
         case 0:
-            if (incomeTreasuryVouchersRef.value) {
-                incomeTreasuryVouchersRef.value.fetchIncomeTreasuryVouchers(e.index + 1, status.value);
+            if (expenseTreasuryVouchersRef.value) {
+                expenseTreasuryVouchersRef.value.fetchExpenseTreasuryVouchers(e.index + 2, status.value);
             }
+
             break;
         case 1:
-            if (expenseTreasuryVouchersRef.value) {
-                expenseTreasuryVouchersRef.value.fetchExpenseTreasuryVouchers(e.index + 1, status.value);
+            if (incomeTreasuryVouchersRef.value) {
+                incomeTreasuryVouchersRef.value.fetchIncomeTreasuryVouchers(e.index, status.value);
             }
 
             break;
@@ -51,13 +52,8 @@ const getTreasuryVoucherStatusData = async () => {
 onMounted(async () => {
     await getTreasuryVoucherStatusData();
     status.value = voucherStatusesSelect.value[0]?.value;
+    handleTabChange({ index: 0 });
 });
-
-/* watch([activeIndex, status], () => {
-    console.log(activeIndex.value, status.value);
-    
-    handleTabChange(activeIndex.value);
-}); */
 </script>
 <template>
     <AuthenticatedLayout>
@@ -70,12 +66,12 @@ onMounted(async () => {
                 </div>
             </template>
             <template #content>
-                <div class="flex justify-center">
-                    <Dropdown v-model="status" :options="voucherStatusesSelect"
-                        placeholder="Estado" name="voucherStatusName" class="p-column-filter" optionLabel="label" optionValue="value"
-                        style="min-width: 12rem" />
+                <div class="w-fit left-[85vh] justify-center top-12 relative z-50">
+                    <Dropdown v-model="status" :options="voucherStatusesSelect" name="voucherStatusName"
+                        class="!border-solid !border-teal-600 p-column-filter font-bold" optionLabel="label" optionValue="value"
+                        style="min-width: 12rem" @change="handleTabChange({ index: activeIndex })" />
                 </div>
-                <TabView @tab-change="handleTabChange" v-model:activeIndex="activeIndex">
+                <TabView @tab-change="handleTabChange($event)" v-model:activeIndex="activeIndex" class="!bg-transparent">
                     <TabPanel header="Egresos">
                         <ExpenseTreasuryVouchersIndex ref="expenseTreasuryVouchersRef" />
                     </TabPanel>

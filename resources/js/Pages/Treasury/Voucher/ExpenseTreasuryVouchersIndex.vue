@@ -10,8 +10,9 @@ import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
-const treasuryVouchersArray = ref([]);
 const loading = ref(true);
+const selectStatus = ref(0);
+const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
 const toast = useToast();
 const confirm = useConfirm();
@@ -23,7 +24,9 @@ const filters = ref({
 });
 
 const fetchExpenseTreasuryVouchers = async (type, status) => {
-console.log(type, status);
+    selectStatus.value = status;
+    treasuryVouchersArray.value = [];
+    loading.value = true;
 
     if (type && status) {
         try {
@@ -40,6 +43,7 @@ console.log(type, status);
         }
     }
 
+    loading.value = false;
 }
 
 const onRowExpand = (data) => {
@@ -96,22 +100,21 @@ const voidTreasuryVoucher = (event, data) => {
     });
 }
 
-onMounted(async () => {
-    await fetchExpenseTreasuryVouchers();
-    loading.value = false;
-
+onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\Voucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
-                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId)) {
+                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId) && e.treasuryVoucher.voucherStatus.id === selectStatus.value) {
                     const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
                     treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
                 }
             } else if (e.type === 'update') {
                 const index = treasuryVouchersArray.value.findIndex(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucher.id);
 
-                if (index !== -1) {
-                    treasuryVouchersArray.value[index] = treasuryVoucherDataStructure(e.treasuryVoucher);
+                if (index !== -1) treasuryVouchersArray.value.splice(index, 1);
+                else {
+                    const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
+                    treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
                 }
             }
         });
@@ -123,7 +126,7 @@ import infoModal from '@/Components/InfoModal.vue';
 const dialogInfo = useDialog();
 
 const info = (id) => {
-    axios.get(`/treasury-vouchers/${id}/info`)
+    axios.get(`/treasury-voucher/${id}/info`)
         .then((response) => {
             const data = response.data;
             const header = 'Información del comprobante';
@@ -195,7 +198,9 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
             <template #body="{ data }">
                 <div class="space-x-4 flex justify-center">
-                    <Checkbox v-model="data.checked" binary />
+                    <template v-if="data.status === 1">
+                        <Checkbox v-model="data.checked" binary />
+                    </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                 @click="info(data.id)"></i></button>
