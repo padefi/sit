@@ -232,8 +232,8 @@ onMounted(async () => {
         </Column>
         <Column header="F. vencimiento">
             <template #body="{ data }">
-                <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
-                    {{ dateFormat(data.invoicePaymentDate) }}
+                <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                    {{ dateFormat(data.invoiceDueDate) }}
                 </span>
             </template>
         </Column>

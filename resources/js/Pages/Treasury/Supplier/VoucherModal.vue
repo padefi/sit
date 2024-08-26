@@ -18,7 +18,7 @@ const form = useForm({
     pointOfNumber: undefined,
     invoiceNumber: undefined,
     invoiceDate: undefined,
-    invoicePaymentDate: undefined,
+    invoiceDueDate: undefined,
     payCondition: undefined,
     notes: '',
     voucherItems: [],
@@ -223,7 +223,7 @@ const isFormInvalid = computed(() => {
     if (!form.pointOfNumber) return true;
     if (!form.invoiceNumber) return true;
     if (!form.invoiceDate) return true;
-    if (!form.invoicePaymentDate) return true;
+    if (!form.invoiceDueDate) return true;
     if (!form.payCondition) return true;
     if (form.netAmount < 0) return true;
     if (form.vatAmount < 0) return true;
@@ -316,7 +316,7 @@ onMounted(async () => {
         form.pointOfNumber = invoiceNumberFormat(data.pointOfNumber, 5);
         form.invoiceNumber = invoiceNumberFormat(data.invoiceNumber, 8);
         form.invoiceDate = addDate(data.invoiceDate, 1);
-        form.invoicePaymentDate = addDate(data.invoicePaymentDate, 1);
+        form.invoiceDueDate = addDate(data.invoiceDueDate, 1);
 
         form.payCondition = data.payCondition.id;
         form.notes = data.notes || '';
@@ -607,12 +607,12 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                         </template>
                         <template v-if="!loading">
                             <FloatLabel>
-                                <Calendar v-model="form.invoicePaymentDate" placeholder="DD/MM/AAAA" showButtonBar id="invoicePaymentDate"
-                                    class="w-full" :class="form.invoicePaymentDate !== null && form.invoicePaymentDate !== undefined ? 'filled' : ''"
-                                    inputClass="w-full" :invalid="form.invoicePaymentDate === null" :minDate="form.invoiceDate" />
-                                <label for="invoicePaymentDate">F. vencimiento</label>
+                                <Calendar v-model="form.invoiceDueDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDueDate"
+                                    class="w-full" :class="form.invoiceDueDate !== null && form.invoiceDueDate !== undefined ? 'filled' : ''"
+                                    inputClass="w-full" :invalid="form.invoiceDueDate === null" :minDate="form.invoiceDate" />
+                                <label for="invoiceDueDate">F. vencimiento</label>
                             </FloatLabel>
-                            <InputError :message="form.invoicePaymentDate === null ? rules : ''" />
+                            <InputError :message="form.invoiceDueDate === null ? rules : ''" />
                         </template>
                     </div>
 

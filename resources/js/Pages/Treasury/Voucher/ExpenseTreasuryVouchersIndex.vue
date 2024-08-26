@@ -8,12 +8,19 @@ import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import treasuryVoucherModalConfirm from './TreasuryVoucherModalConfirm.vue';
+
+const form = useForm({
+    vouchers: [],
+    totalPaymentAmount: 0,
+});
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
 
@@ -77,9 +84,14 @@ const voucherDataStructure = (voucherToTreasury) => {
         invoiceTypeCodeName: data.invoiceTypeCode.name,
         pointOfNumber: data.pointOfNumber,
         invoiceNumber: data.invoiceNumber,
-        invoicePaymentDate: data.invoicePaymentDate,
+        invoiceDueDate: data.invoiceDueDate,
         amount: voucherToTreasury.amount,
     }
+}
+
+const setTotalPaymentAmount = (event, data) => {
+    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.amount : form.totalPaymentAmount - data.amount;
+    if (!event.target.checked) data.paymentAmount = data.pendingToPay;
 }
 
 const voidTreasuryVoucher = (event, data) => {
@@ -97,6 +109,44 @@ const voidTreasuryVoucher = (event, data) => {
                 },
             });
         },
+    });
+}
+
+const confirmTreasuryVoucherModal = () => {
+    if (form.totalPaymentAmount === 0) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe agregar al menos un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
+
+    form.vouchers = filteredVouchers.map(voucher => ({
+        id: voucher.id,
+        businessName: voucher.businessName,
+        amount: voucher.amount,
+        paymentDate: null,
+        bankId: null,
+        bankAccountId: null,
+    }));
+
+    dialogInfo.open(treasuryVoucherModalConfirm, {
+        props: {
+            header: 'Comprobante a egresar',
+            style: {
+                width: '50vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw'
+            },
+            modal: true
+        },
+        data: form
     });
 }
 
@@ -199,7 +249,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
             <template #body="{ data }">
                 <div class="space-x-4 flex justify-center">
                     <template v-if="data.status === 1">
-                        <Checkbox v-model="data.checked" binary />
+                        <Checkbox v-model="data.checked" binary @click="setTotalPaymentAmount($event, data)" />
                     </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
@@ -233,8 +283,8 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                 </Column>
                 <Column header="F. vencimiento">
                     <template #body="{ data }">
-                        <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
-                            {{ dateFormat(data.invoicePaymentDate) }}
+                        <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                            {{ dateFormat(data.invoiceDueDate) }}
                         </span>
                     </template>
                 </Column>
@@ -246,4 +296,21 @@ defineExpose({ fetchExpenseTreasuryVouchers });
             </DataTable>
         </template>
     </DataTable>
+
+    <div class="flex flex-col mx-3 my-4 ">
+        <div class="flex justify-between">
+            <div class="flex md:w-2/5 items-center">
+                <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+                <div class="w-full text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
+                    {{ currencyNumber(form.totalPaymentAmount) }}
+                </div>
+            </div>
+            <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || isProcessing"
+                @click="confirmTreasuryVoucherModal()" />
+        </div>
+    </div>
+
+    <div class="flex p-3 justify-between">
+
+    </div>
 </template>

@@ -246,8 +246,8 @@ const info = (id) => {
                         </Column>
                         <Column header="F. vencimiento">
                             <template #body="{ data }">
-                                <span :class="{ 'text-red-500': compareDates(data.voucher.invoicePaymentDate, '', 'before') }">
-                                    {{ dateFormat(data.voucher.invoicePaymentDate) }}
+                                <span :class="{ 'text-red-500': compareDates(data.voucher.invoiceDueDate, '', 'before') }">
+                                    {{ dateFormat(data.voucher.invoiceDueDate) }}
                                 </span>
                             </template>
                         </Column>

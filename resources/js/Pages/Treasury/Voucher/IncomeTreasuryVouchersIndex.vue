@@ -10,8 +10,9 @@ import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
-const treasuryVouchersArray = ref([]);
 const loading = ref(true);
+const selectStatus = ref(0);
+const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
 const toast = useToast();
 const confirm = useConfirm();
@@ -22,22 +23,24 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-
 const fetchIncomeTreasuryVouchers = async (type, status) => {
+    selectStatus.value = status;
     treasuryVouchersArray.value = [];
     loading.value = true;
 
-    try {
-        const response = await fetch(`/treasury-vouchers/${type}/${status}`);
+    if (type && status) {
+        try {
+            const response = await fetch(`/treasury-vouchers/${type}/${status}`);
 
-        if (!response.ok) {
-            throw new Error('Error al obtener datos de comprobates a ingresar');
+            if (!response.ok) {
+                throw new Error('Error al obtener datos de comprobates a ingresar');
+            }
+
+            const data = await response.json();
+            treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
+        } catch (error) {
+            console.error(error);
         }
-
-        const data = await response.json();
-        treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
-    } catch (error) {
-        console.error(error);
     }
 
     loading.value = false;
@@ -74,7 +77,7 @@ const voucherDataStructure = (voucherToTreasury) => {
         invoiceTypeCodeName: data.invoiceTypeCode.name,
         pointOfNumber: data.pointOfNumber,
         invoiceNumber: data.invoiceNumber,
-        invoicePaymentDate: data.invoicePaymentDate,
+        invoiceDueDate: data.invoiceDueDate,
         amount: voucherToTreasury.amount,
     }
 }
@@ -97,7 +100,7 @@ const voidTreasuryVoucher = (event, data) => {
     });
 }
 
-onMounted(async () => {
+onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\Voucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
@@ -230,8 +233,8 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 </Column>
                 <Column header="F. vencimiento">
                     <template #body="{ data }">
-                        <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
-                            {{ dateFormat(data.invoicePaymentDate) }}
+                        <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                            {{ dateFormat(data.invoiceDueDate) }}
                         </span>
                     </template>
                 </Column>

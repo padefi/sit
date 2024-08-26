@@ -26,7 +26,7 @@ const filters = ref({
     invoiceTypeName: { value: null, matchMode: FilterMatchMode.EQUALS },
     invoiceTypeCodeName: { value: null, matchMode: FilterMatchMode.EQUALS },
     invoiceFullNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    invoicePaymentDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
+    invoiceDueDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
     payConditionName: { value: null, matchMode: FilterMatchMode.EQUALS },
     totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
@@ -76,7 +76,7 @@ const voucherDataStructure = (voucher) => {
         invoiceTypeCodeName: voucher.invoiceTypeCode.name,
         invoiceFullNumber: invoiceNumberFormat(voucher.pointOfNumber, 5) + '-' + invoiceNumberFormat(voucher.invoiceNumber, 8),
         payConditionName: voucher.payCondition.name,
-        invoicePaymentDate: addDate(voucher.invoicePaymentDate, 1),
+        invoiceDueDate: addDate(voucher.invoiceDueDate, 1),
     }
 }
 
@@ -337,15 +337,15 @@ const info = (id) => {
                             mask="99999-99999999" class="p-column-filter" placeholder="Buscar por número" />
                     </template>
                 </Column>
-                <Column field="invoicePaymentDate" header="F. vencimiento" dataType="date" sortable>
+                <Column field="invoiceDueDate" header="F. vencimiento" dataType="date" sortable>
                     <template #body="{ data }">
-                        <span :class="{ 'text-red-500': compareDates(data.invoicePaymentDate, '', 'before') }">
-                            {{ dateFormat(data.invoicePaymentDate) }}
+                        <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                            {{ dateFormat(data.invoiceDueDate) }}
                         </span>
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <Calendar v-model="filterModel.value" @blur="filterCallback();" dateFormat="dd/mm/yy" placeholder="dd/mm/yyyy"
-                            mask="99/99/9999" name="invoicePaymentDate" class="p-column-filter" />
+                            mask="99/99/9999" name="invoiceDueDate" class="p-column-filter" />
                     </template>
                 </Column>
                 <Column field="payConditionName" header="Cond. Pago">

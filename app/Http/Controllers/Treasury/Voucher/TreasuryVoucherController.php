@@ -42,7 +42,7 @@ class TreasuryVoucherController extends Controller {
      * Display the specified resource.
      */
     public function show(string $id) {
-        $treasuryVouchers = TreasuryVoucher::orderBy('id', 'asc')->get();
+        $treasuryVouchers = TreasuryVoucher::where('idSupplier', $id)->orderBy('id', 'asc')->get();
 
         return response()->json([
             'treasuryVouchers' => TreasuryVoucherResource::collection($treasuryVouchers),

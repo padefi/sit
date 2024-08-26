@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Treasury\Voucher;
 
+use App\Events\Treasury\Voucher\TreasuryVoucherEvent;
 use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Events\Treasury\Voucher\VoucherToTreasuryEvent;
 use App\Models\Treasury\Voucher\Voucher;
@@ -65,7 +66,7 @@ class VoucherController extends Controller {
             'pointOfNumber' => $request->pointOfNumber,
             'invoiceNumber' => $request->invoiceNumber,
             'invoiceDate' => date('Y-m-d', strtotime($request->invoiceDate)),
-            'invoicePaymentDate' => date('Y-m-d', strtotime($request->invoicePaymentDate)),
+            'invoiceDueDate' => date('Y-m-d', strtotime($request->invoiceDueDate)),
             'idPC' => $request->payCondition,
             'notes' => $request->notes,
             'totalAmount' => $request->totalAmount,
@@ -155,7 +156,7 @@ class VoucherController extends Controller {
             'pointOfNumber' => $request->pointOfNumber,
             'invoiceNumber' => $request->invoiceNumber,
             'invoiceDate' => date('Y-m-d', strtotime($request->invoiceDate)),
-            'invoicePaymentDate' => date('Y-m-d', strtotime($request->invoicePaymentDate)),
+            'invoiceDueDate' => date('Y-m-d', strtotime($request->invoiceDueDate)),
             'idPC' => $request->payCondition,
             'notes' => $request->notes,
             'totalAmount' => $request->totalAmount,
@@ -336,6 +337,7 @@ class VoucherController extends Controller {
 
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new VoucherToTreasuryEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
+        event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
         event(new VoucherEvent($voucher, $voucher->id, 'voucherToTreasury'));
 
         return Redirect::back()->with([

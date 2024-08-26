@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->integer('pointOfNumber');
             $table->integer('invoiceNumber');
             $table->date('invoiceDate');
-            $table->date('invoicePaymentDate');
+            $table->date('invoiceDueDate');
             $table->unsignedBigInteger('idPC')->comment('id pay condition');
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
             $table->decimal('totalAmount', 10, 2);

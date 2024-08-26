@@ -37,7 +37,7 @@ class VoucherResource extends JsonResource {
             'pointOfNumber' => $this->pointOfNumber,
             'invoiceNumber' => $this->invoiceNumber,
             'invoiceDate' => $this->invoiceDate,
-            'invoicePaymentDate' => $this->invoicePaymentDate,
+            'invoiceDueDate' => $this->invoiceDueDate,
             'payCondition' => $this->payCondition ? [
                 'id' => $this->payCondition->id,
                 'name' => $this->payCondition->name,

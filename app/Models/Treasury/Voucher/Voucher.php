@@ -20,7 +20,7 @@ class Voucher extends Model {
         'pointOfNumber',
         'invoiceNumber',
         'invoiceDate',
-        'invoicePaymentDate',
+        'invoiceDueDate',
         'idPC',
         'notes',
         'totalAmount',
