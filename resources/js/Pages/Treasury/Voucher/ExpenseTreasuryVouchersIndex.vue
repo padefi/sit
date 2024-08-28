@@ -65,13 +65,23 @@ const onRowCollapse = (data) => {
 
 const treasuryVoucherDataStructure = (treasuryVoucher) => {
     const data = treasuryVoucher;
-
+    
     return {
         id: data.id,
+        supplierId: data.supplier.id,
         cuit: data.supplier.cuit,
         businessName: data.supplier.businessName,
         status: data.voucherStatus.id,
-        amount: data.totalAmount,
+        amount: data.amount,
+        withholdings: {
+            incomeTax: undefined,
+            incomeTaxStatus: data.supplier.incomeTaxWithholding,
+            socialTax: undefined,
+            socialTaxStatus: data.supplier.socialTax,
+            vatTax: undefined,
+            vatTaxStatus: data.supplier.vatTax,
+        },
+        totalAmount: data.totalAmount,
         vouchers: data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)),
     }
 }
@@ -127,8 +137,11 @@ const confirmTreasuryVoucherModal = () => {
 
     form.vouchers = filteredVouchers.map(voucher => ({
         id: voucher.id,
+        supplierId: voucher.supplierId,
         businessName: voucher.businessName,
         amount: voucher.amount,
+        withholdings: voucher.withholdings,
+        totalAmount: voucher.totalAmount,
         paymentMethod: undefined,
         bankId: undefined,
         bankAccountId: undefined,
@@ -140,11 +153,11 @@ const confirmTreasuryVoucherModal = () => {
         props: {
             header: 'Comprobantes a egresar',
             style: {
-                width: '90vw',
+                width: '98vw',
             },
             breakpoints: {
                 '960px': '75vw',
-                '640px': '90vw'
+                '640px': '98vw'
             },
             modal: true
         },

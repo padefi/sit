@@ -106,6 +106,14 @@ class SupplierController extends Controller {
         ]);
     }
 
+    public function show(string $id) {
+        $supplier = Supplier::where('id', $id)->orderBy('id', 'asc')->get();
+
+        return response()->json([
+            'supplier' => SupplierResource::collection($supplier),
+        ]);
+    }
+
     /**
      * Update the specified resource in storage.
      */

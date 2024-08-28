@@ -13,6 +13,17 @@ const bankAccountsSelect = ref([]);
 const dialogRef = inject("dialogRef");
 const rules = 'Debe completar el campo';
 
+const setTotalPaymentAmount = (event, index, withholdingType) => {
+    totalPaymentAmount.value = treasuryVouchersArray.value.reduce((total, voucher, i) => {
+        const wittholding = voucher.withholdings;
+        const incomeAmount = wittholding.incomeTaxStatus === 1 ? withholdingType === 'incomeTax' && index === i ? event.value || 0 : wittholding.incomeTax || 0 : 0;
+        const socialAmount = wittholding.socialTaxStatus === 1 ? withholdingType === 'socialTax' && index === i ? event.value || 0 : wittholding.socialTax || 0 : 0;
+        const vatAmount = wittholding.vatTaxStatus === 1 ? withholdingType === 'vatTax' && index === i ? event.value || 0 : wittholding.vatTax || 0 : 0;
+
+        return total + incomeAmount + socialAmount + vatAmount;
+    }, 0);
+}
+
 const getPaymentMethods = async () => {
     try {
         const response = await fetch(`/payment-methods/${dialogRef.value.data.status}`);
@@ -131,9 +142,53 @@ onMounted(async () => {
                 {{ data.businessName }}
             </template>
         </Column>
-        <Column field="amount" header="Importe" class="w-2/12">
+        <Column field="amount" header="Importe" class="w-36">
             <template #body="{ data }">
                 {{ currencyNumber(data.amount) }}
+            </template>
+        </Column>
+        <Column field="withholdings" header="Retenciones" class="w-2/12">
+            <template #body="{ data, index }">
+                <div class="flex space-x-2">
+                    <div>
+                        <FloatLabel>
+                            <InputNumber v-model="data.withholdings.incomeTax" placeholder="$ 0,00" inputId="incomeTax" mode="currency" currency="ARS"
+                                locale="es-AR" id="incomeTax" inputClass="w-36" class="w-full"
+                                :class="data.withholdings.incomeTax !== null && data.withholdings.incomeTax !== undefined ? 'filled' : ''" :min="0"
+                                :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.incomeTax === null"
+                                :disabled="data.withholdings.incomeTaxStatus === 0" @input="setTotalPaymentAmount($event, index, 'incomeTax')" />
+                            <label for="incomeTax">Ganancias</label>
+                        </FloatLabel>
+                        <InputError :message="data.withholdings.incomeTax === null ? rules : ''" />
+                    </div>
+                    <div>
+                        <FloatLabel>
+                            <InputNumber v-model="data.withholdings.socialTax" placeholder="$ 0,00" inputId="socialTax" mode="currency" currency="ARS"
+                                locale="es-AR" id="socialTax" inputClass="w-36" class="w-full"
+                                :class="data.withholdings.socialTax !== null && data.withholdings.socialTax !== undefined ? 'filled' : ''" :min="0"
+                                :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.socialTax === null"
+                                :disabled="data.withholdings.socialTaxStatus === 0" />
+                            <label for="socialTax">Suss</label>
+                        </FloatLabel>
+                        <InputError :message="data.withholdings.socialTax === null ? rules : ''" />
+                    </div>
+                    <div>
+                        <FloatLabel>
+                            <InputNumber v-model="data.withholdings.vatTax" placeholder="$ 0,00" inputId="vatTax" mode="currency" currency="ARS"
+                                locale="es-AR" id="vatTax" inputClass="w-36" class="w-full"
+                                :class="data.withholdings.vatTax !== null && data.withholdings.vatTax !== undefined ? 'filled' : ''" :min="0"
+                                :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.vatTax === null"
+                                :disabled="data.withholdings.vatTaxStatus === 0" />
+                            <label for="vatTax">I.V.A.</label>
+                        </FloatLabel>
+                        <InputError :message="data.withholdings.vatTax === null ? rules : ''" />
+                    </div>
+                </div>
+            </template>
+        </Column>
+        <Column field="totalAmount" header="Importe" class="w-36">
+            <template #body="{ data }">
+                {{ currencyNumber(data.totalAmount) }}
             </template>
         </Column>
         <Column field="paymentMethod" header="Forma Pago" class="w-2/12">

@@ -61,6 +61,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
 
     return {
         id: data.id,
+        supplierId: data.supplier.id,
         cuit: data.supplier.cuit,
         businessName: data.supplier.businessName,
         status: data.voucherStatus.id,
