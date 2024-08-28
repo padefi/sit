@@ -72,6 +72,14 @@ class BankController extends Controller {
         ]);
     }
 
+    public function showBanks() {
+        $banks = Bank::orderBy('name', 'asc')->get();
+
+        return response()->json([
+            'banks' => BankResource::collection($banks),
+        ]);
+    }
+
     /**
      * Update the specified resource in storage.
      */

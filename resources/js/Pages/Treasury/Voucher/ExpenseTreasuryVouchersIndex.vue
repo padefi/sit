@@ -129,16 +129,18 @@ const confirmTreasuryVoucherModal = () => {
         id: voucher.id,
         businessName: voucher.businessName,
         amount: voucher.amount,
-        paymentDate: null,
-        bankId: null,
-        bankAccountId: null,
+        paymentMethod: undefined,
+        bankId: undefined,
+        bankAccountId: undefined,
+        transactionNumber: undefined,
+        paymentDate: undefined,
     }));
 
     dialogInfo.open(treasuryVoucherModalConfirm, {
         props: {
-            header: 'Comprobante a egresar',
+            header: 'Comprobantes a egresar',
             style: {
-                width: '50vw',
+                width: '90vw',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -146,7 +148,10 @@ const confirmTreasuryVoucherModal = () => {
             },
             modal: true
         },
-        data: form
+        data: {
+            form,
+            status: selectStatus.value,
+        }
     });
 }
 
@@ -210,7 +215,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
-        scrollHeight="60vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+        scrollHeight="35vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
         table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
         paginator: {
             root: { class: 'p-paginator-custom' },
@@ -308,9 +313,5 @@ defineExpose({ fetchExpenseTreasuryVouchers });
             <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || isProcessing"
                 @click="confirmTreasuryVoucherModal()" />
         </div>
-    </div>
-
-    <div class="flex p-3 justify-between">
-
     </div>
 </template>

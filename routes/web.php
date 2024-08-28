@@ -13,6 +13,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
+use App\Http\Controllers\Treasury\Voucher\PaymentMethodController;
 use App\Http\Controllers\Treasury\Voucher\TreasuryVoucherController;
 use App\Http\Controllers\Treasury\Voucher\VoucherController;
 
@@ -49,6 +50,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view users']], function
 
 Route::group(['middleware' => ['auth', 'check.permission:view banks']], function () {
     Route::get('/banks/{bank}/info', [BankController::class, 'info'])->name('banks.info');
+    Route::get('/banks/show-banks', [BankController::class, 'showBanks'])->name('banks.show-banks');
     Route::resource('banks', BankController::class);
     Route::get('/bankAccounts/{bankAccount}/info', [BankAccountController::class, 'info'])->name('bankAccounts.info');
     Route::resource('bankAccounts', BankAccountController::class);
@@ -87,6 +89,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
     Route::get('/vouchers/{voucher}/pending-to-pay', [VoucherController::class, 'vouchersPendingToPay'])->name('vouchers.pending-to-pay');
     Route::post('/vouchers/voucher-to-treasury', [VoucherController::class, 'voucherToTreasury'])->name('vouchers.voucher-to-treasury');
     Route::resource('vouchers', VoucherController::class);
+    Route::resource('payment-methods', PaymentMethodController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {

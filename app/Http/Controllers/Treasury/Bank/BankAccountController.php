@@ -53,6 +53,17 @@ class BankAccountController extends Controller {
         ]);
     }
 
+    public function show(string $id) {
+        $bankAccounts = BankAccount::with(['accountType'])
+            ->where('idBank', $id)
+            ->where('status', 1)
+            ->orderBy('accountNumber', 'asc')->get();
+
+        return response()->json([
+            'bankAccounts' => BankAccountResource::collection($bankAccounts),
+        ]);
+    }
+
     /**
      * Update the specified resource in storage.
      */
