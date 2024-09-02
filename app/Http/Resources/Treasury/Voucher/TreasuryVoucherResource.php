@@ -51,8 +51,18 @@ class TreasuryVoucherResource extends JsonResource {
                 'name' => $this->userUpdated->name,
                 'surname' => $this->userUpdated->surname,
             ] : null,
+            'userConfirmed' => $this->userConfirmed ? [
+                'name' => $this->userConfirmed->name,
+                'surname' => $this->userConfirmed->surname,
+            ] : null,
+            'userVoided' => $this->userVoided ? [
+                'name' => $this->userVoided->name,
+                'surname' => $this->userVoided->surname,
+            ] : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'confirmed_at' => $this->confirmed_at,
+            'voided_at' => $this->voided_at,
         ];
     }
 }

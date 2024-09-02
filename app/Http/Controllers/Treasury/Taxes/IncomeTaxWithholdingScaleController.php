@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Treasury\Taxes;
 
 use App\Events\Treasury\Taxes\IncomeTaxWithholdingScaleEvent;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingScaleRequest;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
+use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
+use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -35,6 +38,30 @@ class IncomeTaxWithholdingScaleController extends Controller {
             'updated_at' => null,
         ]);
 
+        $incomeTaxWithholdingTable = IncomeTaxWithholdingTable::where('idCat', $request->idCat)->first();
+
+        if ($incomeTaxWithholdingTable->table === 'normal') {
+            $incomeTaxWithholding = IncomeTaxWithholding::where('idCat', $request->idCat)->first();
+
+            IncomeTaxWithholdingScale::create([
+                'idCat' => $request->idCat,
+                'rate' => $incomeTaxWithholding->rate,
+                'minAmount' => $incomeTaxWithholding->minAmount,
+                'maxAmount' => 0,
+                'fixedAmount' => $incomeTaxWithholding->fixedAmount,
+                'startAt' => date('Y-m-d', strtotime($incomeTaxWithholding->startAt)),
+                'endAt' => date('Y-m-d', strtotime($incomeTaxWithholding->endAt)),
+                'idUserCreated' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => null,
+            ]);
+
+            IncomeTaxWithholding::destroy($incomeTaxWithholding->id);
+            DB::table('income_tax_withholding_tables')
+                ->where('idCat', $request->idCat)
+                ->update(['table' => 'scale']);
+        }
+        
         $tempUUID = $request->keys()[7];
         $incomeTaxWithholdingScale->load('category', 'userCreated', 'userUpdated');
         event(new IncomeTaxWithholdingScaleEvent($incomeTaxWithholdingScale, $tempUUID, 'create'));

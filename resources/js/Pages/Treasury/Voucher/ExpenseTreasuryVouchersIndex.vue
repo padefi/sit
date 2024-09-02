@@ -65,7 +65,7 @@ const onRowCollapse = (data) => {
 
 const treasuryVoucherDataStructure = (treasuryVoucher) => {
     const data = treasuryVoucher;
-    
+
     return {
         id: data.id,
         supplierId: data.supplier.id,
@@ -146,6 +146,7 @@ const confirmTreasuryVoucherModal = () => {
         bankId: undefined,
         bankAccountId: undefined,
         transactionNumber: undefined,
+        transactionNumberStatus: 0,
         paymentDate: undefined,
     }));
 
@@ -315,14 +316,15 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         </template>
     </DataTable>
 
-    <div class="flex flex-col mx-3 my-4 ">
-        <div class="flex justify-between">
-            <div class="flex md:w-2/5 items-center">
-                <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
-                <div class="w-full text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
-                    {{ currencyNumber(form.totalPaymentAmount) }}
-                </div>
+    <div class="flex mt-3 pb-0 items-center justify-between">
+        <div class="flex w-fit space-x-4">
+            <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+            <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
+                {{ currencyNumber(form.totalPaymentAmount) }}
             </div>
+        </div>
+
+        <div>
             <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || isProcessing"
                 @click="confirmTreasuryVoucherModal()" />
         </div>

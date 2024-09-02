@@ -52,7 +52,7 @@ class SupplierRequest extends FormRequest {
             'idVC.required' => 'La condición de I.V.A. es obligatoria.',
             'idVC.exists' => 'La condición de I.V.A. debe existir en el sistema.',
             'idCat.required' => 'El rubro es obligatorio.',
-            'idCat.exists' => 'El rubro es obligatoria.',
+            'idCat.exists' => 'El rubro es obligatorio.',
             'address.required' => 'La dirección es obligatoria.',
             'address.array' => 'La dirección debe ser un array.',
             'address.street.required' => 'El domicilio es obligatorio.',

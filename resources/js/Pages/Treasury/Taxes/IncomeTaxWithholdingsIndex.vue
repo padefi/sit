@@ -274,7 +274,7 @@ const onRowEditSaveIncomeTaxWithholding = (event) => {
     });
 
     if (newData.condition === 'newIncomeTaxWithholding') {
-        const routeUrl = (categoriesArray.value[event.data.categoryIndex].scale === 1 && categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) ? "incomeTaxWithholdingScales.store" : "incomeTaxWithholdings.store";
+        const routeUrl = (categoriesArray.value[event.data.categoryIndex].scale === 1 || categoriesArray.value[event.data.categoryIndex].incomeTax.length > 1) ? "incomeTaxWithholdingScales.store" : "incomeTaxWithholdings.store";
 
         form.post(route(routeUrl, newData.id), {
             onSuccess: (result) => {
@@ -371,7 +371,12 @@ onMounted(() => {
             if (indexCategory !== -1) {
                 if (e.type === 'create') {
                     setTimeout(() => {
-                        if (!categoriesArray.value[indexCategory].incomeTax.some(tax => tax.id === e.incomeTaxWithholdingScale.id)) {
+                        if (categoriesArray.value[indexCategory].scale === 0) {
+                            fetchIncomeTaxWithholdings();
+                            return;
+                        }
+                        
+                        if (!categoriesArray.value[indexCategory].incomeTax.some(tax => tax.id === e.incomeTaxWithholdingScaleId)) {
                             categoriesArray.value[indexCategory].incomeTax.unshift(incomeTaxEventDataStructure(indexCategory, e.incomeTaxWithholdingScale));
                         }
                     }, 500);

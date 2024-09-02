@@ -83,7 +83,7 @@ const calculatePaymentAmount = (event, data) => {
         }
 
         if (voucher.checked && voucher.id !== data.id) {
-            return (voucher.voucherType.id === 2) ?  total + voucher.paymentAmount || 0 :  total + voucher.paymentAmount * -1 || 0;
+            return (voucher.voucherType.id === 2) ? total + voucher.paymentAmount || 0 : total + voucher.paymentAmount * -1 || 0;
             // return total + (voucher.paymentAmount || 0);
         }
 
@@ -94,7 +94,7 @@ const calculatePaymentAmount = (event, data) => {
 const recalculatePaymentAmount = () => {
     form.totalPaymentAmount = treasuryVouchersArray.value.reduce((total, voucher) => {
         if (voucher.checked) {
-            return (voucher.voucherType.id === 2) ?  total + voucher.paymentAmount || 0 :  total + voucher.paymentAmount * -1 || 0;
+            return (voucher.voucherType.id === 2) ? total + voucher.paymentAmount || 0 : total + voucher.paymentAmount * -1 || 0;
             // return total + (voucher.paymentAmount || 0);
         }
 
@@ -179,10 +179,6 @@ const saveTreasuryVoucher = (event) => {
     });
 };
 
-const closeDialog = () => {
-    dialogRef.value.close();
-}
-
 onMounted(async () => {
     await getVouchers();
     loading.value = false;
@@ -250,8 +246,8 @@ onMounted(async () => {
                 <FloatLabel>
                     <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'paymentAmount' + '_' + (new Date()).getTime()" mode="currency"
                         currency="ARS" locale="es-AR" id="paymentAmount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
-                        :class="data[field] !== null ? 'filled' : ''" :min="0" :minFractionDigits="2" :max="data['pendingToPay']" @input="calculatePaymentAmount($event, data)"
-                        :invalid="data[field] === null" />
+                        :class="data[field] !== null ? 'filled' : ''" :min="0" :minFractionDigits="2" :max="data['pendingToPay']"
+                        @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null" />
                     <label for="paymentAmount">Importe</label>
                 </FloatLabel>
                 <InputError :message="data[field] === null ? rules : ''" />
@@ -284,19 +280,14 @@ onMounted(async () => {
         </Column>
     </DataTable>
 
-    <div class="flex flex-col mx-3 my-4 ">
-        <div class="flex md:w-2/5">
-            <div class="w-full text-left text-surface-900/60 font-bold">Total a Pagar: </div>
-            <div class="w-full text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
+    <div class="flex mt-3 pb-0 items-center justify-between">
+        <div class="flex w-fit space-x-4">
+            <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+            <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
                 {{ currencyNumber(form.totalPaymentAmount) }}
             </div>
         </div>
-    </div>
 
-    <Divider class="!my-0" type="dashed" />
-
-    <div class="flex p-3 justify-between">
-        <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
         <ConfirmPopup></ConfirmPopup>
         <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || editing || isProcessing"
             @click="saveTreasuryVoucher($event)" />

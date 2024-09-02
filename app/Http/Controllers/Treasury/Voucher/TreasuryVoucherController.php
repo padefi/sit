@@ -7,6 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\TreasuryVoucherRequest;
 use App\Http\Resources\Treasury\Voucher\TreasuryVoucherResource;
 use App\Http\Resources\Treasury\Voucher\TreasuryVoucherStatusResource;
+use App\Models\Treasury\Supplier\Supplier;
+use App\Models\Treasury\Taxes\IncomeTaxWithholding;
+use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
+use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
+use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
+use App\Models\Treasury\Taxes\VatTaxWithholding;
 use App\Models\Treasury\Voucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\TreasuryVoucherStatus;
 use App\Models\Treasury\Voucher\VoucherType;
@@ -21,6 +27,7 @@ class TreasuryVoucherController extends Controller {
         $this->middleware('check.permission:view treasury vouchers')->only(['index', 'treasuryVouchers', 'treasuryVoucherStatus']);
         // $this->middleware('check.permission:view treasury vouchers')->only('treasuryVoucherStatus');
         $this->middleware('check.permission:edit treasury vouchers')->only('voidTreasuryVoucher');
+        $this->middleware('check.permission:edit treasury vouchers')->only('calculateWithholdingTax');
         $this->middleware('check.permission:view users')->only('info');
     }
 
@@ -49,6 +56,13 @@ class TreasuryVoucherController extends Controller {
         ]);
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id) {
+        //
+    }
+
     public function treasuryVouchers(VoucherType $voucherType, string $status) {
         $treasuryVouchers = TreasuryVoucher::with(['userCreated', 'userUpdated'])
             ->where('idType', $voucherType->id)
@@ -61,11 +75,97 @@ class TreasuryVoucherController extends Controller {
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id) {
-        //
+    public function calculateWithholdingTax(TreasuryVoucher $treasuryVoucher) {
+        $tax = 21;
+        $amountWithoutTax = round($treasuryVoucher->amount / (1 + ($tax / 100)), 2);
+        $totalIncomeTaxAmountCollected = 0;
+        $totalSocialTaxAmountCollected = 0;
+        $totalVatTaxAmountCollected = 0;
+        $incomeTaxWithholdingAmount = 0;
+        $socialTaxAmount = 0;
+        $vatTaxAmount = 0;
+        $supplier = Supplier::where('id', $treasuryVoucher->idSupplier)->first();
+
+        $pendingTreasuryVoucher = TreasuryVoucher::where('idSupplier', $supplier->id)
+            ->where('idType', 2)
+            ->where('idVS', 1)
+            ->whereDate('created_at', '<=', date('Y-m-t'))
+            ->whereNot('id', $treasuryVoucher->id)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($pendingTreasuryVoucher->count() > 0) {
+            $amountWithoutTax += round($pendingTreasuryVoucher->sum('amount') / (1 + ($tax / 100)), 2);
+            $totalIncomeTaxAmountCollected += round($pendingTreasuryVoucher->sum('incomeTaxAmount'), 2);
+            $totalSocialTaxAmountCollected += round($pendingTreasuryVoucher->sum('socialTaxAmount'), 2);
+            $totalVatTaxAmountCollected += round($pendingTreasuryVoucher->sum('vatTaxAmount'), 2);
+        }
+
+        $paidTreasuryVoucher = TreasuryVoucher::where('idSupplier', $supplier->id)
+            ->where('idType', 2)
+            ->where('idVS', 2)
+            ->whereDate('confirmed_at', '<=', date('Y-m-t'))
+            ->whereNot('id', $treasuryVoucher->id)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($paidTreasuryVoucher->count() > 0) {
+            $amountWithoutTax += round($paidTreasuryVoucher->sum('amount') / (1 + ($tax / 100)), 2);
+            $totalIncomeTaxAmountCollected += round($paidTreasuryVoucher->sum('incomeTaxAmount'), 2);
+            $totalSocialTaxAmountCollected += round($paidTreasuryVoucher->sum('socialTaxAmount'), 2);
+            $totalVatTaxAmountCollected += round($paidTreasuryVoucher->sum('vatTaxAmount'), 2);
+        }
+
+        if ($supplier->incomeTaxWithholding == 1) {
+            $incomeTaxWithholdingTable = IncomeTaxWithholdingTable::where('idCat', $supplier->idCat)->first();
+
+            $incomeTax = ($incomeTaxWithholdingTable->table === 'normal')
+                ? IncomeTaxWithholding::where('idCat', $supplier->idCat)
+                ->where('minAmount', '<=', $amountWithoutTax)
+                ->where('startAt', '<=', date('Y-m-d'))
+                ->where('endAt', '>=', date('Y-m-d'))
+                ->first()
+                : IncomeTaxWithholdingScale::where('idCat', $supplier->idCat)
+                ->where('minAmount', '<=', $amountWithoutTax)
+                ->where('maxAmount', '>=', $amountWithoutTax)
+                ->where('startAt', '<=', date('Y-m-d'))
+                ->where('endAt', '>=', date('Y-m-d'))
+                ->first();
+
+            $incomeTaxWithholdingAmount = $incomeTax
+                ? round($incomeTax->fixedAmount + $amountWithoutTax * ($incomeTax->rate / 100) - $totalIncomeTaxAmountCollected, 2)
+                : 0;
+        }
+
+        if ($supplier->socialTax == 1) {
+            $socialTax = SocialSecurityTaxWithholding::where('idCat', $supplier->idCat)
+                ->where('minAmount', '<=', $amountWithoutTax)
+                ->where('startAt', '<=', date('Y-m-d'))
+                ->where('endAt', '>=', date('Y-m-d'))
+                ->first();
+
+            $socialTaxAmount = $socialTax
+                ? round($socialTax->fixedAmount + $amountWithoutTax * ($socialTax->rate / 100) - $totalSocialTaxAmountCollected, 2)
+                : 0;
+        }
+
+        if ($supplier->vatTax == 1) {
+            $vatTax = VatTaxWithholding::where('idCat', $supplier->idCat)
+                ->where('minAmount', '<=', $amountWithoutTax)
+                ->where('startAt', '<=', date('Y-m-d'))
+                ->where('endAt', '>=', date('Y-m-d'))
+                ->first();
+
+            $vatTaxAmount = $vatTax
+                ? round($vatTax->fixedAmount + $amountWithoutTax * ($vatTax->rate / 100) - $totalVatTaxAmountCollected, 2)
+                : 0;
+        }
+
+        return response()->json([
+            'incomeTaxWithholdingAmount' => $incomeTaxWithholdingAmount,
+            'socialTaxAmount' => $socialTaxAmount,
+            'vatTaxAmount' => $vatTaxAmount,
+        ]);
     }
 
     public function treasuryVoucherStatus() {

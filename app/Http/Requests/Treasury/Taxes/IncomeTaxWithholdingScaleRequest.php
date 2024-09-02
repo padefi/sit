@@ -20,6 +20,7 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
      */
     public function rules(): array {
         return [
+            'idCat' => ['required', 'exists:categories,id'],
             'rate' => ['required', 'numeric', 'min:0', 'max:100'],
             'minAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'maxAmount' => ['required', 'numeric', 'min:0', 'max:99999999'],
@@ -42,6 +43,8 @@ class IncomeTaxWithholdingScaleRequest extends FormRequest {
 
     public function messages(): array {
         return [
+            'idCat.required' => 'El rubro es obligatorio.',
+            'idCat.exists' => 'El rubro es obligatorio.',
             'rate.required' => 'El Porcentaje es obligatorio.',
             'rate.min' => 'El Porcentaje no puede ser menor a 0.',
             'rate.max' => 'El Porcentaje no puede ser mayor a 100.',

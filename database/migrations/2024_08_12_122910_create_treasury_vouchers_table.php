@@ -24,7 +24,11 @@ return new class extends Migration {
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
+            $table->unsignedBigInteger('idUserConfirmed')->nullable();
+            $table->unsignedBigInteger('idUserVoided')->nullable();
             $table->timestamps();
+            $table->timestamp('confirmed_at')->nullable();
+            $table->timestamp('voided_at')->nullable();
 
             $table->index('idType');
             $table->index('idSupplier');
@@ -33,6 +37,8 @@ return new class extends Migration {
             $table->index('idVS');
             $table->index('idUserCreated');
             $table->index('idUserUpdated');
+            $table->index('idUserConfirmed');
+            $table->index('idUserVoided');
 
             $table->foreign('idType')
                 ->references('id')
@@ -75,6 +81,18 @@ return new class extends Migration {
                 ->on('users')
                 ->onUpdate('restrict')
                 ->onDelete('restrict');
+
+            $table->foreign('idUserConfirmed')
+                ->references('id')
+                ->on('users')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
+
+            $table->foreign('idUserVoided')
+                ->references('id')
+                ->on('users')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
         });
     }
 
@@ -90,6 +108,8 @@ return new class extends Migration {
             $table->dropForeign(['idVS']);
             $table->dropForeign(['idUserCreated']);
             $table->dropForeign(['idUserUpdated']);
+            $table->dropForeign(['idUserConfirmed']);
+            $table->dropForeign(['idUserVoided']);
         });
 
         Schema::dropIfExists('treasury_vouchers');

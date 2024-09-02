@@ -78,7 +78,6 @@ const addNewTreasuryVoucher = () => {
             header: 'Comprobantes',
             style: {
                 width: '80vw',
-                minHeight: '50vh',
             },
             breakpoints: {
                 '960px': '75vw',
@@ -87,7 +86,6 @@ const addNewTreasuryVoucher = () => {
             modal: true,
             contentStyle: {
                 padding: '1.25rem',
-                minHeight: '50vh',
             },
         },
         data: {

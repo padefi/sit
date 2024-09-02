@@ -25,7 +25,11 @@ class TreasuryVoucher extends Model {
         'notes',
         'idUserCreated',
         'idUserUpdated',
+        'idUserConfirmed',
+        'idUserVoided',
         'updated_at',
+        'confirmed_at',
+        'voided_at',
     ];
 
     protected $casts = [
@@ -66,5 +70,13 @@ class TreasuryVoucher extends Model {
 
     public function userUpdated() {
         return $this->belongsTo(User::class, 'idUserUpdated');
+    }
+
+    public function userConfirmed() {
+        return $this->belongsTo(User::class, 'idUserConfirmed');
+    }
+
+    public function userVoided() {
+        return $this->belongsTo(User::class, 'idUserVoided');
     }
 }
