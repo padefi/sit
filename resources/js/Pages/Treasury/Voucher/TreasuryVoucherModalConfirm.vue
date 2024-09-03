@@ -2,6 +2,7 @@
 import { ref, onMounted, inject, computed } from "vue";
 import { currencyNumber } from "@/utils/formatterFunctions";
 import { dropdownClasses } from '@/utils/cssUtils';
+import { useToast } from "primevue/usetoast";
 import InputError from '@/Components/InputError.vue';
 
 const treasuryVouchersArray = ref([]);
@@ -13,6 +14,8 @@ const bankAccountsSelect = ref([]);
 const paymentMethodGlobal = ref();
 const bankGlobal = ref();
 const bankAccountGlobal = ref();
+const paymentDateGlobal = ref();
+const toast = useToast();
 const dialogRef = inject("dialogRef");
 const rules = 'Debe completar el campo';
 const loading = ref(true);
@@ -51,7 +54,7 @@ const getPaymentMethods = async () => {
     }
 }
 
-const calculateWithholdingTax = async (voucher, index) => {
+const calculateWithholdingTax = async (voucher, voucherBySupplier) => {
     try {
         const response = await fetch(`/treasury-voucher/${voucher.id}/calculate-withholding-tax`);
 
@@ -60,10 +63,21 @@ const calculateWithholdingTax = async (voucher, index) => {
         }
 
         const data = await response.json();
-        voucher.withholdings.incomeTax = data.incomeTaxWithholdingAmount;
+        voucher.withholdings.incomeTax = voucherBySupplier.some((v) => v.id === voucher.id) ? data.incomeTaxWithholdingAmount : 0;
         voucher.withholdings.socialTax = data.socialTaxAmount;
         voucher.withholdings.vatTax = data.vatTaxAmount;
-        voucher.totalAmount = voucher.amount - (data.incomeTaxWithholdingAmount + data.socialTaxAmount + data.vatTaxAmount);
+
+        const totalAmount = voucher.amount - (voucher.withholdings.incomeTax + voucher.withholdings.socialTax + voucher.withholdings.vatTax);
+
+        if (voucher.withholdings.incomeTax > totalAmount) {
+            toast.add({
+                severity: 'error',
+                detail: 'El importe de ganancias a retener es mayor al importe a pagar',
+                life: 5000,
+            });
+        }
+
+        voucher.totalAmount = totalAmount;
     } catch (error) {
         console.error(error);
     }
@@ -135,7 +149,7 @@ const handleTtransactionNumber = (index) => {
 
 const isFormInvalid = computed(() => {
     return treasuryVouchersArray.value.some(voucher => {
-        return !voucher.paymentMethod ||
+        return !voucher.totalAmount <= 0 || !voucher.paymentMethod ||
             !voucher.bankId && voucher.bankId !== 0 ||
             !voucher.bankAccountId && voucher.bankId !== 0 ||
             (!voucher.transactionNumber && voucher.paymentMethod !== 4) ||
@@ -177,16 +191,33 @@ const handleBankAccounts = (event) => {
     });
 }
 
+const handlePaymentDate = (newDate) => {
+    treasuryVouchersArray.value.forEach((voucher) => {
+        voucher.paymentDate = newDate;
+    });
+}
+
 onMounted(async () => {
     treasuryVouchersArray.value = dialogRef.value.data.form.vouchers;
     totalPaymentAmount.value = dialogRef.value.data.form.totalPaymentAmount;
     await getPaymentMethods();
 
-    const promises = treasuryVouchersArray.value.map((voucher, index) => calculateWithholdingTax(voucher, index));
+    //Group each voucher by supplier and get the voucher with the highest amount
+    const maxAmountVoucherBySupplier = treasuryVouchersArray.value.reduce((acc, voucher) => {
+        if (!acc[voucher.supplierId]) {
+            acc[voucher.supplierId] = voucher;
+        } else if (voucher.amount > acc[voucher.supplierId].amount) {
+            acc[voucher.supplierId] = voucher;
+        }
+        return acc;
+    }, {});
+
+    const voucherBySupplier = Object.values(maxAmountVoucherBySupplier);
+
+    const promises = treasuryVouchersArray.value.map((voucher) => calculateWithholdingTax(voucher, voucherBySupplier));
     await Promise.all(promises);
 
     totalPaymentAmount.value = treasuryVouchersArray.value.reduce((total, voucher) => total + voucher.totalAmount, 0);
-
     loading.value = false;
 });
 </script>
@@ -205,17 +236,17 @@ onMounted(async () => {
         <Column field="businessName" header="Proveedor" class="w-2/12">
             <template #body="{ data }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     {{ data.businessName }}
                 </template>
             </template>
         </Column>
-        <Column field="amount" header="Importe" class="w-36">
+        <Column field="amount" header="Total" class="w-36">
             <template #body="{ data }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     {{ currencyNumber(data.amount) }}
@@ -224,12 +255,13 @@ onMounted(async () => {
         </Column>
         <Column field="withholdings" header="Retenciones" class="w-2/12">
             <template #body="{ data, index }">
+
                 <div class="flex space-x-2">
-                    <div>
-                        <template v-if="loading">
-                            <Skeleton class="mb-2"></Skeleton>
-                        </template>
-                        <template v-if="!loading">
+                    <template v-if="loading">
+                        <Skeleton></Skeleton>
+                    </template>
+                    <template v-if="!loading">
+                        <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.incomeTax" placeholder="$ 0,00" inputId="incomeTax" mode="currency"
                                     currency="ARS" locale="es-AR" id="incomeTax" inputClass="w-36" class="w-full"
@@ -239,13 +271,14 @@ onMounted(async () => {
                                 <label for="incomeTax">Ganancias</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.incomeTax === null ? rules : ''" />
-                        </template>
-                    </div>
-                    <div>
-                        <template v-if="loading">
-                            <Skeleton class="mb-2"></Skeleton>
-                        </template>
-                        <template v-if="!loading">
+                        </div>
+                    </template>
+
+                    <template v-if="loading">
+                        <Skeleton></Skeleton>
+                    </template>
+                    <template v-if="!loading">
+                        <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.socialTax" placeholder="$ 0,00" inputId="socialTax" mode="currency"
                                     currency="ARS" locale="es-AR" id="socialTax" inputClass="w-36" class="w-full"
@@ -255,13 +288,14 @@ onMounted(async () => {
                                 <label for="socialTax">Suss</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.socialTax === null ? rules : ''" />
-                        </template>
-                    </div>
-                    <div>
-                        <template v-if="loading">
-                            <Skeleton class="mb-2"></Skeleton>
-                        </template>
-                        <template v-if="!loading">
+                        </div>
+                    </template>
+
+                    <template v-if="loading">
+                        <Skeleton></Skeleton>
+                    </template>
+                    <template v-if="!loading">
+                        <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.vatTax" placeholder="$ 0,00" inputId="vatTax" mode="currency" currency="ARS"
                                     locale="es-AR" id="vatTax" inputClass="w-36" class="w-full"
@@ -271,25 +305,27 @@ onMounted(async () => {
                                 <label for="vatTax">I.V.A.</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.vatTax === null ? rules : ''" />
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                 </div>
             </template>
         </Column>
-        <Column field="totalAmount" header="Importe" class="w-36">
+        <Column field="totalAmount" header="Total" class="w-36">
             <template #body="{ data }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
-                    {{ currencyNumber(data.totalAmount) }}
+                    <div class="w-fit text-left font-bold" :class="data.totalAmount < 0 ? 'text-red-500' : ''">
+                        {{ currencyNumber(data.totalAmount) }}
+                    </div>
                 </template>
             </template>
         </Column>
         <Column field="paymentMethod" header="Forma Pago" class="min-w-48">
             <template #body="{ data, field, index }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
@@ -304,7 +340,7 @@ onMounted(async () => {
         <Column field="bankId" header="Banco" class="min-w-72">
             <template #body="{ data, field, index }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
@@ -319,7 +355,7 @@ onMounted(async () => {
         <Column field="bankAccountId" header="Cta. Bancaria" class="min-w-44">
             <template #body="{ data, field, index }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
@@ -334,7 +370,7 @@ onMounted(async () => {
         <Column field="transactionNumber" header="N° Operación" class="w-1/12">
             <template #body="{ data, field, index }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
@@ -350,7 +386,7 @@ onMounted(async () => {
         <Column field="paymentDate" header="F. pago" class="w-1/12">
             <template #body="{ data, field }">
                 <template v-if="loading">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
@@ -370,7 +406,7 @@ onMounted(async () => {
             <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
             <template v-if="loading">
                 <div class="w-24">
-                    <Skeleton class="mb-2"></Skeleton>
+                    <Skeleton class="mt-1"></Skeleton>
                 </div>
             </template>
             <template v-if="!loading">
@@ -398,6 +434,12 @@ onMounted(async () => {
                     class="!focus:border-primary-500 w-full" :class="dropdownClasses(bankAccountGlobal)" inputClass="text-clip" optionLabel="label"
                     optionValue="value" @change="handleBankAccounts($event)" />
                 <label for="bank">Cta. bancaria</label>
+            </FloatLabel>
+            <FloatLabel class="min-w-36 flex-1">
+                <Calendar v-model="paymentDateGlobal" placeholder="DD/MM/AAAA" showButtonBar id="paymentDateGlobal" class="w-full"
+                    :class="paymentDateGlobal !== null && paymentDateGlobal !== undefined ? 'filled' : ''" :maxDate="new Date()"
+                    @update:model-value="handlePaymentDate" />
+                <label for="paymentDateGlobal">F. Pago</label>
             </FloatLabel>
         </div>
 

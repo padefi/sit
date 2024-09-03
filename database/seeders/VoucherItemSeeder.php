@@ -23,6 +23,10 @@ class VoucherItemSeeder extends Seeder {
             ['idVoucher' => 3, 'description' => 'PENDRIVE 32GB', 'amount' => 20000.00, 'idVat' => 3, 'subtotalAmount' => 24200.00],
 
             ['idVoucher' => 4, 'description' => "MONITOR 24''", 'amount' => 200000.00, 'idVat' => 3, 'subtotalAmount' => 242000.00],
+
+            ['idVoucher' => 5, 'description' => "ABONO INTERNET FULL", 'amount' => 947713.27, 'idVat' => 1, 'subtotalAmount' => 947713.27],
+
+            ['idVoucher' => 6, 'description' => "ABONO INTERNET FULL", 'amount' => 816542.24, 'idVat' => 1, 'subtotalAmount' => 947713.27],
         ];
 
         foreach ($voucherItems as $item) {
