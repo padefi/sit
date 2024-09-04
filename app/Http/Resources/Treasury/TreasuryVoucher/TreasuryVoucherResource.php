@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Resources\Treasury\Voucher;
+namespace App\Http\Resources\Treasury\TreasuryVoucher;
 
+use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

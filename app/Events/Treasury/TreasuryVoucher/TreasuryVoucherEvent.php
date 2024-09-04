@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Events\Treasury\Voucher;
+namespace App\Events\Treasury\TreasuryVoucher;
 
-use App\Http\Resources\Treasury\Voucher\TreasuryVoucherResource;
-use App\Models\Treasury\Voucher\TreasuryVoucher;
+use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -20,7 +20,7 @@ class TreasuryVoucherEvent implements ShouldBroadcast {
     /**
      * Create a new event instance.
      * 
-     * @param \App\Models\Treasury\Voucher\TreasuryVoucher $treasuryVoucher
+     * @param \App\Models\Treasury\TreasuryVoucher\TreasuryVoucher $treasuryVoucher
      * @return void
      */
     public function __construct(TreasuryVoucher $treasuryVoucher, $treasuryVoucherId, $type) {

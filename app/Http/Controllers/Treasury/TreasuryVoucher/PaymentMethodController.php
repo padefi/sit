@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Treasury\Voucher;
+namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Treasury\Voucher\PaymentMethodResource;
-use App\Models\Treasury\Voucher\PaymentMethod;
+use App\Http\Resources\Treasury\TreasuryVoucher\PaymentMethodResource;
+use App\Models\Treasury\TreasuryVoucher\PaymentMethod;
 
 class PaymentMethodController extends Controller {
     public function index() {

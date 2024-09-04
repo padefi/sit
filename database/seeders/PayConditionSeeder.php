@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Treasury\Voucher\PayCondition;
+use App\Models\Treasury\TreasuryVoucher\PayCondition;
 use Illuminate\Database\Seeder;
 
 class PayConditionSeeder extends Seeder {

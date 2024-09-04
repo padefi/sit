@@ -2,8 +2,8 @@
 
 namespace App\Events\Treasury\Voucher;
 
-use App\Http\Resources\Treasury\Voucher\TreasuryVoucherResource;
-use App\Models\Treasury\Voucher\TreasuryVoucher;
+use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Treasury\Voucher\PaymentMethod;
+use App\Models\Treasury\TreasuryVoucher\PaymentMethod;
 use Illuminate\Database\Seeder;
 
 class PaymentMethodSeeder extends Seeder {

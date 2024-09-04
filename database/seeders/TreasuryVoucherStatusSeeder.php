@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Treasury\Voucher\TreasuryVoucherStatus;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use Illuminate\Database\Seeder;
 
 class TreasuryVoucherStatusSeeder extends Seeder {

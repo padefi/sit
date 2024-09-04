@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Treasury\Voucher;
+namespace App\Http\Resources\Treasury\TreasuryVoucher;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PayConditionResource extends JsonResource {
+class PaymentMethodResource extends JsonResource {
     /**
      * Transform the resource into an array.
      *

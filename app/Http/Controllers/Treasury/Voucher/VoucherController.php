@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Treasury\Voucher;
 
-use App\Events\Treasury\Voucher\TreasuryVoucherEvent;
+use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Events\Treasury\Voucher\VoucherToTreasuryEvent;
 use App\Models\Treasury\Voucher\Voucher;
@@ -13,7 +13,7 @@ use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use App\Models\Treasury\Voucher\InvoiceType;
 use App\Models\Treasury\Voucher\InvoiceTypeCode;
-use App\Models\Treasury\Voucher\TreasuryVoucher;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;

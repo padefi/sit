@@ -2,8 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Treasury\Voucher\TreasuryVoucher;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use Illuminate\Database\Seeder;
 
 class TreasuryVoucherSeeder extends Seeder {

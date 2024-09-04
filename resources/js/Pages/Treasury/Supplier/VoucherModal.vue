@@ -288,7 +288,7 @@ onMounted(async () => {
     form.idSupplier = dialogRef.value.data.supplierId;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes;
-    vatRates.value = dialogRef.value.data.vatRates.map((vatRate) => {
+    vatRates.value = await dialogRef.value.data.vatRates.map((vatRate) => {
         return { label: percentNumber(vatRate.rate), rate: vatRate.rate, id: vatRate.id };
     });
 
@@ -329,7 +329,9 @@ onMounted(async () => {
         return;
     }
 
-    addNewItem();
+    // setTimeout(async () => {
+        addNewItem();
+    // }, 100);
     loading.value = false;
 });
 
@@ -607,9 +609,9 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                         </template>
                         <template v-if="!loading">
                             <FloatLabel>
-                                <Calendar v-model="form.invoiceDueDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDueDate"
-                                    class="w-full" :class="form.invoiceDueDate !== null && form.invoiceDueDate !== undefined ? 'filled' : ''"
-                                    inputClass="w-full" :invalid="form.invoiceDueDate === null" :minDate="form.invoiceDate" />
+                                <Calendar v-model="form.invoiceDueDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDueDate" class="w-full"
+                                    :class="form.invoiceDueDate !== null && form.invoiceDueDate !== undefined ? 'filled' : ''" inputClass="w-full"
+                                    :invalid="form.invoiceDueDate === null" :minDate="form.invoiceDate" />
                                 <label for="invoiceDueDate">F. vencimiento</label>
                             </FloatLabel>
                             <InputError :message="form.invoiceDueDate === null ? rules : ''" />

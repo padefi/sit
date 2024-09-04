@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Treasury\Voucher;
+namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 
-use App\Events\Treasury\Voucher\TreasuryVoucherEvent;
+use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Treasury\Voucher\TreasuryVoucherRequest;
-use App\Http\Resources\Treasury\Voucher\TreasuryVoucherResource;
-use App\Http\Resources\Treasury\Voucher\TreasuryVoucherStatusResource;
+use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryVoucherRequest;
+use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
+use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherStatusResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
 use App\Models\Treasury\Taxes\VatTaxWithholding;
-use App\Models\Treasury\Voucher\TreasuryVoucher;
-use App\Models\Treasury\Voucher\TreasuryVoucherStatus;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -35,7 +35,7 @@ class TreasuryVoucherController extends Controller {
      * Display a listing of the resource.
      */
     public function index(): Response {
-        return Inertia::render('Treasury/Voucher/TreasuryVouchers');
+        return Inertia::render('Treasury/TreasuryVoucher/TreasuryVouchers');
     }
 
     /**

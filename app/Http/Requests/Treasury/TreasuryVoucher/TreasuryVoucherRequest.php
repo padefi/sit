@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Treasury\Voucher;
+namespace App\Http\Requests\Treasury\TreasuryVoucher;
 
 use Illuminate\Foundation\Http\FormRequest;
 

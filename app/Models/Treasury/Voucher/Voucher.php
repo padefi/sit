@@ -3,6 +3,7 @@
 namespace App\Models\Treasury\Voucher;
 
 use App\Models\Treasury\Supplier\Supplier;
+use App\Models\Treasury\TreasuryVoucher\PayCondition;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

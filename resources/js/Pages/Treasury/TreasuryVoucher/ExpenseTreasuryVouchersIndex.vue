@@ -8,12 +8,19 @@ import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import treasuryVoucherModalConfirm from './TreasuryVoucherModalConfirm.vue';
+
+const form = useForm({
+    vouchers: [],
+    totalPaymentAmount: 0,
+});
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
 
@@ -23,7 +30,7 @@ const filters = ref({
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
-const fetchIncomeTreasuryVouchers = async (type, status) => {
+const fetchExpenseTreasuryVouchers = async (type, status) => {
     selectStatus.value = status;
     treasuryVouchersArray.value = [];
     loading.value = true;
@@ -33,7 +40,7 @@ const fetchIncomeTreasuryVouchers = async (type, status) => {
             const response = await fetch(`/treasury-vouchers/${type}/${status}`);
 
             if (!response.ok) {
-                throw new Error('Error al obtener datos de comprobates a ingresar');
+                throw new Error('Error al obtener datos de comprobates a egresar');
             }
 
             const data = await response.json();
@@ -65,7 +72,16 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         cuit: data.supplier.cuit,
         businessName: data.supplier.businessName,
         status: data.voucherStatus.id,
-        amount: data.totalAmount,
+        amount: data.amount,
+        withholdings: {
+            incomeTax: undefined,
+            incomeTaxStatus: data.supplier.incomeTaxWithholding,
+            socialTax: undefined,
+            socialTaxStatus: data.supplier.socialTax,
+            vatTax: undefined,
+            vatTaxStatus: data.supplier.vatTax,
+        },
+        totalAmount: data.totalAmount,
         vouchers: data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)),
     }
 }
@@ -81,6 +97,11 @@ const voucherDataStructure = (voucherToTreasury) => {
         invoiceDueDate: data.invoiceDueDate,
         amount: voucherToTreasury.amount,
     }
+}
+
+const setTotalPaymentAmount = (event, data) => {
+    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.amount : form.totalPaymentAmount - data.amount;
+    if (!event.target.checked) data.paymentAmount = data.pendingToPay;
 }
 
 const voidTreasuryVoucher = (event, data) => {
@@ -101,9 +122,56 @@ const voidTreasuryVoucher = (event, data) => {
     });
 }
 
+const confirmTreasuryVoucherModal = () => {
+    if (form.totalPaymentAmount === 0) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe agregar al menos un item.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
+
+    form.vouchers = filteredVouchers.map(voucher => ({
+        id: voucher.id,
+        supplierId: voucher.supplierId,
+        businessName: voucher.businessName,
+        amount: voucher.amount,
+        withholdings: voucher.withholdings,
+        totalAmount: voucher.totalAmount,
+        paymentMethod: undefined,
+        bankId: undefined,
+        bankAccountId: undefined,
+        transactionNumber: undefined,
+        transactionNumberStatus: 0,
+        paymentDate: undefined,
+    }));
+
+    dialogInfo.open(treasuryVoucherModalConfirm, {
+        props: {
+            header: 'Comprobantes a egresar',
+            style: {
+                width: '98vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '98vw'
+            },
+            modal: true
+        },
+        data: {
+            form,
+            status: selectStatus.value,
+        }
+    });
+}
+
 onMounted(() => {
     Echo.channel('treasuryVouchers')
-        .listen('Treasury\\Voucher\\TreasuryVoucherEvent', (e) => {
+        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
                 if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId) && e.treasuryVoucher.voucherStatus.id === selectStatus.value) {
                     const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
@@ -157,7 +225,7 @@ const info = (id) => {
 }
 /*  */
 
-defineExpose({ fetchIncomeTreasuryVouchers });
+defineExpose({ fetchExpenseTreasuryVouchers });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
@@ -200,7 +268,7 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             <template #body="{ data }">
                 <div class="space-x-4 flex justify-center">
                     <template v-if="data.status === 1">
-                        <Checkbox v-model="data.checked" binary />
+                        <Checkbox v-model="data.checked" binary @click="setTotalPaymentAmount($event, data)" />
                     </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
@@ -247,4 +315,18 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             </DataTable>
         </template>
     </DataTable>
+
+    <div class="flex mt-3 pb-0 items-center justify-between">
+        <div class="flex w-fit space-x-4">
+            <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+            <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
+                {{ currencyNumber(form.totalPaymentAmount) }}
+            </div>
+        </div>
+
+        <div>
+            <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || isProcessing"
+                @click="confirmTreasuryVoucherModal()" />
+        </div>
+    </div>
 </template>

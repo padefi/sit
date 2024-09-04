@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Models\Treasury\Voucher;
+namespace App\Models\Treasury\TreasuryVoucher;
 
 use App\Models\Treasury\Bank\BankAccount;
 use App\Models\Treasury\Supplier\Supplier;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
+use App\Models\Treasury\Voucher\VoucherToTreasury;
+use App\Models\Treasury\Voucher\VoucherType;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

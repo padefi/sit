@@ -13,8 +13,8 @@ use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
-use App\Http\Controllers\Treasury\Voucher\PaymentMethodController;
-use App\Http\Controllers\Treasury\Voucher\TreasuryVoucherController;
+use App\Http\Controllers\Treasury\TreasuryVoucher\PaymentMethodController;
+use App\Http\Controllers\Treasury\TreasuryVoucher\TreasuryVoucherController;
 use App\Http\Controllers\Treasury\Voucher\VoucherController;
 
 /*
