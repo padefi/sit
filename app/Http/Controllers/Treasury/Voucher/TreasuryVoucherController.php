@@ -75,7 +75,21 @@ class TreasuryVoucherController extends Controller {
         ]);
     }
 
-    public function calculateWithholdingTax(TreasuryVoucher $treasuryVoucher) {
+    public function calculateWithholdingTax(Request $request, TreasuryVoucher $treasuryVoucher) {
+        $voucherIds = $request->input('voucherIds', []);
+
+        if (!is_array($voucherIds) || empty($voucherIds)) {
+            throw ValidationException::withMessages([
+                'message' => trans('No se proporcionaron voucherIds válidos.')
+            ]);
+        }
+
+        if (!$treasuryVoucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('Voucher no encontrado.')
+            ]);
+        }
+
         $tax = 21;
         $amountWithoutTax = round($treasuryVoucher->amount / (1 + ($tax / 100)), 2);
         $totalAmountCollected = $amountWithoutTax;
@@ -91,6 +105,7 @@ class TreasuryVoucherController extends Controller {
             ->where('idType', 2)
             ->where('idVS', 1)
             ->whereDate('created_at', '<=', date('Y-m-t'))
+            ->whereIn('id', $voucherIds) 
             ->whereNot('id', $treasuryVoucher->id)
             ->orderBy('id', 'asc')
             ->get();
@@ -105,6 +120,7 @@ class TreasuryVoucherController extends Controller {
         $paidTreasuryVoucher = TreasuryVoucher::where('idSupplier', $supplier->id)
             ->where('idType', 2)
             ->where('idVS', 2)
+            ->whereDate('confirmed_at', '>=', date('Y-m-1'))
             ->whereDate('confirmed_at', '<=', date('Y-m-t'))
             ->whereNot('id', $treasuryVoucher->id)
             ->orderBy('id', 'asc')

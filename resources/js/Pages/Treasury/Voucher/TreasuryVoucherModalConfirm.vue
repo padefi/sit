@@ -55,14 +55,18 @@ const getPaymentMethods = async () => {
 }
 
 const calculateWithholdingTax = async (voucher, voucherBySupplier) => {
-    try {
-        const response = await fetch(`/treasury-voucher/${voucher.id}/calculate-withholding-tax`);
+    const voucherIds = voucherBySupplier.map(v => v.voucherId).flat();
 
-        if (!response.ok) {
+    try {
+        const response = await axios.post(`/treasury-voucher/${voucher.id}/calculate-withholding-tax`, {
+            voucherIds // Envía el array voucherIds como parte del cuerpo de la solicitud
+        });        
+
+        if (response.status !== 200) {
             throw new Error('Error al obtener el importe a retener');
         }
 
-        const data = await response.json();
+        const data = response.data;
         voucher.withholdings.incomeTax = voucherBySupplier.some((v) => v.id === voucher.id) ? data.incomeTaxWithholdingAmount : 0;
         voucher.withholdings.socialTax = data.socialTaxAmount;
         voucher.withholdings.vatTax = data.vatTaxAmount;
@@ -205,10 +209,24 @@ onMounted(async () => {
     //Group each voucher by supplier and get the voucher with the highest amount
     const maxAmountVoucherBySupplier = treasuryVouchersArray.value.reduce((acc, voucher) => {
         if (!acc[voucher.supplierId]) {
-            acc[voucher.supplierId] = voucher;
-        } else if (voucher.amount > acc[voucher.supplierId].amount) {
-            acc[voucher.supplierId] = voucher;
+            acc[voucher.supplierId] = {
+                ...voucher,
+                voucherId: [voucher.id]
+            };
+        } else {
+            if (voucher.amount > acc[voucher.supplierId].amount) {
+                const voucherId = acc[voucher.supplierId].voucherId;
+                voucherId.push(voucher.id); //It's necessary to get all voucherIds from the same supplier to calculate the withholding tax
+
+                acc[voucher.supplierId] = {
+                    ...voucher,
+                    voucherId,
+                };
+            } else {
+                acc[voucher.supplierId].voucherId.push(voucher.id);
+            }
         }
+
         return acc;
     }, {});
 
@@ -227,7 +245,7 @@ onMounted(async () => {
 }
 </style>
 <template>
-    <DataTable :value="treasuryVouchersArray" scrollable scrollHeight="30vh" dataKey="id" filterDisplay="menu" :pt="{
+    <DataTable :value="treasuryVouchersArray" scrollable scrollHeight="60vh" dataKey="id" filterDisplay="menu" :pt="{
         table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
     }" class="data-table uppercase">
         <template #empty>
@@ -255,8 +273,7 @@ onMounted(async () => {
         </Column>
         <Column field="withholdings" header="Retenciones" class="w-2/12">
             <template #body="{ data, index }">
-
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 relative !z-0">
                     <template v-if="loading">
                         <Skeleton></Skeleton>
                     </template>
@@ -435,7 +452,7 @@ onMounted(async () => {
                     optionValue="value" @change="handleBankAccounts($event)" />
                 <label for="bank">Cta. bancaria</label>
             </FloatLabel>
-            <FloatLabel class="min-w-36 flex-1">
+            <FloatLabel class="min-w-36 flex-1 bottom-0.5">
                 <Calendar v-model="paymentDateGlobal" placeholder="DD/MM/AAAA" showButtonBar id="paymentDateGlobal" class="w-full"
                     :class="paymentDateGlobal !== null && paymentDateGlobal !== undefined ? 'filled' : ''" :maxDate="new Date()"
                     @update:model-value="handlePaymentDate" />
