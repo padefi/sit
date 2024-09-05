@@ -2,7 +2,9 @@
 import { ref, onMounted, inject, computed } from "vue";
 import { currencyNumber } from "@/utils/formatterFunctions";
 import { dropdownClasses } from '@/utils/cssUtils';
+import { useForm } from "@inertiajs/vue3";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
 const treasuryVouchersArray = ref([]);
@@ -15,6 +17,7 @@ const paymentMethodGlobal = ref();
 const bankGlobal = ref();
 const bankAccountGlobal = ref();
 const paymentDateGlobal = ref();
+const confirm = useConfirm();
 const toast = useToast();
 const dialogRef = inject("dialogRef");
 const rules = 'Debe completar el campo';
@@ -60,7 +63,7 @@ const calculateWithholdingTax = async (voucher, voucherBySupplier) => {
     try {
         const response = await axios.post(`/treasury-voucher/${voucher.id}/calculate-withholding-tax`, {
             voucherIds // Envía el array voucherIds como parte del cuerpo de la solicitud
-        });        
+        });
 
         if (response.status !== 200) {
             throw new Error('Error al obtener el importe a retener');
@@ -153,11 +156,14 @@ const handleTtransactionNumber = (index) => {
 
 const isFormInvalid = computed(() => {
     return treasuryVouchersArray.value.some(voucher => {
-        return !voucher.totalAmount <= 0 || !voucher.paymentMethod ||
-            !voucher.bankId && voucher.bankId !== 0 ||
-            !voucher.bankAccountId && voucher.bankId !== 0 ||
-            (!voucher.transactionNumber && voucher.paymentMethod !== 4) ||
-            !voucher.paymentDate;
+        if (voucher.totalAmount <= 0) return true;
+        if (!voucher.paymentMethod) return true;
+        if (!voucher.bankId && voucher.paymentMethod !== 4 ) return true;
+        if (!voucher.bankAccountId && voucher.paymentMethod !== 4) return true;
+        if (!voucher.transactionNumber && voucher.paymentMethod !== 4) return true;
+        if (!voucher.paymentDate || voucher.paymentDate > new Date()) return true;
+
+        return false;
     });
 });
 
@@ -200,6 +206,47 @@ const handlePaymentDate = (newDate) => {
         voucher.paymentDate = newDate;
     });
 }
+
+const confirmVouchers = (event) => {
+    if (totalPaymentAmount.value === 0) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe haber almenos un importe a pagar.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    if (isFormInvalid.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar todos los campos.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de confirmar el pago de los comprobantes?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            const form = useForm({
+                vouchers: treasuryVouchersArray.value,
+                totalPaymentAmount: totalPaymentAmount.value,
+            });
+
+            form.put(route("treasury-vouchers.confirm"), {
+                onSuccess: () => {
+                    dialogRef.value.close();
+                },
+            });
+
+        },
+    });
+};
 
 onMounted(async () => {
     treasuryVouchersArray.value = dialogRef.value.data.form.vouchers;
@@ -460,6 +507,8 @@ onMounted(async () => {
             </FloatLabel>
         </div>
 
-        <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="totalPaymentAmount === 0 || isProcessing || isFormInvalid" />
+        <ConfirmPopup></ConfirmPopup>
+        <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="totalPaymentAmount === 0 || isProcessing || isFormInvalid"
+            @click="confirmVouchers($event)" />
     </div>
 </template>

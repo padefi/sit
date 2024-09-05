@@ -27,7 +27,9 @@ class Voucher extends Model {
         'totalAmount',
         'idUserCreated',
         'idUserUpdated',
+        'idUserVoided',
         'updated_at',
+        'voided_at',
         'status',
     ];
 
@@ -77,5 +79,9 @@ class Voucher extends Model {
 
     public function userUpdated() {
         return $this->belongsTo(User::class, 'idUserUpdated');
+    }
+
+    public function userVoided() {
+        return $this->belongsTo(User::class, 'idUserVoided');
     }
 }

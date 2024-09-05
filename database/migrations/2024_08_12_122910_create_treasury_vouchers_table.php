@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idSupplier');
             $table->unsignedBigInteger('idPM')->nullable()->comment('id payment method');
             $table->unsignedBigInteger('idBA')->nullable()->comment('id bank account');
+            $table->string('idTN', 64)->collation('utf8mb4_general_ci')->nullable()->comment('transaction number');
             $table->unsignedBigInteger('idVS')->comment('id voucher status');
             $table->decimal('amount', 10, 2);
             $table->decimal('incomeTaxAmount', 10, 2)->default(0);

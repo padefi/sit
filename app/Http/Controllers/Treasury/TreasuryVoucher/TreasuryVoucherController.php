@@ -105,7 +105,7 @@ class TreasuryVoucherController extends Controller {
             ->where('idType', 2)
             ->where('idVS', 1)
             ->whereDate('created_at', '<=', date('Y-m-t'))
-            ->whereIn('id', $voucherIds) 
+            ->whereIn('id', $voucherIds)
             ->whereNot('id', $treasuryVoucher->id)
             ->orderBy('id', 'asc')
             ->get();
@@ -190,6 +190,43 @@ class TreasuryVoucherController extends Controller {
 
         return response()->json([
             'treasuryVoucherStatus' => TreasuryVoucherStatusResource::collection($treasuryVoucherStatus),
+        ]);
+    }
+
+    public function confirmTreasuryVoucher(Request $request) {
+        /* var_dump($request->all());
+        die(); */
+        foreach ($request->input('vouchers', []) as $item) {
+            $treasuryVoucherExist = TreasuryVoucher::where('id', $item['id'])
+                ->where('idSupplier', $item['supplierId'])
+                ->first();
+
+            if (!$treasuryVoucherExist) {
+                throw ValidationException::withMessages([
+                    'message' => trans('Comprobante no encontrado.')
+                ]);
+            }
+        }
+
+        foreach ($request->input('vouchers', []) as $item) {
+            $treasuryVoucher = TreasuryVoucher::where('id', $item['id'])
+                ->where('idSupplier', $item['supplierId'])
+                ->first();
+
+            $treasuryVoucher->update([
+                'idVS' => 2,
+            ]);
+
+            $treasuryVoucher->load('userCreated', 'userUpdated');
+            event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));
+        }
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobantes confirmados exitosamente.',
+            ],
+            'success' => true,
         ]);
     }
 

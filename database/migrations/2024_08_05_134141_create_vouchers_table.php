@@ -26,7 +26,9 @@ return new class extends Migration {
             $table->decimal('totalAmount', 10, 2);
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
+            $table->unsignedBigInteger('idUserVoided')->nullable();
             $table->timestamps();
+            $table->timestamp('voided_at')->nullable();
             $table->boolean('status')->default(true);
 
             $table->index('idSupplier');
@@ -38,6 +40,7 @@ return new class extends Migration {
             $table->index('idPC');
             $table->index('idUserCreated');
             $table->index('idUserUpdated');
+            $table->index('idUserVoided');
 
             $table->foreign('idSupplier')
                 ->references('id')
@@ -92,6 +95,12 @@ return new class extends Migration {
                 ->on('users')
                 ->onUpdate('restrict')
                 ->onDelete('restrict');
+
+            $table->foreign('idUserVoided')
+                ->references('id')
+                ->on('users')
+                ->onUpdate('restrict')
+                ->onDelete('restrict');
         });
     }
 
@@ -109,6 +118,7 @@ return new class extends Migration {
             $table->dropForeign(['idPC']);
             $table->dropForeign(['idUserCreated']);
             $table->dropForeign(['idUserUpdated']);
+            $table->dropForeign(['idUserVoided']);
         });
 
         Schema::dropIfExists('vouchers');
