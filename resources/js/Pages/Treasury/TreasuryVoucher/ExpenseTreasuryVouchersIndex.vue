@@ -73,6 +73,10 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         businessName: data.supplier.businessName,
         status: data.voucherStatus.id,
         amount: data.amount,
+        paymentMethod: data.paymentMethod ? data.paymentMethod.name : '',
+        bank: data.bankAccount.bank ? data.bankAccount.bank.name : '',
+        bankAccount: data.bankAccount ? data.bankAccount.accountNumber : '',
+        paymentDate: data.paymentDate ?? null,
         withholdings: {
             incomeTax: undefined,
             incomeTaxStatus: data.supplier.incomeTaxWithholding,
@@ -230,12 +234,12 @@ defineExpose({ fetchExpenseTreasuryVouchers });
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
         scrollHeight="35vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
-        table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
-        paginator: {
-            root: { class: 'p-paginator-custom' },
-            current: { class: 'p-paginator-current' },
-        }
-    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
+            table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
+            paginator: {
+                root: { class: 'p-paginator-custom' },
+                current: { class: 'p-paginator-current' },
+            }
+        }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
         <template #empty>
@@ -262,6 +266,26 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         <Column field="amount" header="Importe" sortable>
             <template #body="{ data }">
                 {{ currencyNumber(data.totalAmount) }}
+            </template>
+        </Column>
+        <Column field="paymentMethod" header="Forma de pago" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.paymentMethod }}
+            </template>
+        </Column>
+        <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.bank }}
+            </template>
+        </Column>
+        <Column field="bankAccount" header="Cta. bancaria" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.bankAccount }}
+            </template>
+        </Column>
+        <Column field="paymentDate" header="F. pago" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ dateFormat(data.paymentDate) }}
             </template>
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
@@ -316,7 +340,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         </template>
     </DataTable>
 
-    <div class="flex mt-3 pb-0 items-center justify-between">
+    <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
         <div class="flex w-fit space-x-4">
             <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
             <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">

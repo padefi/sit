@@ -226,6 +226,51 @@ class TreasuryVoucherController extends Controller {
                 'confirmed_at' => now(),
             ]);
 
+            if ($item["withholdings"]['incomeTax'] > 0) {
+                $incomeTaxTreasuryVoucher = TreasuryVoucher::create([
+                    'idType' => 2,
+                    'idSupplier' => 18, // A.F.I.P.
+                    'idVS' => 1,
+                    'amount' => $item["withholdings"]['incomeTax'],
+                    'totalAmount' => $item["withholdings"]['incomeTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                    'updated_at' => null,
+                ]);
+
+                event(new TreasuryVoucherEvent($incomeTaxTreasuryVoucher, $incomeTaxTreasuryVoucher->id, 'create'));
+            }
+
+            if ($item["withholdings"]['socialTax'] > 0) {
+                $socialTaxTreasuryVoucher = TreasuryVoucher::create([
+                    'idType' => 2,
+                    'idSupplier' => 18, // A.F.I.P.
+                    'idVS' => 1,
+                    'amount' => $item["withholdings"]['socialTax'],
+                    'totalAmount' => $item["withholdings"]['socialTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                    'updated_at' => null,
+                ]);
+
+                event(new TreasuryVoucherEvent($socialTaxTreasuryVoucher, $socialTaxTreasuryVoucher->id, 'create'));
+            }
+
+            if ($item["withholdings"]['vatTax'] > 0) {
+                $vatTaxTreasuryVoucher = TreasuryVoucher::create([
+                    'idType' => 2,
+                    'idSupplier' => 18, // A.F.I.P.
+                    'idVS' => 1,
+                    'amount' => $item["withholdings"]['vatTax'],
+                    'totalAmount' => $item["withholdings"]['vatTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                    'updated_at' => null,
+                ]);
+
+                event(new TreasuryVoucherEvent($vatTaxTreasuryVoucher, $vatTaxTreasuryVoucher->id, 'create'));
+            }
+
             switch ($item['paymentMethod']) {
                 case 1:
                 case 3:

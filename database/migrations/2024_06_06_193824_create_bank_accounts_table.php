@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('cbu', 22)->collation('utf8mb4_general_ci');
             $table->string('alias', 20)->collation('utf8mb4_general_ci');
             $table->unsignedBigInteger('idBank');
-            $table->unsignedBigInteger('idAT');
+            $table->unsignedBigInteger('idAT')->comment('id bank account type');
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->timestamps();

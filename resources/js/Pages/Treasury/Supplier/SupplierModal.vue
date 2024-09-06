@@ -349,8 +349,8 @@ onMounted(async () => {
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">
-                                            <Checkbox v-model="form.socialSecurityTax" inputId="socialSecurityTax" name="tax" :binary="true" />
-                                            <label for="socialSecurityTax" class="ml-2">Suss</label>
+                                            <Checkbox v-model="form.socialTax" inputId="socialTax" name="tax" :binary="true" />
+                                            <label for="socialTax" class="ml-2">Suss</label>
                                         </div>
 
                                         <div class="flex align-items-center w-1/3">

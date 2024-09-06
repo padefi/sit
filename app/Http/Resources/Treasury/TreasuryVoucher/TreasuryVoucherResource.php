@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Treasury\TreasuryVoucher;
 
+use App\Http\Resources\Treasury\Bank\BankResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -24,7 +25,11 @@ class TreasuryVoucherResource extends JsonResource {
                 'id' => $this->paymentMethod->id,
                 'name' => $this->paymentMethod->name,
             ] : null,
-            'bankAccount' => $this->bankAccount,
+            'bankAccount' => $this->bankAccount ? [
+                'id' => $this->bankAccount->id,
+                'accountNumber' => $this->bankAccount->accountNumber,
+                'bank' => $this->bankAccount->bank ? new BankResource($this->bankAccount->bank) : null,
+            ]  : [],
             'voucherStatus' => $this->voucherStatus ? [
                 'id' => $this->voucherStatus->id,
                 'name' => $this->voucherStatus->name,
