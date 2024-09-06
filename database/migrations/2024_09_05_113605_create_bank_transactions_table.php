@@ -13,7 +13,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('idBA')->comment('id bank account');
             $table->unsignedBigInteger('idTV')->comment('id treasury voucher');
-            $table->integer('number');
+            $table->integer('number')->nullable()->comment('transaction number');
+            $table->decimal('amount', 10, 2)->default(0);
             $table->unsignedBigInteger('idUserConfirmed')->nullable();
             $table->unsignedBigInteger('idUserVoided')->nullable();
             $table->timestamp('confirmed_at')->nullable();

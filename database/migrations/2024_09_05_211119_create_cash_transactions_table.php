@@ -9,11 +9,9 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('check_transactions', function (Blueprint $table) {
+        Schema::create('cash_transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('idBA')->comment('id bank account');
             $table->unsignedBigInteger('idTV')->comment('id treasury voucher');
-            $table->integer('number')->nullable()->comment('transaction number');
             $table->decimal('amount', 10, 2)->default(0);
             $table->unsignedBigInteger('idUserConfirmed')->nullable();
             $table->unsignedBigInteger('idUserVoided')->nullable();
@@ -21,16 +19,9 @@ return new class extends Migration {
             $table->timestamp('voided_at')->nullable();
             $table->boolean('status')->default(true);
 
-            $table->index('idBA');
             $table->index('idTV');
             $table->index('idUserConfirmed');
             $table->index('idUserVoided');
-
-            $table->foreign('idBA')
-                ->references('id')
-                ->on('bank_accounts')
-                ->onUpdate('restrict')
-                ->onDelete('restrict');
 
             $table->foreign('idTV')
                 ->references('id')
@@ -56,13 +47,12 @@ return new class extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('check_transactions', function (Blueprint $table) {
-            $table->dropForeign(['idBA']);
+        Schema::table('cash_transactions', function (Blueprint $table) {
             $table->dropForeign(['idTV']);
             $table->dropForeign(['idUserConfirmed']);
             $table->dropForeign(['idUserVoided']);
         });
 
-        Schema::dropIfExists('check_transactions');
+        Schema::dropIfExists('cash_transactions');
     }
 };

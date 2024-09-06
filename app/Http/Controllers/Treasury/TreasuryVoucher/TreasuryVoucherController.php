@@ -13,6 +13,9 @@ use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
 use App\Models\Treasury\Taxes\VatTaxWithholding;
+use App\Models\Treasury\TreasuryVoucher\BankTransaction;
+use App\Models\Treasury\TreasuryVoucher\CashTransaction;
+use App\Models\Treasury\TreasuryVoucher\CheckTransaction;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\Voucher\VoucherType;
@@ -25,9 +28,7 @@ use Inertia\Inertia;
 class TreasuryVoucherController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view treasury vouchers')->only(['index', 'treasuryVouchers', 'treasuryVoucherStatus']);
-        // $this->middleware('check.permission:view treasury vouchers')->only('treasuryVoucherStatus');
-        $this->middleware('check.permission:edit treasury vouchers')->only('voidTreasuryVoucher');
-        $this->middleware('check.permission:edit treasury vouchers')->only('calculateWithholdingTax');
+        $this->middleware('check.permission:edit treasury vouchers')->only(['voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
         $this->middleware('check.permission:view users')->only('info');
     }
 
@@ -194,8 +195,6 @@ class TreasuryVoucherController extends Controller {
     }
 
     public function confirmTreasuryVoucher(Request $request) {
-        /* var_dump($request->all());
-        die(); */
         foreach ($request->input('vouchers', []) as $item) {
             $treasuryVoucherExist = TreasuryVoucher::where('id', $item['id'])
                 ->where('idSupplier', $item['supplierId'])
@@ -215,7 +214,55 @@ class TreasuryVoucherController extends Controller {
 
             $treasuryVoucher->update([
                 'idVS' => 2,
+                'idPM' => $item['paymentMethod'],
+                'idBA' => $item['bankAccountId'] > 0 ? $item['bankAccountId'] : null,
+                'number' => $item['transactionNumber'] ?? null,
+                'incomeTaxAmount' => $item["withholdings"]['incomeTax'],
+                'socialTaxAmount' => $item["withholdings"]['socialTax'],
+                'vatTaxAmount' => $item["withholdings"]['vatTax'],
+                'totalAmount' => $item['totalAmount'],
+                'paymentDate' => date('Y-m-d', strtotime($item['paymentDate'])),
+                'idUserConfirmer' => auth()->user()->id,
+                'confirmed_at' => now(),
             ]);
+
+            switch ($item['paymentMethod']) {
+                case 1:
+                case 3:
+                    BankTransaction::create([
+                        'idBA' => $item['bankAccountId'],
+                        'idTV' => $item['id'],
+                        'number' => $item['transactionNumber'],
+                        'amount' => $item['totalAmount'],
+                        'idUserConfirmed' => auth()->user()->id,
+                        'confirmed_at' => now(),
+                        'status' => 1,
+                    ]);
+
+                    break;
+                case 2:
+                    CheckTransaction::create([
+                        'idBA' => $item['bankAccountId'],
+                        'idTV' => $item['id'],
+                        'number' => $item['transactionNumber'],
+                        'amount' => $item['totalAmount'],
+                        'idUserConfirmed' => auth()->user()->id,
+                        'confirmed_at' => now(),
+                        'status' => 1,
+                    ]);
+
+                    break;
+                case 4:
+                    CashTransaction::create([
+                        'idTV' => $item['id'],
+                        'amount' => $item['totalAmount'],
+                        'idUserConfirmed' => auth()->user()->id,
+                        'confirmed_at' => now(),
+                        'status' => 1,
+                    ]);
+
+                    break;
+            }
 
             $treasuryVoucher->load('userCreated', 'userUpdated');
             event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));

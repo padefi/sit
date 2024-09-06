@@ -261,7 +261,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         </Column>
         <Column field="amount" header="Importe" sortable>
             <template #body="{ data }">
-                {{ currencyNumber(data.amount) }}
+                {{ currencyNumber(data.totalAmount) }}
             </template>
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">

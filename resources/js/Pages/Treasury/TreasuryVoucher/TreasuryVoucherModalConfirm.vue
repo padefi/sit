@@ -62,7 +62,7 @@ const calculateWithholdingTax = async (voucher, voucherBySupplier) => {
 
     try {
         const response = await axios.post(`/treasury-voucher/${voucher.id}/calculate-withholding-tax`, {
-            voucherIds // Envía el array voucherIds como parte del cuerpo de la solicitud
+            voucherIds,
         });
 
         if (response.status !== 200) {
@@ -103,6 +103,8 @@ const getBanks = async (paymentMethod, index) => {
 
         bankAccountsSelect.value[index] = [{ value: 0, label: 'SIN DATOS' }];
         treasuryVouchersArray.value[index].bankAccountId = 0;
+
+        handleTransactionNumber(index);
         return;
     }
 
@@ -149,16 +151,16 @@ const getBankAccounts = async (bankId, index) => {
     }
 }
 
-const handleTtransactionNumber = (index) => {
-    treasuryVouchersArray.value[index].transactionNumber = null;
-    treasuryVouchersArray.value[index].transactionNumberStatus = 1;
+const handleTransactionNumber = (index) => {
+    treasuryVouchersArray.value[index].transactionNumber = undefined;
+    treasuryVouchersArray.value[index].transactionNumberStatus = treasuryVouchersArray.value[index].paymentMethod === 4 ? 0 : 1;
 }
 
 const isFormInvalid = computed(() => {
     return treasuryVouchersArray.value.some(voucher => {
         if (voucher.totalAmount <= 0) return true;
         if (!voucher.paymentMethod) return true;
-        if (!voucher.bankId && voucher.paymentMethod !== 4 ) return true;
+        if (!voucher.bankId && voucher.paymentMethod !== 4) return true;
         if (!voucher.bankAccountId && voucher.paymentMethod !== 4) return true;
         if (!voucher.transactionNumber && voucher.paymentMethod !== 4) return true;
         if (!voucher.paymentDate || voucher.paymentDate > new Date()) return true;
@@ -184,6 +186,7 @@ const handlePaymentMethod = (event) => {
     treasuryVouchersArray.value.forEach((voucher, index) => {
         voucher.paymentMethod = event.value;
         getBanks(event.value, index);
+        handleTransactionNumber(index);
     });
 }
 
@@ -191,13 +194,14 @@ const handleBanks = (event) => {
     treasuryVouchersArray.value.forEach((voucher, index) => {
         voucher.bankId = event.value;
         getBankAccounts(event.value, index);
+        handleTransactionNumber(index);
     });
 }
 
 const handleBankAccounts = (event) => {
     treasuryVouchersArray.value.forEach((voucher, index) => {
         voucher.bankAccountId = event.value;
-        handleTtransactionNumber(index);
+        handleTransactionNumber(index);
     });
 }
 
@@ -308,7 +312,7 @@ onMounted(async () => {
                 </template>
             </template>
         </Column>
-        <Column field="amount" header="Total" class="w-36">
+        <Column field="amount" header="Importe" class="w-36">
             <template #body="{ data }">
                 <template v-if="loading">
                     <Skeleton></Skeleton>
@@ -328,7 +332,7 @@ onMounted(async () => {
                         <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.incomeTax" placeholder="$ 0,00" inputId="incomeTax" mode="currency"
-                                    currency="ARS" locale="es-AR" id="incomeTax" inputClass="w-36" class="w-full"
+                                    currency="ARS" locale="es-AR" id="incomeTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.incomeTax !== null && data.withholdings.incomeTax !== undefined ? 'filled' : ''"
                                     :min="0" :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.incomeTax === null"
                                     :disabled="data.withholdings.incomeTaxStatus === 0" @input="setTotalPaymentAmount($event, index, 'incomeTax')" />
@@ -345,7 +349,7 @@ onMounted(async () => {
                         <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.socialTax" placeholder="$ 0,00" inputId="socialTax" mode="currency"
-                                    currency="ARS" locale="es-AR" id="socialTax" inputClass="w-36" class="w-full"
+                                    currency="ARS" locale="es-AR" id="socialTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.socialTax !== null && data.withholdings.socialTax !== undefined ? 'filled' : ''"
                                     :min="0" :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.socialTax === null"
                                     :disabled="data.withholdings.socialTaxStatus === 0" />
@@ -362,7 +366,7 @@ onMounted(async () => {
                         <div>
                             <FloatLabel>
                                 <InputNumber v-model="data.withholdings.vatTax" placeholder="$ 0,00" inputId="vatTax" mode="currency" currency="ARS"
-                                    locale="es-AR" id="vatTax" inputClass="w-36" class="w-full"
+                                    locale="es-AR" id="vatTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.vatTax !== null && data.withholdings.vatTax !== undefined ? 'filled' : ''" :min="0"
                                     :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.vatTax === null"
                                     :disabled="data.withholdings.vatTaxStatus === 0" />
@@ -374,7 +378,7 @@ onMounted(async () => {
                 </div>
             </template>
         </Column>
-        <Column field="totalAmount" header="Total" class="w-36">
+        <Column field="totalAmount" header="A Pagar" class="w-36">
             <template #body="{ data }">
                 <template v-if="loading">
                     <Skeleton></Skeleton>
@@ -410,7 +414,7 @@ onMounted(async () => {
                     <FloatLabel>
                         <Dropdown inputId="bank" v-model="data[field]" :options="banksSelect[index]" filter class="!focus:border-primary-500 w-full"
                             :class="dropdownClasses(data[field])" optionLabel="label" optionValue="value"
-                            @change="getBankAccounts(data[field], index)" />
+                            @change="getBankAccounts(data[field], index)" :disabled="data[field] === 0" />
                         <label for="bank">Banco</label>
                     </FloatLabel>
                 </template>
@@ -425,7 +429,7 @@ onMounted(async () => {
                     <FloatLabel>
                         <Dropdown inputId="bankAccount" v-model="data[field]" :options="bankAccountsSelect[index]" filter
                             class="!focus:border-primary-500 w-full" :class="dropdownClasses(data[field])" optionLabel="label" optionValue="value"
-                            @change="handleTtransactionNumber(index)" />
+                            @change="handleTransactionNumber(index)" :disabled="data[field] === 0" />
                         <label for="bank">Cta. bancaria</label>
                     </FloatLabel>
                 </template>
@@ -443,18 +447,18 @@ onMounted(async () => {
                             :max="9999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null" />
                         <label for="rate">N° Operación</label>
                     </FloatLabel>
-                    <InputError :message="data[field] === null ? rules : ''" />
+                    <InputError :message="data[field] === null && data.transactionNumberStatus === 1 ? rules : ''" />
                 </template>
             </template>
         </Column>
-        <Column field="paymentDate" header="F. pago" class="w-1/12">
+        <Column field="paymentDate" header="F. pago" class="min-w-36">
             <template #body="{ data, field }">
                 <template v-if="loading">
                     <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
-                        <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="paymentDate" class="w-full"
+                        <Calendar v-model="data[field]" placeholder="DD/MM/AAAA" showButtonBar id="paymentDate" inputClass="w-full" class="w-full"
                             :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] === null"
                             :maxDate="new Date()" />
                         <label for="paymentDate">F. Pago</label>
@@ -490,17 +494,17 @@ onMounted(async () => {
             <FloatLabel class="min-w-72 flex-1">
                 <Dropdown inputId="bankGlobal" v-model="bankGlobal" :options="banksSelect[0]" filter class="!focus:border-primary-500 w-full"
                     :class="dropdownClasses(bankGlobal)" inputClass="text-clip" optionLabel="label" optionValue="value"
-                    @change="handleBanks($event)" />
+                    @change="handleBanks($event)" :disabled="bankGlobal === 0" />
                 <label for="bank">Banco</label>
             </FloatLabel>
             <FloatLabel class="min-w-36 flex-1">
                 <Dropdown inputId="bankAccountGlobal" v-model="bankAccountGlobal" :options="bankAccountsSelect[0]" filter
                     class="!focus:border-primary-500 w-full" :class="dropdownClasses(bankAccountGlobal)" inputClass="text-clip" optionLabel="label"
-                    optionValue="value" @change="handleBankAccounts($event)" />
+                    optionValue="value" @change="handleBankAccounts($event)" :disabled="bankGlobal === 0" />
                 <label for="bank">Cta. bancaria</label>
             </FloatLabel>
             <FloatLabel class="min-w-36 flex-1 bottom-0.5">
-                <Calendar v-model="paymentDateGlobal" placeholder="DD/MM/AAAA" showButtonBar id="paymentDateGlobal" class="w-full"
+                <Calendar v-model="paymentDateGlobal" placeholder="DD/MM/AAAA" showButtonBar id="paymentDateGlobal" inputClass="w-full" class="w-full"
                     :class="paymentDateGlobal !== null && paymentDateGlobal !== undefined ? 'filled' : ''" :maxDate="new Date()"
                     @update:model-value="handlePaymentDate" />
                 <label for="paymentDateGlobal">F. Pago</label>

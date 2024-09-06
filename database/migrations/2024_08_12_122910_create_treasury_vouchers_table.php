@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('idSupplier');
             $table->unsignedBigInteger('idPM')->nullable()->comment('id payment method');
             $table->unsignedBigInteger('idBA')->nullable()->comment('id bank account');
-            $table->string('idTN', 64)->collation('utf8mb4_general_ci')->nullable()->comment('transaction number');
+            $table->integer('number')->nullable()->comment('transaction number');
             $table->unsignedBigInteger('idVS')->comment('id voucher status');
             $table->decimal('amount', 10, 2);
             $table->decimal('incomeTaxAmount', 10, 2)->default(0);
@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->decimal('vatTaxAmount', 10, 2)->default(0);
             $table->decimal('totalAmount', 10, 2);
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();
+            $table->date('paymentDate')->nullable();
             $table->unsignedBigInteger('idUserCreated');
             $table->unsignedBigInteger('idUserUpdated')->nullable();
             $table->unsignedBigInteger('idUserConfirmed')->nullable();

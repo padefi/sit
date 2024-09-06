@@ -26,6 +26,7 @@ class TreasuryVoucher extends Model {
         'vatTaxAmount',
         'totalAmount',
         'notes',
+        'paymentDate',
         'idUserCreated',
         'idUserUpdated',
         'idUserConfirmed',
