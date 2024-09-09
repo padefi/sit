@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(VatConditionSeeder::class);
         $this->call(VatRateSeeder::class);
         $this->call(CategorySeeder::class);
+        $this->call(TaxTypeSeeder::class);
         $this->call(IncomeTaxWithholdingSeeder::class);
         $this->call(IncomeTaxWithholdingScaleSeeder::class);
         $this->call(IncomeTaxWithholdingTableSeeder::class);

@@ -18,6 +18,7 @@ use App\Models\Treasury\TreasuryVoucher\CashTransaction;
 use App\Models\Treasury\TreasuryVoucher\CheckTransaction;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
+use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherTaxWithholding;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -239,6 +240,15 @@ class TreasuryVoucherController extends Controller {
                 ]);
 
                 event(new TreasuryVoucherEvent($incomeTaxTreasuryVoucher, $incomeTaxTreasuryVoucher->id, 'create'));
+
+                TreasuryVoucherTaxWithholding::create([
+                    'idOTV' => $treasuryVoucher->id,
+                    'idNTV' => $incomeTaxTreasuryVoucher->id,
+                    'idTT' => 1,
+                    'amount' => $item["withholdings"]['incomeTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                ]);
             }
 
             if ($item["withholdings"]['socialTax'] > 0) {
@@ -254,6 +264,15 @@ class TreasuryVoucherController extends Controller {
                 ]);
 
                 event(new TreasuryVoucherEvent($socialTaxTreasuryVoucher, $socialTaxTreasuryVoucher->id, 'create'));
+
+                TreasuryVoucherTaxWithholding::create([
+                    'idOTV' => $treasuryVoucher->id,
+                    'idNTV' => $socialTaxTreasuryVoucher->id,
+                    'idTT' => 2,
+                    'amount' => $item["withholdings"]['socialTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                ]);
             }
 
             if ($item["withholdings"]['vatTax'] > 0) {
@@ -269,6 +288,15 @@ class TreasuryVoucherController extends Controller {
                 ]);
 
                 event(new TreasuryVoucherEvent($vatTaxTreasuryVoucher, $vatTaxTreasuryVoucher->id, 'create'));
+
+                TreasuryVoucherTaxWithholding::create([
+                    'idOTV' => $treasuryVoucher->id,
+                    'idNTV' => $vatTaxTreasuryVoucher->id,
+                    'idTT' => 3,
+                    'amount' => $item["withholdings"]['vatTax'],
+                    'idUserCreated' => auth()->user()->id,
+                    'created_at' => now(),
+                ]);
             }
 
             switch ($item['paymentMethod']) {

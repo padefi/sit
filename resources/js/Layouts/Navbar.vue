@@ -13,40 +13,15 @@ const allItems = ref([
         route: 'home'
     },
     {
-        label: 'Tesorería',
-        icon: 'pi pi-money-bill',
+        label: 'Configuración',
+        icon: 'pi pi-cog',
         items: [
-            {
-                label: 'Comprobantes',
-                icon: 'pi pi-shop',
-                method: 'get',
-                route: 'treasury-vouchers.index',
-                name: 'treasury vouchers',
-            },
             {
                 label: 'Bancos',
                 icon: 'pi pi-building-columns',
                 method: 'get',
                 route: 'banks.index',
                 name: 'banks',
-            },
-            {
-                label: 'Retenciones',
-                icon: 'pi pi-book',
-                method: 'get',
-                route: 'taxes.index',
-                name: [
-                    'income tax withholdings',
-                    'social security tax withholdings',
-                    'social vat tax withholdings',
-                ]
-            },
-            {
-                label: 'Proveedores',
-                icon: 'pi pi-truck',
-                method: 'get',
-                route: 'suppliers.index',
-                name: 'suppliers',
             },
             {
                 label: 'Relaciones',
@@ -74,6 +49,37 @@ const allItems = ref([
                         name: 'voucher expenses',
                     },
                 ]
+            },
+            {
+                label: 'Retenciones',
+                icon: 'pi pi-book',
+                method: 'get',
+                route: 'taxes.index',
+                name: [
+                    'income tax withholdings',
+                    'social security tax withholdings',
+                    'social vat tax withholdings',
+                ]
+            },
+        ]
+    },
+    {
+        label: 'Finanzas',
+        icon: 'pi pi-money-bill',
+        items: [
+            {
+                label: 'Comprobantes',
+                icon: 'pi pi-wallet',
+                method: 'get',
+                route: 'treasury-vouchers.index',
+                name: 'treasury vouchers',
+            },
+            {
+                label: 'Proveedores',
+                icon: 'pi pi-truck',
+                method: 'get',
+                route: 'suppliers.index',
+                name: 'suppliers',
             },
         ]
     },

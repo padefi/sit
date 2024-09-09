@@ -55,11 +55,18 @@ onMounted(async () => {
     handleTabChange({ index: 0 });
 });
 </script>
+<style>
+.card-treasury-vouchers>div[data-pc-section="body"]>div[data-pc-section="content"] {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: -2rem;
+}
+</style>
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5 mx-4 uppercase">
+        <Card class="card-treasury-vouchers mt-5 mx-4 uppercase">
             <template #title>
-                <div class="flex justify-between items-center mx-4">
+                <div class="flex justify-between items-center mx-4 ">
                     <div class="align-left">
                         <h3 class="uppercase">Comprobantes</h3>
                     </div>

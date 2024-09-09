@@ -233,7 +233,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
-        scrollHeight="35vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
+        scrollHeight="45vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
             table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
             paginator: {
                 root: { class: 'p-paginator-custom' },
