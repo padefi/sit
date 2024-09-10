@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(SocialSecurityTaxWithholdingSeeder::class);
         $this->call(VatTaxWithholdingSeeder::class);
         $this->call(SupplierSeeder::class);
+        $this->call(SubtypeSupplierRelationshipSeeder::class);
         $this->call(PayConditionSeeder::class);
         $this->call(InvoiceTypeSeeder::class);
         $this->call(InvoiceTypeCodeSeeder::class);

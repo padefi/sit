@@ -2,6 +2,7 @@
 
 namespace App\Models\Treasury\Voucher;
 
+use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -37,6 +38,12 @@ class VoucherSubtype extends Model {
 
     public function expenses() {
         return $this->belongsToMany(VoucherExpense::class, 'subtype_expense_relationships', 'idSubtype', 'idExpense')
+            ->withPivot('idUserRelated', 'related_at')
+            ->with('userRelated');
+    }
+
+    public function suppliers() {
+        return $this->belongsToMany(Supplier::class, 'subtype_supplier_relationships', 'idSubtype', 'idSupplier')
             ->withPivot('idUserRelated', 'related_at')
             ->with('userRelated');
     }

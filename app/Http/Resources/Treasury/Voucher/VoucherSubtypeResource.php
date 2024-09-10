@@ -39,6 +39,18 @@ class VoucherSubtypeResource extends JsonResource {
                     'related_at' => $expense->pivot->related_at,
                 ];
             }),
+            'suppliers' => $this->suppliers->map(function ($supplier) {
+                $userRelated = $supplier->pivot->idUserRelated ? User::find($supplier->pivot->idUserRelated) : null;
+                return [
+                    'id' => $supplier->id,
+                    'businessName' => $supplier->businessName,
+                    'userRelated' => $userRelated ? [
+                        'name' => $userRelated->name,
+                        'surname' => $userRelated->surname,
+                    ] : null,
+                    'related_at' => $supplier->pivot->related_at,
+                ];
+            }),
             'status' => $this->status,
         ];
     }

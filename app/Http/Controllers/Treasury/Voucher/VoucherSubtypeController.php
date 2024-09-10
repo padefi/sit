@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Treasury\Voucher;
 use App\Events\Treasury\Voucher\VoucherSubtypeEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherSubtypeRequest;
+use App\Http\Resources\Treasury\Supplier\SupplierResource;
 use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
+use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
@@ -26,16 +28,18 @@ class VoucherSubtypeController extends Controller {
         $this->middleware('check.permission:create voucher subtypes')->only('store');
         $this->middleware('check.permission:edit voucher subtypes')->only('update');
         $this->middleware('check.permission:view users')->only('info');
-        $this->middleware('check.permission:relationship voucher subtypes')->only('relate');
+        $this->middleware('check.permission:relationship voucher subtypes')->only(['relate', 'supplierRelate']);
     }
 
     public function index(): Response {
-        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses.userRelated'])->orderBy('name', 'asc')->get();
+        $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses.userRelated', 'suppliers.userRelated'])->orderBy('name', 'asc')->get();
         $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
+        $suppliers = Supplier::orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [
             'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
             'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
+            'suppliers' => SupplierResource::collection($suppliers),
         ]);
     }
 
@@ -138,6 +142,39 @@ class VoucherSubtypeController extends Controller {
 
         $voucherSubtype->load('userCreated', 'userUpdated', 'expenses.userRelated');
         event(new VoucherSubtypeEvent($voucherSubtype, $voucherSubtype->id, 'relate'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Relación actualizada exitosamente.'
+            ],
+            'success' => true,
+        ]);
+    }
+
+    public function supplierRelate(Request $request, VoucherSubtype $voucherSubtype) {
+        $supplier = Supplier::where('id', $request->supplier)->first();
+
+
+        if (!$supplier) {
+            throw ValidationException::withMessages([
+                'message' => trans('El proveedor no existe.')
+            ]);
+        }
+
+        $existingRelationship = $voucherSubtype->suppliers()->where('id', $supplier->id)->exists();
+
+        if ($existingRelationship) {
+            $voucherSubtype->suppliers()->detach($supplier->id);
+        } else {
+            $voucherSubtype->suppliers()->attach($supplier->id, [
+                'idUserRelated' => auth()->user()->id,
+                'related_at' => now(),
+            ]);
+        }
+
+        $voucherSubtype->load('userCreated', 'userUpdated', 'suppliers.userRelated');
+        event(new VoucherSubtypeEvent($voucherSubtype, $voucherSubtype->id, 'supplierRelate'));
 
         return Redirect::back()->with([
             'info' => [

@@ -21,6 +21,10 @@ const props = defineProps({
         type: Object,
         default: () => ({}),
     },
+    suppliers: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
@@ -28,7 +32,10 @@ const voucherSubtypesArray = ref([]);
 const originalVoucherSubtypesArray = ref([]);
 const voucherExpensesArray = ref([]);
 const dataVoucherExpensesArray = ref([]);
+const suppliersArray = ref([]);
+const dataSuppliersArray = ref([]);
 const expensesPanel = ref();
+const suppliersPanel = ref();
 const toast = useToast();
 const newRow = ref([]);
 const editingRows = ref([]);
@@ -39,6 +46,7 @@ const voucherSubtypeRelated = ref();
 
 voucherSubtypesArray.value = props.voucherSubtypes;
 dataVoucherExpensesArray.value = props.voucherExpenses;
+dataSuppliersArray.value = props.suppliers;
 
 const related = (data, event) => {
     voucherSubtypeRelated.value = data;
@@ -63,6 +71,31 @@ const related = (data, event) => {
     });
 
     expensesPanel.value.toggle(event);
+};
+
+const supplierRelated = (data, event) => {
+    voucherSubtypeRelated.value = data;
+    suppliersArray.value = [];
+
+    dataSuppliersArray.value.map((supplier) => {
+        const matchingSupplier = data.suppliers.find(s => s.id === supplier.id);
+        if (matchingSupplier) {
+            supplier.related = true;
+            supplier.relatedData = {
+                related_at: matchingSupplier.related_at ? format(matchingSupplier.related_at, "DD/MM/YYYY HH:mm:ss", "es") : '00/00/0000 00:00:00',
+                userRelated: {
+                    name: matchingSupplier.userRelated.name,
+                    surname: matchingSupplier.userRelated.surname
+                }
+            }
+        } else {
+            supplier.related = false;
+        }
+
+        suppliersArray.value.push(supplier);
+    });
+
+    suppliersPanel.value.toggle(event);
 };
 
 const statuses = ref([
@@ -90,6 +123,10 @@ const subtypesFilters = ref({
 
 const expensesFilters = ref({
     name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+});
+
+const suppliersFilters = ref({
+    businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
 const addNewVoucherSubtype = () => {
@@ -237,17 +274,26 @@ const onContentMouseDown = () => {
     allowHide.value = false;
 };
 
-const relateButton = (event, data) => {
+const relateButton = (event, data, status, type) => {
+    const descStatus = status ? 'relacionar el' : 'quitar la relación del';
+    const desc = type === 'supplier' ? 'proveedor' : 'gasto';
+
     confirm.require({
         target: event.currentTarget,
-        message: '¿Está seguro de relacionar el gasto al subtipo?',
+        message: `¿Está seguro de ${descStatus} ${desc} al subipo?`,
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
-            const form = useForm({
-                voucherExpense: data.id
-            })
+            const form =
+                type === 'supplier' ?
+                    useForm({
+                        supplier: data.id
+                    }) :
+                    useForm({
+                        voucherExpense: data.id
+                    });
 
-            form.post(route("voucher-subtypes.relate", voucherSubtypeRelated.value.id), {
+            const routeUrl = type === 'supplier' ? 'voucher-subtypes.supplier-relate' : 'voucher-subtypes.relate';
+            form.post(route(routeUrl, voucherSubtypeRelated.value.id), {
                 onSuccess: () => {
                 },
                 onError: () => {
@@ -299,6 +345,31 @@ onMounted(() => {
                         }
                     } else {
                         voucherExpense.related = false;
+                    }
+                });
+            } else if (e.type === 'supplierRelate') {
+                const index = voucherSubtypesArray.value.findIndex(voucherSubtype => voucherSubtype.id === e.voucherSubtype.id);
+
+                if (index !== -1) {
+                    voucherSubtypesArray.value[index] = e.voucherSubtype;
+                }
+
+                if (voucherSubtypeRelated.value.id != e.voucherSubtype.id) return;
+
+                suppliersArray.value.map((supplier) => {
+                    const data = e.voucherSubtype.suppliers.find(supplierRelated => supplierRelated.id === supplier.id);
+
+                    if (data) {
+                        supplier.related = true;
+                        supplier.relatedData = {
+                            related_at: data.related_at ? format(data.related_at, "DD/MM/YYYY HH:mm:ss", "es") : '00/00/0000 00:00:00',
+                            userRelated: {
+                                name: data.userRelated.name,
+                                surname: data.userRelated.surname
+                            }
+                        }
+                    } else {
+                        supplier.related = false;
                     }
                 });
             }
@@ -419,6 +490,13 @@ const info = (data) => {
                             </Button>
                         </template>
                     </Column>
+                    <Column header="Proveedores relacionados">
+                        <template #body="{ data }">
+                            <Button severity="info" raised rounded outlined @click="supplierRelated(data, $event)">
+                                {{ data.suppliers.length }}
+                            </Button>
+                        </template>
+                    </Column>
                     <Column field="status" header="Estado">
                         <template #body="{ data }">
                             <Tag :value="data.status" class="!text-sm uppercase" :severity="getStatusLabel(data.status)" />
@@ -443,7 +521,8 @@ const info = (data) => {
                             <InputError :message="!data[field] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32" v-if="hasPermissionColumn(['edit voucher subtypes', 'view users'])">
+                    <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
+                        v-if="hasPermissionColumn(['edit voucher subtypes', 'view users'])">
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-4 flex pl-6">
                                 <template v-if="hasPermission('edit voucher subtypes')">
@@ -502,7 +581,54 @@ const info = (data) => {
                                             <ConfirmPopup></ConfirmPopup>
                                             <button v-tooltip="data.related ? 'Quitar relación' : 'Relacionar'"><i class="pi text-blue-300"
                                                     :class="{ 'pi-plus-circle text-green-500': !data.related, 'pi-minus-circle text-red-400': data.related }"
-                                                    @click="relateButton($event, data)"></i></button>
+                                                    @click="relateButton($event, data, !data.related, 'expense')"></i></button>
+                                        </template>
+                                        <template v-if="hasPermission('view users') && data.related">
+                                            <i class="pi pi-id-card text-cyan-500 text-2xl top-1 relative"
+                                                v-tooltip="`Usuario: ${data.relatedData.userRelated.surname} ${data.relatedData.userRelated.name} \n Fecha: ${data.relatedData.related_at}`"></i>
+                                        </template>
+                                    </div>
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </div>
+                </OverlayPanel>
+
+                <OverlayPanel ref="suppliersPanel" appendTo="body" :dismissable="false" @hide="handleHide">
+                    <div @mousedown.stop="onContentMouseDown">
+                        <DataTable v-model:filters="suppliersFilters" :value="suppliersArray" paginator :rows="5" dataKey="id" filterDisplay="menu"
+                            :globalFilterFields="['name']">
+                            <template #empty>
+                                <div class="text-center text-lg text-red-500">
+                                    Sin proveedores cargados
+                                </div>
+                            </template>
+                            <Column field="businessName" header="Proveedor" style="min-width: 12rem" class="uppercase" sortable>
+                                <template #body="{ data }">
+                                    <span :class="{ 'text-red-500': data.status === 'INACTIVO' || data.status === 0 }">
+                                        {{ data.businessName }}
+                                    </span>
+                                </template>
+                                <template #filter="{ filterModel, filterCallback }">
+                                    <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="businessName"
+                                        autocomplete="off" class="p-column-filter" placeholder="Buscar por proveedor" />
+                                </template>
+                            </Column>
+                            <Column field="related" header="Relacionado" dataType="boolean" class="action-column text-center"
+                                headerClass="min-w-28 w-28">
+                                <template #body="{ data }">
+                                    <div class="space-x-4">
+                                        <template v-if="!hasPermission('relationship voucher subtypes')">
+                                            <i class="pi top-1 relative"
+                                                :class="{ 'pi-check-circle text-green-500': data.related, 'pi-times-circle text-red-400': !data.related }"
+                                                v-tooltip="data.related ? 'Relacionado' : 'No relacionado'">
+                                            </i>
+                                        </template>
+                                        <template v-if="hasPermission('relationship voucher subtypes')">
+                                            <ConfirmPopup></ConfirmPopup>
+                                            <button v-tooltip="data.related ? 'Quitar relación' : 'Relacionar'"><i class="pi text-blue-300"
+                                                    :class="{ 'pi-plus-circle text-green-500': !data.related, 'pi-minus-circle text-red-400': data.related }"
+                                                    @click="relateButton($event, data, !data.related, 'supplier')"></i></button>
                                         </template>
                                         <template v-if="hasPermission('view users') && data.related">
                                             <i class="pi pi-id-card text-cyan-500 text-2xl top-1 relative"

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Treasury\Supplier;
 
+use App\Models\Users\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -39,6 +40,19 @@ class SupplierResource extends JsonResource {
             'incomeTaxWithholding' => $this->incomeTaxWithholding,
             'socialTax' => $this->socialTax,
             'vatTax' => $this->vatTax,
+            'subtypes' => $this->subtypes->map(function ($subtype) {
+                $userRelated = $subtype->pivot->idUserRelated ? User::find($subtype->pivot->idUserRelated) : null;
+                return [
+                    'id' => $subtype->id,
+                    'name' => $subtype->name,
+                    'status' => $subtype->status,
+                    'userRelated' => $userRelated ? [
+                        'name' => $userRelated->name,
+                        'surname' => $userRelated->surname,
+                    ] : null,
+                    'related_at' => $subtype->pivot->related_at,
+                ];
+            }),
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,
