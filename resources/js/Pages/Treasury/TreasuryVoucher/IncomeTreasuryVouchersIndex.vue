@@ -105,7 +105,9 @@ onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
-                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId) && e.treasuryVoucher.voucherStatus.id === selectStatus.value) {
+                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId)
+                    && e.treasuryVoucher.voucherStatus.id === selectStatus.value
+                    && e.treasuryVoucher.voucherType.id === 1) {
                     const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
                     treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
                 }
@@ -162,12 +164,12 @@ defineExpose({ fetchIncomeTreasuryVouchers });
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
         scrollHeight="45vh" dataKey="id" filterDisplay="menu" @row-expand="onRowExpand($event)" @row-collapse="onRowCollapse($event)" :pt="{
-        table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
-        paginator: {
-            root: { class: 'p-paginator-custom' },
-            current: { class: 'p-paginator-current' },
-        }
-    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
+            table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
+            paginator: {
+                root: { class: 'p-paginator-custom' },
+                current: { class: 'p-paginator-current' },
+            }
+        }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
         <template #empty>

@@ -44,7 +44,30 @@ class TreasuryVoucherController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(TreasuryVoucherRequest $request) {
-        //
+        $treasuryVoucher = TreasuryVoucher::create([
+            'idType' => $request->voucherType,
+            'idSupplier' => $request->supplier,
+            'idVS' => 1,
+            'amount' => $request->amount,
+            'totalAmount' => $request->amount,
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
+
+        // $tempUUID = $request->keys()[0];
+        $treasuryVoucher->load('userCreated', 'userUpdated');
+        event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
+        // event(new TreasuryVoucherEvent($treasuryVoucher, $tempUUID, 'create'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobante cargado exitosamente.',
+                'treasuryVoucher' => $treasuryVoucher,
+            ],
+            'success' => true,
+        ]);
     }
 
     /**

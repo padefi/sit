@@ -23,6 +23,7 @@ class VoucherTypeController extends Controller {
         $this->middleware('check.permission:view voucher types')->only('index');
         $this->middleware('check.permission:edit voucher types')->only('update');
         $this->middleware('check.permission:relationship voucher types')->only('relate');
+        $this->middleware('check.permission:view voucher types')->only('data');
     }
 
     public function index(): Response {
@@ -64,6 +65,14 @@ class VoucherTypeController extends Controller {
                 'message' => 'Relación actualizada exitosamente.'
             ],
             'success' => true,
+        ]);
+    }
+
+    public function data() {
+        $voucherTypes = VoucherType::orderBy('name', 'asc')->get();
+
+        return response()->json([
+            'voucherTypes' => VoucherTypeResource::collection($voucherTypes),
         ]);
     }
 }

@@ -177,7 +177,9 @@ onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
-                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId) && e.treasuryVoucher.voucherStatus.id === selectStatus.value) {
+                if (!treasuryVouchersArray.value.some(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucherId)
+                    && e.treasuryVoucher.voucherStatus.id === selectStatus.value
+                    && e.treasuryVoucher.voucherType.id === 2) {
                     const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
                     treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
                 }

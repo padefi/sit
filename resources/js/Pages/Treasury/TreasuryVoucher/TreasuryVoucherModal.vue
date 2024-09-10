@@ -2,18 +2,19 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
-import { percentNumber, addDate, currencyNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { percentNumber, addDate, currencyNumber } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
     id: crypto.randomUUID(),
-    idSupplier: undefined,
+    invoiceDate: undefined,
     voucherType: undefined,
     voucherSubtype: undefined,
     voucherExpense: undefined,
-    amount: 0,
+    supplier: undefined,
+    amount: undefined,
     notes: '',
 });
 
@@ -22,34 +23,18 @@ const loading = ref(true);
 const voucherTypes = ref([]);
 const voucherSubtypes = ref([]);
 const voucherExpenses = ref([]);
-const invoiceTypes = ref([]);
-const invoiceTypeCodes = ref([]);
-const payConditions = ref([]);
-const vatRates = ref([]);
-
-const voucherItems = ref([]);
-const originalVoucherItems = ref([]);
-const editingRows = ref([]);
-const editing = ref(false);
+const suppliers = ref([]);
 const editingVoucher = ref(false);
 const confirm = useConfirm();
 const toast = useToast();
 
 const isFormInvalid = computed(() => {
+    if (!form.invoiceDate) return true;
     if (!form.voucherType) return true;
     if (!form.voucherSubtype) return true;
     if (form.voucherExpense === undefined || form.voucherExpense === null) return true;
-    if (!form.invoiceType) return true;
-    if (!form.invoiceTypeCode) return true;
-    if (!form.pointOfNumber) return true;
-    if (!form.invoiceNumber) return true;
-    if (!form.invoiceDate) return true;
-    if (!form.invoiceDueDate) return true;
-    if (!form.payCondition) return true;
-    if (form.netAmount < 0) return true;
-    if (form.vatAmount < 0) return true;
-    if (form.totalAmount < 0) return true;
-    if (voucherItems.value.length === 0) return true;
+    if (!form.supplier) return true;
+    if (!form.amount || form.amount < 0) return true;
 
     return false;
 });
@@ -60,16 +45,14 @@ const saveVoucher = (event) => {
         message: '¿Está seguro de ingresar el comprobante?',
         rejectClass: 'bg-red-500 text-white hover:bg-red-600',
         accept: () => {
-            form.voucherItems = voucherItems.value;
-
             if (!editingVoucher.value) {
-                form.post(route("vouchers.store"), {
+                form.post(route("treasury-vouchers.store"), {
                     onSuccess: () => {
                         dialogRef.value.close();
                     },
                 });
             } else {
-                form.put(route("vouchers.update", form.id), {
+                form.put(route("treasury-vouchers.update", form.id), {
                     onSuccess: () => {
                         dialogRef.value.close();
                     },
@@ -89,6 +72,8 @@ onMounted(async () => {
     /* form.idSupplier = dialogRef.value.data.supplierId;
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes; */
+    await loadVoucherTypeData();
+    await loadSupplierData();
     loading.value = false;
 });
 
@@ -107,35 +92,45 @@ const getVhoucher = async (voucherId) => {
     }
 }
 
+const loadVoucherTypeData = async () => {
+    form.voucherType = undefined;
+    form.voucherSubtype = undefined;
+    form.voucherExpense = undefined;
+    voucherTypes.value = [];
+    voucherSubtypes.value = [];
+    voucherExpenses.value = [];
+
+    try {
+        const response = await fetch('/voucher-types/data');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los tipos de comprobantes');
+        }
+
+        const data = await response.json();
+        voucherTypes.value = data.voucherTypes;
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 const loadVoucherSubtypeData = async (voucherTypeId) => {
     form.voucherSubtype = undefined;
     form.voucherExpense = undefined;
-    form.invoiceType = undefined;
-    form.invoiceTypeCode = undefined;
     voucherSubtypes.value = [];
     voucherExpenses.value = [];
-    invoiceTypes.value = [];
-    invoiceTypeCodes.value = [];
 
     if (!voucherTypeId) return;
 
     try {
-        const [subtypeResponse, invoiceTypeResponse] = await Promise.all([
-            fetch(`/voucher-subtypes/${voucherTypeId}/data-related`),
-            fetch(`/vouchers/${voucherTypeId}/types-related`)
-        ]);
+        const response = await fetch(`/voucher-subtypes/${voucherTypeId}/data-related`);
 
-        if (!subtypeResponse.ok || !invoiceTypeResponse.ok) {
+        if (!response.ok) {
             throw new Error('Error al obtener los datos relacionados');
         }
 
-        const [dataSubtype, dataInvoiceType] = await Promise.all([
-            subtypeResponse.json(),
-            invoiceTypeResponse.json()
-        ]);
-
-        voucherSubtypes.value = dataSubtype.voucherSubtypes;
-        invoiceTypes.value = dataInvoiceType.invoiceTypes;
+        const data = await response.json();
+        voucherSubtypes.value = data.voucherSubtypes;
     } catch (error) {
         console.error(error);
     }
@@ -162,21 +157,19 @@ const loadVoucherExpenseData = async (voucherSubtype) => {
     }
 }
 
-const loadInvoiceTypeData = async (invoiceTypeId) => {
-    form.invoiceTypeCode = undefined;
-    invoiceTypeCodes.value = [];
-
-    if (!invoiceTypeId) return;
+const loadSupplierData = async () => {
+    form.supplier = undefined;
+    suppliers.value = [];
 
     try {
-        const response = await fetch(`/vouchers/${invoiceTypeId}/invoice-types-related`);
+        const response = await fetch('/suppliers/data');
 
         if (!response.ok) {
-            throw new Error('Error al obtener los tipos de factura relacionados');
+            throw new Error('Error al obtener los proveedores');
         }
 
         const data = await response.json();
-        invoiceTypeCodes.value = data.invoiceTypeCodes;
+        suppliers.value = data.suppliers;
     } catch (error) {
         console.error(error);
     }
@@ -188,10 +181,6 @@ watch(() => form.voucherType, async (voucherTypeId) => {
 
 watch(() => form.voucherSubtype, async (voucherSubtype) => {
     await loadVoucherExpenseData(voucherSubtype);
-});
-
-watch(() => form.invoiceType, async (invoiceTypeId) => {
-    await loadInvoiceTypeData(invoiceTypeId);
 });
 </script>
 <style>
@@ -287,15 +276,15 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                     </template>
                     <template v-if="!loading">
                         <FloatLabel class="!top-[2px]">
-                            <Dropdown inputId="voucherExpense" v-model="form.voucherExpense" :options="voucherExpenses" filter showClear
-                                resetFilterOnHide :invalid="form.voucherExpense === null" optionLabel="name" optionValue="id"
-                                class="w-full !focus:border-primary-500" :class="dropdownClasses(form.voucherExpense)" />
+                            <Dropdown inputId="supplier" v-model="form.supplier" :options="suppliers" filter showClear resetFilterOnHide
+                                :invalid="form.supplier === null" optionLabel="businessName" optionValue="id"
+                                class="w-full !focus:border-primary-500 uppercase" :class="dropdownClasses(form.supplier)" />
                             <template #option="slotProps">
-                                <Tag :value="slotProps.option.name" class="bg-transparent uppercase" />
+                                <Tag :value="slotProps.option.businessName" class="bg-transparent uppercase" />
                             </template>
-                            <label for="voucherExpense">Proveedor</label>
+                            <label for="supplier">Proveedor</label>
                         </FloatLabel>
-                        <InputError :message="form.voucherExpense === null ? rules : ''" />
+                        <InputError :message="form.supplier === null ? rules : ''" />
                     </template>
                 </div>
 
@@ -307,8 +296,8 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                     <FloatLabel>
                         <InputNumber v-model="form.amount" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" mode="currency"
                             currency="ARS" locale="es-AR" id="amount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
-                            :class="form.amount !== null ? 'filled' : ''" :min="0" :minFractionDigits="2" :max="99999999"
-                            :invalid="form.amount === null" />
+                            style="width: -webkit-fill-available;" :class="form.amount !== null && form.amount !== undefined ? 'filled' : ''" :min="0"
+                            :minFractionDigits="2" :max="99999999" :invalid="form.amount === null" />
                         <label for="amount">Importe</label>
                     </FloatLabel>
                     <InputError :message="form.amount === null ? rules : ''" />
@@ -323,8 +312,8 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                 </template>
                 <template v-if="!loading">
                     <FloatLabel class="w-full !top-[2px]">
-                        <Textarea v-model="form.notes" autocomplete="off" inputId="notes" id="notes" class="w-full resize-none peer uppercase"
-                            :class="dropdownClasses(form.notes)" />
+                        <Textarea v-model="form.notes" rows="5" autocomplete="off" inputId="notes" id="notes"
+                            class="w-full resize-none peer uppercase" :class="dropdownClasses(form.notes)" />
                         <label for="notes" class="peer-focus:!top-[-0.75rem]"
                             :class="{ '!top-5': form.notes.trim() === '', '!top-[-0.75rem]': form.notes.trim() !== '' }">Observación</label>
                     </FloatLabel>
@@ -336,7 +325,7 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
             <div class="flex p-3 justify-between">
                 <Button label="Cancelar" severity="danger" icon="pi pi-times" @click="closeDialog" />
                 <ConfirmPopup></ConfirmPopup>
-                <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="editing || isFormInvalid" @click="saveVoucher($event)" />
+                <Button label="Finalizar" icon="pi pi-save" iconPos="right" :disabled="isFormInvalid" @click="saveVoucher($event)" />
             </div>
         </div>
     </div>
