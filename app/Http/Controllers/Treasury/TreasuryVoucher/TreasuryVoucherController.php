@@ -16,6 +16,7 @@ use App\Models\Treasury\Taxes\VatTaxWithholding;
 use App\Models\Treasury\TreasuryVoucher\BankTransaction;
 use App\Models\Treasury\TreasuryVoucher\CashTransaction;
 use App\Models\Treasury\TreasuryVoucher\CheckTransaction;
+use App\Models\Treasury\TreasuryVoucher\TreasuryCustomVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherTaxWithholding;
@@ -55,10 +56,22 @@ class TreasuryVoucherController extends Controller {
             'updated_at' => null,
         ]);
 
-        // $tempUUID = $request->keys()[0];
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
-        // event(new TreasuryVoucherEvent($treasuryVoucher, $tempUUID, 'create'));
+
+        TreasuryCustomVoucher::create([
+            'idTV' => $treasuryVoucher->id,
+            'idSupplier' => $request->supplier,
+            'idType' => $request->voucherType,
+            'idSubtype' => $request->voucherSubtype,
+            'idExpense' => $request->voucherExpense > 0 ? $request->voucherExpense : null,
+            'amount' => $request->amount,
+            'notes' => $request->notes,
+            'voucherDate' => date('Y-m-d', strtotime($request->voucherDate)),
+            'idUserCreated' => auth()->user()->id,
+            'created_at' => now(),
+            'updated_at' => null,
+        ]);
 
         return Redirect::back()->with([
             'info' => [
@@ -394,6 +407,8 @@ class TreasuryVoucherController extends Controller {
 
         $treasuryVoucher->update([
             'idVS' => 3,
+            'idUserVoided' => auth()->user()->id,
+            'voided_at' => now(),
         ]);
 
         $treasuryVoucher->load('userCreated', 'userUpdated');

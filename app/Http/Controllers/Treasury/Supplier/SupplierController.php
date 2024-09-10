@@ -16,6 +16,7 @@ use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
 use App\Models\Treasury\Taxes\VatRate;
 use App\Models\Treasury\TreasuryVoucher\PayCondition;
+use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
@@ -24,7 +25,7 @@ use Inertia\Response;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'data']);
+        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'subtypeRelated']);
         $this->middleware('check.permission:create suppliers')->only('store');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
@@ -179,8 +180,8 @@ class SupplierController extends Controller {
         return new SupplierResource($supplier);
     }
 
-    public function data() {
-        $suppliers = Supplier::orderBy('businessName', 'asc')->get();
+    public function subtypeRelated(VoucherSubtype $voucherSubtype) {
+        $suppliers = $voucherSubtype->suppliers()->orderBy('name', 'asc')->get();
 
         return response()->json([
             'suppliers' => SupplierResource::collection($suppliers),

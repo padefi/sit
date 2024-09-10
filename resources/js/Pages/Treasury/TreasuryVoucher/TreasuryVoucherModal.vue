@@ -9,7 +9,7 @@ import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
     id: crypto.randomUUID(),
-    invoiceDate: undefined,
+    voucherDate: undefined,
     voucherType: undefined,
     voucherSubtype: undefined,
     voucherExpense: undefined,
@@ -29,7 +29,7 @@ const confirm = useConfirm();
 const toast = useToast();
 
 const isFormInvalid = computed(() => {
-    if (!form.invoiceDate) return true;
+    if (!form.voucherDate) return true;
     if (!form.voucherType) return true;
     if (!form.voucherSubtype) return true;
     if (form.voucherExpense === undefined || form.voucherExpense === null) return true;
@@ -73,7 +73,6 @@ onMounted(async () => {
     payConditions.value = dialogRef.value.data.payConditions;
     voucherTypes.value = dialogRef.value.data.voucherTypes; */
     await loadVoucherTypeData();
-    await loadSupplierData();
     loading.value = false;
 });
 
@@ -151,18 +150,20 @@ const loadVoucherExpenseData = async (voucherSubtype) => {
 
         const data = await response.json();
         voucherExpenses.value = data.voucherExpenses.length > 0 ? data.voucherExpenses : [{ id: 0, name: 'SIN GASTOS' }];
-        form.voucherExpense = data.voucherExpenses.length === 0 && 0;
+        form.voucherExpense = data.voucherExpenses.length === 0 ? 0 : undefined;
     } catch (error) {
         console.error(error);
     }
 }
 
-const loadSupplierData = async () => {
+const loadSupplierData = async (voucherSubtype) => {
     form.supplier = undefined;
     suppliers.value = [];
 
+    if (!voucherSubtype) return;
+
     try {
-        const response = await fetch('/suppliers/data');
+        const response = await fetch(`/suppliers/${voucherSubtype}/subtype-related`);
 
         if (!response.ok) {
             throw new Error('Error al obtener los proveedores');
@@ -181,6 +182,7 @@ watch(() => form.voucherType, async (voucherTypeId) => {
 
 watch(() => form.voucherSubtype, async (voucherSubtype) => {
     await loadVoucherExpenseData(voucherSubtype);
+    await loadSupplierData(voucherSubtype);
 });
 </script>
 <style>
@@ -205,12 +207,12 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     </template>
                     <template v-if="!loading">
                         <FloatLabel>
-                            <Calendar v-model="form.invoiceDate" placeholder="DD/MM/AAAA" showButtonBar id="invoiceDate" class="w-full"
-                                :class="form.invoiceDate !== null && form.invoiceDate !== undefined ? 'filled' : ''" inputClass="w-full"
-                                :invalid="form.invoiceDate === null" :maxDate="new Date()" />
-                            <label for="invoiceDate">F. Comprobante</label>
+                            <Calendar v-model="form.voucherDate" placeholder="DD/MM/AAAA" showButtonBar id="voucherDate" class="w-full"
+                                :class="form.voucherDate !== null && form.voucherDate !== undefined ? 'filled' : ''" inputClass="w-full"
+                                :invalid="form.voucherDate === null" :maxDate="new Date()" />
+                            <label for="voucherDate">F. Comprobante</label>
                         </FloatLabel>
-                        <InputError :message="form.invoiceDate === null ? rules : ''" />
+                        <InputError :message="form.voucherDate === null ? rules : ''" />
                     </template>
                 </div>
 

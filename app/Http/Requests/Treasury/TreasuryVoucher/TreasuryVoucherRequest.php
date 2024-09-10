@@ -19,7 +19,7 @@ class TreasuryVoucherRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'invoiceDate' => ['required', 'date', 'before_or_equal:today'],
+            'voucherDate' => ['required', 'date', 'before_or_equal:today'],
             'voucherType' => ['required', 'integer', 'exists:voucher_types,id'],
             'voucherSubtype' => ['required', 'integer', 'exists:voucher_subtypes,id'],
             'voucherExpense' => ['required', 'integer'],
@@ -30,7 +30,7 @@ class TreasuryVoucherRequest extends FormRequest {
 
     public function messages(): array {
         return [
-            'invoiceDate.required' => 'La fecha es obligatoria.',
+            'voucherDate.required' => 'La fecha es obligatoria.',
             'voucherType.required' => 'El tipo es obligatorio.',
             'voucherType.exists' => 'El tipo debe existir en el sistema.',
             'voucherSubtype.required' => 'El subtipo es obligatorio.',

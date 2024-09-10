@@ -378,7 +378,7 @@ onMounted(async () => {
                 </div>
             </template>
         </Column>
-        <Column field="totalAmount" header="A Pagar" class="w-36">
+        <Column field="totalAmount" header="A Pagar" class="min-w-24">
             <template #body="{ data }">
                 <template v-if="loading">
                     <Skeleton></Skeleton>
