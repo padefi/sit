@@ -7,6 +7,10 @@ use App\Http\Resources\Treasury\TreasuryVoucher\PaymentMethodResource;
 use App\Models\Treasury\TreasuryVoucher\PaymentMethod;
 
 class PaymentMethodController extends Controller {
+    public function __construct() {
+        $this->middleware('check.permission:view vouchers')->only(['index', 'show']);
+    }
+
     public function index() {
         $paymentMethods = PaymentMethod::orderBy('name', 'asc')->get();
 

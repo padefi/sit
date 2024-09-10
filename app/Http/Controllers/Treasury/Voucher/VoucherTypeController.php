@@ -20,10 +20,9 @@ class VoucherTypeController extends Controller {
      */
 
     public function __construct() {
-        $this->middleware('check.permission:view voucher types')->only('index');
+        $this->middleware('check.permission:view voucher types')->only(['index', 'data']);
         $this->middleware('check.permission:edit voucher types')->only('update');
         $this->middleware('check.permission:relationship voucher types')->only('relate');
-        $this->middleware('check.permission:view voucher types')->only('data');
     }
 
     public function index(): Response {

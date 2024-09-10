@@ -24,12 +24,10 @@ use Inertia\Response;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only('index');
+        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'data']);
         $this->middleware('check.permission:create suppliers')->only('store');
-        $this->middleware('check.permission:view suppliers')->only('show');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
-        $this->middleware('check.permission:view suppliers')->only('data');
     }
 
     /**

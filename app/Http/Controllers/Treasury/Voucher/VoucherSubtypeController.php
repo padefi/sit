@@ -22,12 +22,11 @@ class VoucherSubtypeController extends Controller {
      */
 
     public function __construct() {
-        $this->middleware('check.permission:view voucher subtypes')->only('index');
+        $this->middleware('check.permission:view voucher subtypes')->only(['index', 'dataRelated']);
         $this->middleware('check.permission:create voucher subtypes')->only('store');
         $this->middleware('check.permission:edit voucher subtypes')->only('update');
         $this->middleware('check.permission:view users')->only('info');
         $this->middleware('check.permission:relationship voucher subtypes')->only('relate');
-        $this->middleware('check.permission:view voucher subtypes')->only('dataRelated');
     }
 
     public function index(): Response {

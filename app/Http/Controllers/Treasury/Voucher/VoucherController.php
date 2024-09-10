@@ -23,14 +23,9 @@ use Illuminate\Validation\ValidationException;
 
 class VoucherController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view vouchers')->only('index');
-        $this->middleware('check.permission:view vouchers')->only('show');
+        $this->middleware('check.permission:view vouchers')->only(['index', 'show', 'invoiceTypes', 'typesRelated', 'invoiceTypesRelated']);
         $this->middleware('check.permission:create vouchers')->only('store');
-        $this->middleware('check.permission:edit vouchers')->only('update');
-        $this->middleware('check.permission:view vouchers')->only('invoiceTypes');
-        $this->middleware('check.permission:view vouchers')->only('typesRelated');
-        $this->middleware('check.permission:view vouchers')->only('invoiceTypesRelated');
-        $this->middleware('check.permission:edit vouchers')->only('voidVoucher');
+        $this->middleware('check.permission:edit vouchers')->only(['update', 'voidVoucher']);
         $this->middleware('check.permission:view treasury vouchers')->only('vouchersPendingToPay');
         $this->middleware('check.permission:create treasury vouchers')->only('voucherToTreasury');
     }
