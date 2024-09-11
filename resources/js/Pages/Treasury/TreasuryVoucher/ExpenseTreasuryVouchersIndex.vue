@@ -45,8 +45,6 @@ const fetchExpenseTreasuryVouchers = async (type, status) => {
 
             const data = await response.json();
             treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
-            console.log(treasuryVouchersArray.value);
-            
         } catch (error) {
             console.error(error);
         }
@@ -107,14 +105,14 @@ const voucherDataStructure = (voucherToTreasury) => {
 }
 
 const customVoucherDataStructure = (customVoucher) => {
-
-    return {
+    return [{
         id: customVoucher.id,
         voucherSubtype: customVoucher.voucherSubtype.name,
-        voucherExpense: customVoucher.voucherExpense? customVoucher.voucherExpense.name : 'SIN DATOS',
+        voucherExpense: customVoucher.voucherExpense ? customVoucher.voucherExpense.name : 'SIN DATOS',
         amount: customVoucher.amount,
-        notes: customVoucher.notes
-    }
+        notes: customVoucher.notes,
+        voucherDate: customVoucher.voucherDate,
+    }];
 }
 
 const setTotalPaymentAmount = (event, data) => {
@@ -183,7 +181,13 @@ const confirmTreasuryVoucherModal = () => {
         data: {
             form,
             status: selectStatus.value,
-        }
+        },
+        onClose: (response) => {
+            if (response.data === 'confirm') {
+                form.vouchers = [];
+                form.totalPaymentAmount = 0;
+            }
+        },
     });
 }
 
@@ -362,19 +366,19 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             Sin comprobantes
                         </div>
                     </template>
-                    <Column header="Subtipo">
+                    <Column header="Subtipo" class="w-1/3">
                         <template #body="{ data }">
-                            {{ data.amount }}
+                            {{ data.voucherSubtype }}
                         </template>
                     </Column>
-                    <Column header="Gasto">
+                    <Column header="Gasto" class="w-1/3">
                         <template #body="{ data }">
                             {{ data.voucherExpense }}
                         </template>
                     </Column>
-                    <Column header="Comprobante">
+                    <Column header="F. Comprobante" class="w-1/3">
                         <template #body="{ data }">
-                            {{ data.voucherExpense }}
+                            {{ dateFormat(data.voucherDate) }}
                         </template>
                     </Column>
                 </DataTable>

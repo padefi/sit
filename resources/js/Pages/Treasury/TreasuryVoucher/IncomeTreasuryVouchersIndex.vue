@@ -66,7 +66,11 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         businessName: data.supplier.businessName,
         status: data.voucherStatus.id,
         amount: data.totalAmount,
+        paymentMethod: data.paymentMethod ? data.paymentMethod.name : '',
+        bank: data.bankAccount.bank ? data.bankAccount.bank.name : '',
+        bankAccount: data.bankAccount ? data.bankAccount.accountNumber : '',
         vouchers: data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)),
+        customVoucher: data.treasuryCustomVoucher ? customVoucherDataStructure(data.treasuryCustomVoucher) : null,
     }
 }
 
@@ -81,6 +85,17 @@ const voucherDataStructure = (voucherToTreasury) => {
         invoiceDueDate: data.invoiceDueDate,
         amount: voucherToTreasury.amount,
     }
+}
+
+const customVoucherDataStructure = (customVoucher) => {
+    return [{
+        id: customVoucher.id,
+        voucherSubtype: customVoucher.voucherSubtype.name,
+        voucherExpense: customVoucher.voucherExpense ? customVoucher.voucherExpense.name : 'SIN DATOS',
+        amount: customVoucher.amount,
+        notes: customVoucher.notes,
+        voucherDate: customVoucher.voucherDate,
+    }];
 }
 
 const voidTreasuryVoucher = (event, data) => {
@@ -217,36 +232,62 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             </template>
         </Column>
         <template #expansion="{ data }">
-            <DataTable :value="data.vouchers" scrollable class="m-3 data-table-expanded">
-                <template #empty>
-                    <div class="text-center text-lg text-red-500">
-                        Sin comprobantes
-                    </div>
-                </template>
-                <Column header="Comprobante">
-                    <template #body="{ data }">
-                        {{ data.invoiceTypeName }}
-                        <span class="font-bold">{{ data.invoiceTypeCodeName }}</span>
+            <template v-if="data.vouchers.length > 0">
+                <DataTable :value="data.vouchers" scrollable class="m-3 data-table-expanded">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin comprobantes
+                        </div>
                     </template>
-                </Column>
-                <Column header="Número">
-                    <template #body="{ data }">
-                        {{ invoiceNumberFormat(data.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.invoiceNumber, 8) }}
+                    <Column header="Comprobante">
+                        <template #body="{ data }">
+                            {{ data.invoiceTypeName }}
+                            <span class="font-bold">{{ data.invoiceTypeCodeName }}</span>
+                        </template>
+                    </Column>
+                    <Column header="Número">
+                        <template #body="{ data }">
+                            {{ invoiceNumberFormat(data.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.invoiceNumber, 8) }}
+                        </template>
+                    </Column>
+                    <Column header="F. vencimiento">
+                        <template #body="{ data }">
+                            <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                                {{ dateFormat(data.invoiceDueDate) }}
+                            </span>
+                        </template>
+                    </Column>
+                    <Column header="Importe">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.amount) }}
+                        </template>
+                    </Column>
+                </DataTable>
+            </template>
+            <template v-else-if="data.customVoucher">
+                <DataTable :value="data.customVoucher" scrollable class="m-3 data-table-expanded">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin comprobantes
+                        </div>
                     </template>
-                </Column>
-                <Column header="F. vencimiento">
-                    <template #body="{ data }">
-                        <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
-                            {{ dateFormat(data.invoiceDueDate) }}
-                        </span>
-                    </template>
-                </Column>
-                <Column header="Importe">
-                    <template #body="{ data }">
-                        {{ currencyNumber(data.amount) }}
-                    </template>
-                </Column>
-            </DataTable>
+                    <Column header="Subtipo" class="w-1/3">
+                        <template #body="{ data }">
+                            {{ data.voucherSubtype }}
+                        </template>
+                    </Column>
+                    <Column header="Gasto" class="w-1/3">
+                        <template #body="{ data }">
+                            {{ data.voucherExpense }}
+                        </template>
+                    </Column>
+                    <Column header="F. Comprobante" class="w-1/3">
+                        <template #body="{ data }">
+                            {{ dateFormat(data.voucherDate) }}
+                        </template>
+                    </Column>
+                </DataTable>
+            </template>
         </template>
     </DataTable>
 </template>

@@ -56,9 +56,6 @@ class TreasuryVoucherController extends Controller {
             'updated_at' => null,
         ]);
 
-        $treasuryVoucher->load('userCreated', 'userUpdated');
-        event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
-
         TreasuryCustomVoucher::create([
             'idTV' => $treasuryVoucher->id,
             'idSupplier' => $request->supplier,
@@ -72,6 +69,9 @@ class TreasuryVoucherController extends Controller {
             'created_at' => now(),
             'updated_at' => null,
         ]);
+
+        $treasuryVoucher->load('userCreated', 'userUpdated');
+        event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'create'));
 
         return Redirect::back()->with([
             'info' => [

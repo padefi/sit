@@ -244,7 +244,7 @@ const confirmVouchers = (event) => {
 
             form.put(route("treasury-vouchers.confirm"), {
                 onSuccess: () => {
-                    dialogRef.value.close();
+                    dialogRef.value.close('confirm');
                 },
             });
 
@@ -300,7 +300,7 @@ onMounted(async () => {
         table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
     }" class="data-table uppercase">
         <template #empty>
-            Sin comprobantes cargados
+            Sin comprobantes seleccionados
         </template>
         <Column field="businessName" header="Proveedor" class="w-2/12">
             <template #body="{ data }">
