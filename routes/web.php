@@ -98,6 +98,8 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
     Route::get('/treasury-vouchers/status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.status');
     Route::get('/treasury-vouchers/{voucher_type}/{voucher_status}', [TreasuryVoucherController::class, 'treasuryVouchers'])->name('treasury-vouchers.get-treasury-vouchers');
+    Route::get('/treasury-custom-vouchers/{treasury_custom_voucher}', [TreasuryVoucherController::class, 'treasuryCustomVouchers'])->name('treasury-custom-vouchers.get-treasury-custom-vouchers');
+    Route::put('/treasury-custom-vouchers/{treasury_custom_voucher}', [TreasuryVoucherController::class, 'update'])->name('treasury-custom-vouchers.update');
     Route::post('/treasury-voucher/{treasury_voucher}/calculate-withholding-tax', [TreasuryVoucherController::class, 'calculateWithholdingTax'])->name('treasury-vouchers.calculate-withholding-tax');
     Route::get('/treasury-voucher/{treasury_voucher}/info', [TreasuryVoucherController::class, 'info'])->name('treasury-voucher.info');
     Route::put('/treasury-vouchers/confirm', [TreasuryVoucherController::class, 'confirmTreasuryVoucher'])->name('treasury-vouchers.confirm');

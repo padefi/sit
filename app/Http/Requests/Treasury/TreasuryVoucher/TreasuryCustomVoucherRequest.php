@@ -4,7 +4,7 @@ namespace App\Http\Requests\Treasury\TreasuryVoucher;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TreasuryVoucherRequest extends FormRequest {
+class TreasuryCustomVoucherRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */

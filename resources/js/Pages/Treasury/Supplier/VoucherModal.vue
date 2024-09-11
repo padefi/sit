@@ -293,7 +293,7 @@ onMounted(async () => {
     });
 
     if (dialogRef.value.data.voucherId) {
-        const data = await getVhoucher(dialogRef.value.data.voucherId);
+        const data = await getVoucher(dialogRef.value.data.voucherId);
 
         editingVoucher.value = true;
         form.id = data.id;
@@ -302,16 +302,13 @@ onMounted(async () => {
         await loadVoucherSubtypeData(data.voucherType.id);
         form.voucherSubtype = voucherSubtypes.value.find((subtype) => subtype.id === data.voucherSubtype.id) ? data.voucherSubtype.id : undefined;
 
-        // setTimeout(async () => {
         await loadVoucherExpenseData(data.voucherSubtype.id);
-        form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === data.voucherExpense.id) ? data.voucherExpense.id : undefined;
-        // }, 1);
-
+        const voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+        form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === voucherExpense) ? voucherExpense : undefined;
         form.invoiceType = data.invoiceType.id;
-
+        
         await loadInvoiceTypeData(data.invoiceType.id);
-        form.invoiceTypeCode = data.invoiceTypeCode.id;
-        form.voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+        form.invoiceTypeCode = invoiceTypeCodes.value.find((invoiceTypeCode) => invoiceTypeCode.id === data.invoiceTypeCode.id) ? data.invoiceTypeCode.id : undefined;
 
         form.pointOfNumber = invoiceNumberFormat(data.pointOfNumber, 5);
         form.invoiceNumber = invoiceNumberFormat(data.invoiceNumber, 8);
@@ -335,7 +332,7 @@ onMounted(async () => {
     loading.value = false;
 });
 
-const getVhoucher = async (voucherId) => {
+const getVoucher = async (voucherId) => {
     try {
         const response = await fetch(`/vouchers/${voucherId}`);
 

@@ -15,6 +15,11 @@ class TreasuryCustomVoucherResource extends JsonResource {
     public function toArray(Request $request): array {
         return [
             'id' => $this->id,
+            'supplier' => $this->supplier->id,
+            'voucherType' => $this->voucherType ? [
+                'id' => $this->voucherType->id,
+                'name' => $this->voucherType->name,
+            ] : null,
             'voucherSubtype' => $this->voucherSubtype ? [
                 'id' => $this->voucherSubtype->id,
                 'name' => $this->voucherSubtype->name,

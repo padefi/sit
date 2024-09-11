@@ -52,7 +52,7 @@ const saveVoucher = (event) => {
                     },
                 });
             } else {
-                form.put(route("treasury-vouchers.update", form.id), {
+                form.put(route("treasury-custom-vouchers.update", form.id), {
                     onSuccess: () => {
                         dialogRef.value.close();
                     },
@@ -69,23 +69,41 @@ const closeDialog = () => {
 }
 
 onMounted(async () => {
-    /* form.idSupplier = dialogRef.value.data.supplierId;
-    payConditions.value = dialogRef.value.data.payConditions;
-    voucherTypes.value = dialogRef.value.data.voucherTypes; */
     await loadVoucherTypeData();
+
+    if (dialogRef.value.data) {
+        const data = await getVoucher(dialogRef.value.data);
+
+        form.id = data.id;
+        form.voucherDate = addDate(data.voucherDate, 0);
+        form.voucherType = data.voucherType.id;
+
+        await loadVoucherSubtypeData(data.voucherType.id);
+        form.voucherSubtype = voucherSubtypes.value.find((subtype) => subtype.id === data.voucherSubtype.id) ? data.voucherSubtype.id : undefined;
+
+        await loadVoucherExpenseData(data.voucherSubtype.id);
+        await loadSupplierData(data.voucherSubtype.id);        
+        const voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
+        form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === voucherExpense) ? voucherExpense : undefined;
+        form.supplier = suppliers.value.find((supplier) => supplier.id === data.supplier) ? data.supplier : undefined;
+        form.amount = data.amount;
+        form.notes = data.notes ? data.notes : '';
+        editingVoucher.value = true;
+    }
+
     loading.value = false;
 });
 
-const getVhoucher = async (voucherId) => {
+const getVoucher = async (voucher) => {
     try {
-        const response = await fetch(`/vouchers/${voucherId}`);
+        const response = await fetch(`/treasury-custom-vouchers/${voucher}`);
 
         if (!response.ok) {
             throw new Error('Error al obtener el comprobante');
         }
 
         const data = await response.json();
-        return data.voucher[0];
+        return data.treasuryCustomVouchers[0];
     } catch (error) {
         console.error(error);
     }
@@ -294,15 +312,16 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                     <template v-if="loading">
                         <Skeleton class="mb-2"></Skeleton>
                     </template>
-                    <template v-if="!loading"></template>
-                    <FloatLabel>
-                        <InputNumber v-model="form.amount" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" mode="currency"
-                            currency="ARS" locale="es-AR" id="amount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
-                            style="width: -webkit-fill-available;" :class="form.amount !== null && form.amount !== undefined ? 'filled' : ''" :min="0"
-                            :minFractionDigits="2" :max="99999999" :invalid="form.amount === null" />
-                        <label for="amount">Importe</label>
-                    </FloatLabel>
-                    <InputError :message="form.amount === null ? rules : ''" />
+                    <template v-if="!loading">
+                        <FloatLabel>
+                            <InputNumber v-model="form.amount" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" mode="currency"
+                                currency="ARS" locale="es-AR" id="amount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
+                                style="width: -webkit-fill-available;" :class="form.amount !== null && form.amount !== undefined ? 'filled' : ''"
+                                :min="0" :minFractionDigits="2" :max="99999999" :invalid="form.amount === null" />
+                            <label for="amount">Importe</label>
+                        </FloatLabel>
+                        <InputError :message="form.amount === null ? rules : ''" />
+                    </template>
                 </div>
             </div>
 

@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 
 use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryVoucherRequest;
+use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryCustomVoucherRequest;
+use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryCustomVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherStatusResource;
 use App\Models\Treasury\Supplier\Supplier;
@@ -29,8 +30,8 @@ use Inertia\Inertia;
 
 class TreasuryVoucherController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'treasuryVouchers', 'treasuryVoucherStatus']);
-        $this->middleware('check.permission:edit treasury vouchers')->only(['voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
+        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus']);
+        $this->middleware('check.permission:edit treasury vouchers')->only(['update', 'voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
         $this->middleware('check.permission:view users')->only('info');
     }
 
@@ -44,7 +45,7 @@ class TreasuryVoucherController extends Controller {
     /**
      * Store a newly created resource in storage.
      */
-    public function store(TreasuryVoucherRequest $request) {
+    public function store(TreasuryCustomVoucherRequest $request) {
         $treasuryVoucher = TreasuryVoucher::create([
             'idType' => $request->voucherType,
             'idSupplier' => $request->supplier,
@@ -97,8 +98,60 @@ class TreasuryVoucherController extends Controller {
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id) {
-        //
+    public function update(TreasuryCustomVoucherRequest $request, TreasuryCustomVoucher $treasuryCustomVoucher) {
+        if($treasuryCustomVoucher->idVS != 1) {
+            throw ValidationException::withMessages([
+                'message' => trans('El comprobante ha cambiado de estado.')
+            ]);
+        }
+
+        $treasuryVoucher = TreasuryVoucher::where('id', $treasuryCustomVoucher->idTV)->first();
+
+        if (!$treasuryVoucher) {
+            throw ValidationException::withMessages([
+                'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+
+        $treasuryVoucher->update([
+            'idType' => $request->voucherType,
+            'idSupplier' => $request->supplier,
+            'amount' => $request->amount,
+            'totalAmount' => $request->amount,
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        $treasuryCustomVoucher->update([
+            'idSupplier' => $request->supplier,
+            'idType' => $request->voucherType,
+            'idSubtype' => $request->voucherSubtype,
+            'idExpense' => $request->voucherExpense > 0 ? $request->voucherExpense : null,
+            'amount' => $request->amount,
+            'notes' => $request->notes,
+            'voucherDate' => date('Y-m-d', strtotime($request->voucherDate)),
+            'idUserUpdated' => auth()->user()->id,
+            'updated_at' => now(),
+        ]);
+
+        $treasuryVoucher->load('userCreated', 'userUpdated');
+        event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Comprobante actualizado exitosamente.',
+            ],
+            'success' => true,
+        ]);
+    }
+
+    public function treasuryCustomVouchers(TreasuryCustomVoucher $treasuryCustomVoucher) {
+        $treasuryCustomVouchers = TreasuryCustomVoucher::where('id', $treasuryCustomVoucher->id)->get();
+
+        return response()->json([
+            'treasuryCustomVouchers' => TreasuryCustomVoucherResource::collection($treasuryCustomVouchers),
+        ]);
     }
 
     public function treasuryVouchers(VoucherType $voucherType, string $status) {
@@ -124,7 +177,7 @@ class TreasuryVoucherController extends Controller {
 
         if (!$treasuryVoucher) {
             throw ValidationException::withMessages([
-                'message' => trans('Voucher no encontrado.')
+                'message' => trans('Comprobante no encontrado.')
             ]);
         }
 

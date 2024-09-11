@@ -8,6 +8,7 @@ import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import treasuryVoucherModal from './TreasuryVoucherModal.vue';
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const loading = ref(true);
@@ -98,6 +99,25 @@ const customVoucherDataStructure = (customVoucher) => {
     }];
 }
 
+const editTreasuryVoucher = (data) => {
+    dialogInfo.open(treasuryVoucherModal, {
+        props: {
+            header: 'Nuevo comprobante',
+            style: {
+                width: '55vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+            },
+            modal: true,
+            contentStyle: {
+                padding: '1.25rem',
+            },
+        },
+        data: data.customVoucher[0].id
+    });
+}
+
 const voidTreasuryVoucher = (event, data) => {
     confirm.require({
         target: event.currentTarget,
@@ -129,10 +149,17 @@ onMounted(() => {
             } else if (e.type === 'update') {
                 const index = treasuryVouchersArray.value.findIndex(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucher.id);
 
-                if (index !== -1) treasuryVouchersArray.value.splice(index, 1);
-                else {
+                if (e.treasuryVoucher.voucherStatus.id === selectStatus.value
+                    && e.treasuryVoucher.voucherType.id === 1) {
                     const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
-                    treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
+
+                    if (index !== -1) {
+                        treasuryVouchersArray.value[index] = dataTreasuryVoucher;
+                    } else {
+                        treasuryVouchersArray.value.unshift(dataTreasuryVoucher);
+                    }
+                } else {
+                    treasuryVouchersArray.value.splice(index, 1);
                 }
             }
         });
@@ -215,7 +242,7 @@ defineExpose({ fetchIncomeTreasuryVouchers });
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
             <template #body="{ data }">
-                <div class="space-x-4 flex justify-center">
+                <div class="space-x-2 flex justify-center">
                     <template v-if="data.status === 1">
                         <Checkbox v-model="data.checked" binary />
                     </template>
@@ -223,10 +250,16 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                 @click="info(data.id)"></i></button>
                     </template>
-                    <template v-if="hasPermission('edit treasury vouchers') && data.status === 1">
-                        <ConfirmPopup></ConfirmPopup>
-                        <button v-tooltip="'Anular'" class="bottom-[0.2rem] relative"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
-                                @click="voidTreasuryVoucher($event, data)"></i></button>
+                    <template v-if="hasPermission('edit treasury vouchers')">
+                        <template v-if="data.customVoucher">
+                            <button v-tooltip="'Editar'" class="bottom-[0.2rem] relative"><i
+                                    class="pi pi-pencil text-orange-500 text-lg font-extrabold" @click="editTreasuryVoucher(data)"></i></button>
+                        </template>
+                        <template v-if="data.status === 1">
+                            <ConfirmPopup></ConfirmPopup>
+                            <button v-tooltip="'Anular'" class="bottom-[0.2rem] relative"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
+                                    @click="voidTreasuryVoucher($event, data)"></i></button>
+                        </template>
                     </template>
                 </div>
             </template>
