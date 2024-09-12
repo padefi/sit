@@ -58,7 +58,7 @@ const allItems = ref([
                 name: [
                     'income tax withholdings',
                     'social security tax withholdings',
-                    'social vat tax withholdings',
+                    'vat tax withholdings',
                 ]
             },
         ]

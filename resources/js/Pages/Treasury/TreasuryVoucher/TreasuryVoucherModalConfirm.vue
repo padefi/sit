@@ -335,7 +335,8 @@ onMounted(async () => {
                                     currency="ARS" locale="es-AR" id="incomeTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.incomeTax !== null && data.withholdings.incomeTax !== undefined ? 'filled' : ''"
                                     :min="0" :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.incomeTax === null"
-                                    :disabled="data.withholdings.incomeTaxStatus === 0" @input="setTotalPaymentAmount($event, index, 'incomeTax')" />
+                                    :disabled="data.withholdings.incomeTaxStatus === 0" @input="setTotalPaymentAmount($event, index, 'incomeTax')"
+                                    :pt="{ input: { root: { autocomplete: 'off' } } }" />
                                 <label for="incomeTax">Ganancias</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.incomeTax === null ? rules : ''" />
@@ -352,7 +353,7 @@ onMounted(async () => {
                                     currency="ARS" locale="es-AR" id="socialTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.socialTax !== null && data.withholdings.socialTax !== undefined ? 'filled' : ''"
                                     :min="0" :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.socialTax === null"
-                                    :disabled="data.withholdings.socialTaxStatus === 0" />
+                                    :disabled="data.withholdings.socialTaxStatus === 0" :pt="{ input: { root: { autocomplete: 'off' } } }" />
                                 <label for="socialTax">Suss</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.socialTax === null ? rules : ''" />
@@ -369,7 +370,7 @@ onMounted(async () => {
                                     locale="es-AR" id="vatTax" inputClass="w-32" class="w-full"
                                     :class="data.withholdings.vatTax !== null && data.withholdings.vatTax !== undefined ? 'filled' : ''" :min="0"
                                     :max="99999999" :minFractionDigits="2" :invalid="data.withholdings.vatTax === null"
-                                    :disabled="data.withholdings.vatTaxStatus === 0" />
+                                    :disabled="data.withholdings.vatTaxStatus === 0" :pt="{ input: { root: { autocomplete: 'off' } } }" />
                                 <label for="vatTax">I.V.A.</label>
                             </FloatLabel>
                             <InputError :message="data.withholdings.vatTax === null ? rules : ''" />
@@ -444,7 +445,8 @@ onMounted(async () => {
                     <FloatLabel>
                         <InputNumber v-model="data[field]" placeholder="12345678" :useGrouping="false" inputId="transactionNumber"
                             id="transactionNumber" class="w-full" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :min="1"
-                            :max="9999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null" />
+                            :max="9999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null"
+                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
                         <label for="rate">N° Operación</label>
                     </FloatLabel>
                     <InputError :message="data[field] === null && data.transactionNumberStatus === 1 ? rules : ''" />
@@ -493,8 +495,8 @@ onMounted(async () => {
             </FloatLabel>
             <FloatLabel class="min-w-72 flex-1">
                 <Dropdown inputId="bankGlobal" v-model="bankGlobal" :options="banksSelect[0]" filter class="!focus:border-primary-500 w-full"
-                    :class="dropdownClasses(bankGlobal)" inputClass="text-clip" optionLabel="label" optionValue="value"
-                    @change="handleBanks($event)" :disabled="bankGlobal === 0" />
+                    :class="dropdownClasses(bankGlobal)" inputClass="text-clip" optionLabel="label" optionValue="value" @change="handleBanks($event)"
+                    :disabled="bankGlobal === 0" />
                 <label for="bank">Banco</label>
             </FloatLabel>
             <FloatLabel class="min-w-36 flex-1">

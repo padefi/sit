@@ -363,7 +363,8 @@ const info = (id) => {
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
-                            locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2" />
+                            locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2"
+                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
                     </template>
                 </Column>
                 <Column field="pendingToPay" header="Saldo" dataType="numeric" sortable>
@@ -372,7 +373,8 @@ const info = (id) => {
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
-                            locale="es-AR" name="pendingToPay" :min="0" :max="99999999" :minFractionDigits="2" />
+                            locale="es-AR" name="pendingToPay" :min="0" :max="99999999" :minFractionDigits="2"
+                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
                     </template>
                 </Column>
                 <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"

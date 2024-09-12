@@ -196,12 +196,12 @@ onMounted(async () => {
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:editingRows="editingRows" :loading="loading" editMode="row" scrollable scrollHeight="25vh"
         dataKey="id" filterDisplay="menu" :pt="{
-        table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
-        paginator: {
-            root: { class: 'p-paginator-custom' },
-            current: { class: 'p-paginator-current' },
-        }
-    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
+            table: { style: 'min-width: 50rem' }, tbody: { class: 'thin-td' }, wrapper: { class: 'datatable-scrollbar' },
+            paginator: {
+                root: { class: 'p-paginator-custom' },
+                current: { class: 'p-paginator-current' },
+            }
+        }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table uppercase" @row-edit-init="onRowEditInit($event)"
         @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel">
@@ -247,7 +247,8 @@ onMounted(async () => {
                     <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'paymentAmount' + '_' + (new Date()).getTime()" mode="currency"
                         currency="ARS" locale="es-AR" id="paymentAmount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
                         :class="data[field] !== null ? 'filled' : ''" :min="0" :minFractionDigits="2" :max="data['pendingToPay']"
-                        @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null" />
+                        @input="calculatePaymentAmount($event, data)" :invalid="data[field] === null"
+                        :pt="{ input: { root: { autocomplete: 'off' } } }" />
                     <label for="paymentAmount">Importe</label>
                 </FloatLabel>
                 <InputError :message="data[field] === null ? rules : ''" />

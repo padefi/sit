@@ -306,7 +306,7 @@ onMounted(async () => {
         const voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
         form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === voucherExpense) ? voucherExpense : undefined;
         form.invoiceType = data.invoiceType.id;
-        
+
         await loadInvoiceTypeData(data.invoiceType.id);
         form.invoiceTypeCode = invoiceTypeCodes.value.find((invoiceTypeCode) => invoiceTypeCode.id === data.invoiceTypeCode.id) ? data.invoiceTypeCode.id : undefined;
 
@@ -327,7 +327,7 @@ onMounted(async () => {
     }
 
     // setTimeout(async () => {
-        addNewItem();
+    addNewItem();
     // }, 100);
     loading.value = false;
 });
@@ -691,7 +691,8 @@ watch(() => form.invoiceType, async (invoiceTypeId) => {
                                     <InputNumber v-model="data[field]" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()"
                                         inputClass="w-full px-1" prefix="$" id="amount" class=":not(:focus)::placeholder:text-transparent" :min="0.01"
                                         :max="99999999" :minFractionDigits="2" @input="calculateSubtotalAmount(data, $event.value, data['vat'])"
-                                        :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0" />
+                                        :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :invalid="data[field] <= 0"
+                                        :pt="{ input: { root: { autocomplete: 'off' } } }" />
                                     <label for="amount">Importe</label>
                                 </FloatLabel>
                                 <InputError :message="data[field] <= 0 ? rules : ''" />

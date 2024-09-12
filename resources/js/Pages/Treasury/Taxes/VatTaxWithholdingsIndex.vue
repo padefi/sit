@@ -333,12 +333,12 @@ div[data-pc-section="columnfilter"] {
 <template>
     <DataTable :value="categoriesArray" v-model:filters="filters" dataKey="id" filterDisplay="menu" :globalFilterFields="['name']"
         v-model:expandedRows="expandedRows" scrollable scrollHeight="60vh" :pt="{
-        table: { style: 'min-width: 50rem' },
-        paginator: {
-            root: { class: 'p-paginator-custom' },
-            current: { class: 'p-paginator-current' },
-        }
-    }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
+            table: { style: 'min-width: 50rem' },
+            paginator: {
+                root: { class: 'p-paginator-custom' },
+                current: { class: 'p-paginator-current' },
+            }
+        }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
         <template #empty>
@@ -363,7 +363,7 @@ div[data-pc-section="columnfilter"] {
             </template>
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
-            v-if="hasPermissionColumn(['edit vat tax withholdings', 'create vat tax withholdings', 'view users'])">
+            v-if="hasPermissionColumn(['create vat tax withholdings', 'view users'])">
             <template #body="{ data }">
                 <div class="text-center">
                     <template
@@ -395,7 +395,8 @@ div[data-pc-section="columnfilter"] {
                         <FloatLabel>
                             <InputNumber v-model="data[field]" placeholder="% 0,00" inputId="rate" prefix="%" id="rate"
                                 class="w-full :not(:focus)::placeholder:text-transparent" :class="data[field] !== null ? 'filled' : ''" :min="0.01"
-                                :max="100" :minFractionDigits="2" :invalid="data[field] === null || data[field] === 0" />
+                                :max="100" :minFractionDigits="2" :invalid="data[field] === null || data[field] === 0"
+                                :pt="{ input: { root: { autocomplete: 'off' } } }" />
                             <label for="rate">Tasa</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null || data[field] === 0 ? rules : ''" />
@@ -409,7 +410,7 @@ div[data-pc-section="columnfilter"] {
                         <FloatLabel>
                             <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="minAmount" mode="currency" currency="ARS" locale="es-AR"
                                 id="minAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
-                                :minFractionDigits="2" :invalid="data[field] === null" />
+                                :minFractionDigits="2" :invalid="data[field] === null" :pt="{ input: { root: { autocomplete: 'off' } } }" />
                             <label for="minAmount">Monto mínino</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />
@@ -423,7 +424,7 @@ div[data-pc-section="columnfilter"] {
                         <FloatLabel>
                             <InputNumber v-model="data[field]" placeholder="$ 0,00" inputId="fixedAmount" mode="currency" currency="ARS"
                                 locale="es-AR" id="fixedAmount" class="w-full" :class="data[field] !== null ? 'filled' : ''" :min="0" :max="99999999"
-                                :minFractionDigits="2" :invalid="data[field] === null" />
+                                :minFractionDigits="2" :invalid="data[field] === null" :pt="{ input: { root: { autocomplete: 'off' } } }" />
                             <label for="fixedAmount">Monto fijo</label>
                         </FloatLabel>
                         <InputError :message="data[field] === null ? rules : ''" />

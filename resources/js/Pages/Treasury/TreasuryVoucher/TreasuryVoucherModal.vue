@@ -82,7 +82,7 @@ onMounted(async () => {
         form.voucherSubtype = voucherSubtypes.value.find((subtype) => subtype.id === data.voucherSubtype.id) ? data.voucherSubtype.id : undefined;
 
         await loadVoucherExpenseData(data.voucherSubtype.id);
-        await loadSupplierData(data.voucherSubtype.id);        
+        await loadSupplierData(data.voucherSubtype.id);
         const voucherExpense = data.voucherExpense ? data.voucherExpense.id : 0;
         form.voucherExpense = voucherExpenses.value.find((expense) => expense.id === voucherExpense) ? voucherExpense : undefined;
         form.supplier = suppliers.value.find((supplier) => supplier.id === data.supplier) ? data.supplier : undefined;
@@ -317,7 +317,8 @@ watch(() => form.voucherSubtype, async (voucherSubtype) => {
                             <InputNumber v-model="form.amount" placeholder="$ 0,00" :inputId="'amount' + '_' + (new Date()).getTime()" mode="currency"
                                 currency="ARS" locale="es-AR" id="amount" inputClass="w-full px-1" class=":not(:focus)::placeholder:text-transparent"
                                 style="width: -webkit-fill-available;" :class="form.amount !== null && form.amount !== undefined ? 'filled' : ''"
-                                :min="0" :minFractionDigits="2" :max="99999999" :invalid="form.amount === null" />
+                                :min="0" :minFractionDigits="2" :max="99999999" :invalid="form.amount === null"
+                                :pt="{ input: { root: { autocomplete: 'off' } } }" />
                             <label for="amount">Importe</label>
                         </FloatLabel>
                         <InputError :message="form.amount === null ? rules : ''" />
