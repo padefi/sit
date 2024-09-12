@@ -26,6 +26,7 @@ class VoucherExpenseSeeder extends Seeder {
             ['name' => 'MANTENIMIENTO', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'MEDICOS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'MUEBLES Y UTILES', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
+            ['name' => 'SEGURIDAD', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'SEGUROS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'TELEFONOS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],
             ['name' => 'VARIOS', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'status' => true],

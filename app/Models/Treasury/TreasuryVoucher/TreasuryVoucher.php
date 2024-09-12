@@ -68,6 +68,10 @@ class TreasuryVoucher extends Model {
         return $this->hasMany(VoucherToTreasury::class, 'idTV');
     }
 
+    public function treasuryVoucherTaxWithholding() {
+        return $this->hasOne(TreasuryVoucherTaxWithholding::class, 'idNTV');
+    }
+
     public function treasuryCustomVoucher() {
         return $this->hasOne(TreasuryCustomVoucher::class, 'idTV');
     }

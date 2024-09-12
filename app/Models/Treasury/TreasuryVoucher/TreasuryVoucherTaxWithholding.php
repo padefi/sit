@@ -29,9 +29,9 @@ class TreasuryVoucherTaxWithholding extends Model {
         return $this->belongsTo(TreasuryVoucher::class, 'idOTV');
     }
 
-    public function newVoucher() {
+    /* public function newVoucher() {
         return $this->belongsTo(TreasuryVoucher::class, 'idNTV');
-    }
+    } */
 
     public function taxType() {
         return $this->belongsTo(TaxType::class, 'idTT');

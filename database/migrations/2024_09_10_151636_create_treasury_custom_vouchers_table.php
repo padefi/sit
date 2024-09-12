@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('treasury_custom_vouchers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('idTV');
+            $table->unsignedBigInteger('idTV')->comment('id original treasury voucher');
             $table->unsignedBigInteger('idSupplier');
             $table->unsignedBigInteger('idType');
             $table->unsignedBigInteger('idSubtype');

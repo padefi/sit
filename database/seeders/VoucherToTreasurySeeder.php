@@ -24,6 +24,7 @@ class VoucherToTreasurySeeder extends Seeder {
             ['idVoucher' => 14, 'idTV' => 6, 'amount' => 282436.88, 'idUserSent' => 1, 'related_at' => now()],
             ['idVoucher' => 5, 'idTV' => 7, 'amount' => 947713.27, 'idUserSent' => 1, 'related_at' => now()],
             ['idVoucher' => 6, 'idTV' => 7, 'amount' => 816542.24, 'idUserSent' => 1, 'related_at' => now()],
+            ['idVoucher' => 17, 'idTV' => 8, 'amount' => 10000000, 'idUserSent' => 1, 'related_at' => now()],
         ];
 
         foreach ($vouchersToTreasury as $voucherToTreasury) {

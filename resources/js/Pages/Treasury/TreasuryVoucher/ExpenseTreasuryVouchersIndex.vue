@@ -66,12 +66,15 @@ const onRowCollapse = (data) => {
 
 const treasuryVoucherDataStructure = (treasuryVoucher) => {
     const data = treasuryVoucher;
+    const businessName = data.treasuryVoucherTaxWithholding
+        ? data.supplier.businessName + ' - ' + data.treasuryVoucherTaxWithholding.taxType.name
+        : data.supplier.businessName;
 
     return {
         id: data.id,
         supplierId: data.supplier.id,
         cuit: data.supplier.cuit,
-        businessName: data.supplier.businessName,
+        businessName: businessName,
         status: data.voucherStatus.id,
         amount: data.amount,
         paymentMethod: data.paymentMethod ? data.paymentMethod.name : '',
@@ -88,6 +91,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         },
         totalAmount: data.totalAmount,
         vouchers: data.voucherToTreasury.length > 0 ? data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)) : [],
+        taxVoucher: data.treasuryVoucherTaxWithholding ? taxVoucherDataStructure(data.treasuryVoucherTaxWithholding) : null,
         customVoucher: data.treasuryCustomVoucher ? customVoucherDataStructure(data.treasuryCustomVoucher) : null,
     }
 }
@@ -103,6 +107,18 @@ const voucherDataStructure = (voucherToTreasury) => {
         invoiceDueDate: data.invoiceDueDate,
         amount: voucherToTreasury.amount,
     }
+}
+
+const taxVoucherDataStructure = (taxVoucher) => {
+    return [{
+        id: taxVoucher.id,
+        amount: taxVoucher.originalVoucher.amount,
+        totalAmount: taxVoucher.originalVoucher.totalAmount,
+        paymentDate: taxVoucher.originalVoucher.supplier.paymentDate,
+        cuit: taxVoucher.originalVoucher.supplier.cuit,
+        businessName: taxVoucher.originalVoucher.supplier.businessName,
+        originalVoucher: taxVoucher.originalVoucher.voucherToTreasury.length > 0 ? taxVoucher.originalVoucher.voucherToTreasury.map(voucher => voucherDataStructure(voucher)) : [],
+    }];
 }
 
 const customVoucherDataStructure = (customVoucher) => {
@@ -367,25 +383,25 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             Sin comprobantes
                         </div>
                     </template>
-                    <Column header="Comprobante">
+                    <Column header="Comprobante" class="w-1/4">
                         <template #body="{ data }">
                             {{ data.invoiceTypeName }}
                             <span class="font-bold">{{ data.invoiceTypeCodeName }}</span>
                         </template>
                     </Column>
-                    <Column header="Número">
+                    <Column header="Número" class="w-1/4">
                         <template #body="{ data }">
                             {{ invoiceNumberFormat(data.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.invoiceNumber, 8) }}
                         </template>
                     </Column>
-                    <Column header="F. vencimiento">
+                    <Column header="F. vencimiento" class="w-1/4">
                         <template #body="{ data }">
                             <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
                                 {{ dateFormat(data.invoiceDueDate) }}
                             </span>
                         </template>
                     </Column>
-                    <Column header="Importe">
+                    <Column header="Importe" class="w-1/4">
                         <template #body="{ data }">
                             {{ currencyNumber(data.amount) }}
                         </template>
@@ -412,6 +428,40 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                     <Column header="F. Comprobante" class="w-1/3">
                         <template #body="{ data }">
                             {{ dateFormat(data.voucherDate) }}
+                        </template>
+                    </Column>
+                </DataTable>
+            </template>
+            <template v-else-if="data.taxVoucher">
+                <DataTable :value="data.taxVoucher" scrollable class="m-3 data-table-expanded">
+                    <template #empty>
+                        <div class="text-center text-lg text-red-500">
+                            Sin comprobantes
+                        </div>
+                    </template>
+                    <Column header="Cuit" class="w-1/5">
+                        <template #body="{ data }">
+                            {{ data.cuit }}
+                        </template>
+                    </Column>
+                    <Column header="Proveedor" class="w-1/5">
+                        <template #body="{ data }">
+                            {{ data.businessName }}
+                        </template>
+                    </Column>
+                    <Column header="Importe" class="w-1/5">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.amount) }}
+                        </template>
+                    </Column>
+                    <Column header="Pagado" class="w-1/5">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.totalAmount) }}
+                        </template>
+                    </Column>
+                    <Column header="F. Pagado" class="w-1/5">
+                        <template #body="{ data }">
+                            {{ dateFormat(data.paymentDate) }}
                         </template>
                     </Column>
                 </DataTable>

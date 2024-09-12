@@ -15,7 +15,7 @@ class TreasuryVoucherTaxWithholdingResource extends JsonResource {
         return [
             'id' => $this->id,
             'originalVoucher' => $this->originalVoucher ? new TreasuryVoucherResource($this->originalVoucher) : null,
-            'newVoucher' => $this->newVoucher ? new TreasuryVoucherResource($this->newVoucher) : null,
+            // 'newVoucher' => $this->newVoucher ? new TreasuryVoucherResource($this->newVoucher) : null,
             'taxType' => $this->taxType ? [
                 'id' => $this->taxType->id,
                 'name' => $this->taxType->name,

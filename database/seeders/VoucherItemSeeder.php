@@ -56,6 +56,8 @@ class VoucherItemSeeder extends Seeder {
             ['idVoucher' => 15, 'description' => "ABONO MENSUAL", 'amount' => 97870.85, 'idVat' => 1, 'subtotalAmount' => 97870.85],
 
             ['idVoucher' => 16, 'description' => "CARTA DOCUMENTO", 'amount' => 8700.00, 'idVat' => 1, 'subtotalAmount' => 8700.00],
+
+            ['idVoucher' => 17, 'description' => "ABONO MENSUAL", 'amount' => 15412773.74, 'idVat' => 1, 'subtotalAmount' => 15412773.74],
         ];
 
         foreach ($voucherItems as $item) {
