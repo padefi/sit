@@ -124,7 +124,7 @@ class SupplierController extends Controller {
 
         if ($supplierCuit) {
             throw ValidationException::withMessages([
-                'message' => trans('El banco ya se encuentra ingresado.')
+                'message' => trans('El proveedor ya se encuentra ingresado.')
             ]);
         }
 

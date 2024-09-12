@@ -108,7 +108,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers'
 });
 
 
-Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings', 'check.permission:view social security tax withholdings']], function () {
+Route::group(['middleware' => ['auth', 'check.permission:view income tax withholdings,view social security tax withholdings,view vat tax withholdings']], function () {
     Route::get('/taxes', function () {
         return Inertia::render('Treasury/Taxes/Taxes');
     })->name('taxes.index');

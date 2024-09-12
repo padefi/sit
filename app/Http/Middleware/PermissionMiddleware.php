@@ -13,13 +13,32 @@ class PermissionMiddleware {
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next, $permission) {
+    public function handle($request, Closure $next, ...$permissions) {
         $user = Auth::user();
+        $hasPermission = false;
 
-        if (!$user || !$user->hasDirectPermission($permission)) {
+        if (!$user) {
             abort(403, 'Sin autorización.');
         }
 
-        return $next($request);
+        foreach ($permissions as $permission) {
+            if ($user->hasDirectPermission($permission)) {
+                $hasPermission = true;
+                break;
+            }
+        }
+        // die();
+
+        if ($hasPermission) {
+            return $next($request);
+        }
+
+        abort(403, 'Sin autorización.');
+
+        /*  if (!$user || !$user->hasDirectPermission($permission)) {
+            abort(403, 'Sin autorización.');
+        }
+
+        return $next($request); */
     }
 }
