@@ -367,7 +367,7 @@ const info = (id) => {
                             :pt="{ input: { root: { autocomplete: 'off' } } }" />
                     </template>
                 </Column>
-                <Column field="pendingToPay" header="Saldo" dataType="numeric" sortable>
+                <Column field="pendingToPay" header="Pendiente" dataType="numeric" sortable>
                     <template #body="{ data }">
                         {{ currencyNumber(data.pendingToPay) }}
                     </template>

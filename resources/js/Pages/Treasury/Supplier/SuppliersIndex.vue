@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { usePermissions } from '@/composables/permissions';
 import { toastService } from '@/composables/toastService'
+import { currencyNumber } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import supplierModal from './SupplierModal.vue';
@@ -51,6 +52,7 @@ const filters = ref({
     cuit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
 });
 
 const Vouchers = (data) => {
@@ -236,7 +238,7 @@ const info = (data, id) => {
                         <ProgressSpinner class="!w-10 !h-10" />
                     </template>
                     <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view suppliers')" />
-                    <Column field="cuit" header="Cuit" sortable>
+                    <Column field="cuit" header="Cuit" sortable class="w-1/6">
                         <template #body="{ data }">
                             {{ data.cuit }}
                         </template>
@@ -245,7 +247,7 @@ const info = (data, id) => {
                                 class="p-column-filter" placeholder="Buscar por CUIT" />
                         </template>
                     </Column>
-                    <Column field="name" header="Razón social" sortable>
+                    <Column field="name" header="Razón social" sortable class="w-2/6">
                         <template #body="{ data }">
                             {{ data.name }}
                         </template>
@@ -254,7 +256,7 @@ const info = (data, id) => {
                                 class="p-column-filter" placeholder="Buscar por razón social" />
                         </template>
                     </Column>
-                    <Column field="businessName" header="Nombre fantasía" sortable>
+                    <Column field="businessName" header="Nombre fantasía" sortable class="w-2/6">
                         <template #body="{ data }">
                             {{ data.businessName }}
                         </template>
@@ -263,31 +265,15 @@ const info = (data, id) => {
                                 class="p-column-filter" placeholder="Buscar por nombre fantasía" />
                         </template>
                     </Column>
-                    <Column header="Dirección">
+                    <Column field="pendingToPay" header="Saldo" dataType="numeric" sortable class="w-1/6">
                         <template #body="{ data }">
-                            {{ data.street }} {{ data.streetNumber }} {{ data.floor }} {{ data.apartment }}
-                            - {{ data.postalCode }},
-                            {{ data.city }}, {{ data.state }} - {{ data.country }}
-                            <Button icon="pi pi-map-marker"
-                                class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent" text rounded
-                                v-tooltip="'Ver en mapa'" @click="viewOnMap(data, $event)" />
+                            <span :class="data.pendingToPay < 0 ? 'text-red-500' : ''">
+                                {{ currencyNumber(data.pendingToPay) }}
+                            </span>
                         </template>
-                    </Column>
-                    <Column header="Datos contacto">
-                        <template #body="{ data }">
-                            <div class="flex flex-col gap-2">
-                                <div class="flex">
-                                    <i class="pi pi-at text-amber-500"></i>
-                                    <span class="ml-2 bottom-0.5 relative text-sm" :class="{ 'text-red-500': data.email === '' }">
-                                        {{ data.email !== '' ? data.email : 'Sin email' }}</span>
-                                </div>
-
-                                <div class="flex">
-                                    <i class="pi pi-phone text-emerald-500"></i>
-                                    <span class="ml-2 bottom-0.5 relative text-sm" :class="{ 'text-red-500': data.phone === '' }">
-                                        {{ data.phone !== '' ? data.phone : 'Sin telefono' }}</span>
-                                </div>
-                            </div>
+                        <template #filter="{ filterModel, filterCallback }">
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="pendingToPay" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por saldo" />
                         </template>
                     </Column>
                     <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
@@ -311,37 +297,60 @@ const info = (data, id) => {
                     </Column>
                     <template #expansion="{ data }">
                         <div class="data-table-expanded">
-                            <div class="flex w-5/5 gap-3 mx-3 my-0">
-                                <div class="w-full md:w-1/5">
-                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">CBU</div>
-                                    <div class="uppercase" :class="{ 'text-red-500': !data.cbu }">
+                            <div class="flex w-6/6 gap-3 mx-1 my-0 text-sm uppercase tracking-tight">
+                                <div class="w-full md:w-5/12">
+                                    {{ data.street }} {{ data.streetNumber }} {{ data.floor }} {{ data.apartment }}
+                                    - {{ data.postalCode }},
+                                    {{ data.city }}, {{ data.state }} - {{ data.country }}
+                                    <Button icon="pi pi-map-marker"
+                                        class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent" text
+                                        rounded v-tooltip="'Ver en mapa'" @click="viewOnMap(data, $event)" />
+                                </div>
+                                <div class="w-full md:w-1/6 min-w-48 break-all">
+                                    <div class="flex flex-col top-0.5 relative">
+                                        <div class="flex">
+                                            <i class="pi pi-at text-amber-500"></i>
+                                            <span class="ml-1 bottom-0.5 relative" :class="{ 'text-red-500': data.email === '' }">
+                                                {{ data.email !== '' ? data.email : 'Sin email' }}</span>
+                                        </div>
+
+                                        <div class="flex">
+                                            <i class="pi pi-phone text-emerald-500"></i>
+                                            <span class="ml-1 bottom-0.5 relative" :class="{ 'text-red-500': data.phone === '' }">
+                                                {{ data.phone !== '' ? data.phone : 'Sin telefono' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-1/6 break-all">
+                                    <div class="w-full text-left text-surface-900/60 font-bold">CBU</div>
+                                    <div class="" :class="{ 'text-red-500': !data.cbu }">
                                         {{ (data.cbu) ? data.cbu : 'Sin CBU' }}
                                     </div>
                                 </div>
 
-                                <div class="w-full md:w-1/5">
-                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">Condición de I.V.A.</div>
-                                    <div class="uppercase">
+                                <div class="w-full md:w-1/6">
+                                    <div class="w-full text-left text-surface-900/60 font-bold">Condición de I.V.A.</div>
+                                    <div class="">
                                         {{ (data.idVC) && vatConditions.filter(v => v.id === data.idVC)[0].name }}
                                     </div>
                                 </div>
 
-                                <div class="w-full md:w-1/5">
-                                    <div class="w-full text-sm text-left text-surface-900/60 font-bold">Rubro</div>
-                                    <div class="uppercase">
+                                <div class="w-full md:w-1/6">
+                                    <div class="w-full text-left text-surface-900/60 font-bold">Rubro</div>
+                                    <div class="">
                                         {{ (data.idCat) && categories.filter(c => c.id === data.idCat)[0].name }}
                                     </div>
                                 </div>
 
-                                <div class="w-full md:w-1/5">
+                                <div class="w-full md:w-48">
                                     <div class="flex w-full flex-col align-items-center">
                                         <div class="flex w-full">
                                             <div class="flex align-items-center w-1/3">
                                                 <div class="w-full">
-                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                    <div class="w-full text-surface-900/60 font-bold">
                                                         Gcias.
                                                     </div>
-                                                    <div class="uppercase" :class="{ 'text-red-500': !data.incomeTaxWithholding }">
+                                                    <div :class="{ 'text-red-500': !data.incomeTaxWithholding }">
                                                         {{ (data.incomeTaxWithholding) ? 'SI' : 'NO' }}
                                                     </div>
                                                 </div>
@@ -349,10 +358,10 @@ const info = (data, id) => {
 
                                             <div class="flex align-items-center w-1/3">
                                                 <div class="w-full">
-                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                    <div class="w-full text-surface-900/60 font-bold">
                                                         Suss
                                                     </div>
-                                                    <div class="uppercase" :class="{ 'text-red-500': !data.socialSecurityTax }">
+                                                    <div :class="{ 'text-red-500': !data.socialSecurityTax }">
                                                         {{ (data.socialSecurityTax) ? 'SI' : 'NO' }}
                                                     </div>
                                                 </div>
@@ -360,10 +369,10 @@ const info = (data, id) => {
 
                                             <div class="flex align-items-center w-1/3">
                                                 <div class="w-full">
-                                                    <div class="w-full text-sm text-surface-900/60 font-bold">
+                                                    <div class="w-full text-surface-900/60 font-bold">
                                                         I.V.A.
                                                     </div>
-                                                    <div class="uppercase" :class="{ 'text-red-500': !data.vatTax }">
+                                                    <div :class="{ 'text-red-500': !data.vatTax }">
                                                         {{ (data.vatTax) ? 'SI' : 'NO' }}
                                                     </div>
                                                 </div>

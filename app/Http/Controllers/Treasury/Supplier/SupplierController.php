@@ -16,6 +16,7 @@ use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
 use App\Models\Treasury\Taxes\VatRate;
 use App\Models\Treasury\TreasuryVoucher\PayCondition;
+use App\Models\Treasury\Voucher\Voucher;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Support\Facades\Redirect;
@@ -41,6 +42,12 @@ class SupplierController extends Controller {
         $category = Category::orderBy('name', 'asc')->get();
         $payCondition = PayCondition::orderBy('name', 'asc')->get();
         $voucherTypes = VoucherType::with(['subtypes'])->orderBy('name', 'asc')->get();
+
+        foreach ($suppliers as $supplier) {
+            $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+            $vouchers = $this->calculatePendingToPay($vouchers);
+            $supplier->pendingToPay = $vouchers->sum('pendingToPay');
+        }
 
         return Inertia::render('Treasury/Supplier/SuppliersIndex', [
             'suppliers' => SupplierResource::collection($suppliers),
@@ -186,5 +193,20 @@ class SupplierController extends Controller {
         return response()->json([
             'suppliers' => SupplierResource::collection($suppliers),
         ]);
+    }
+
+    private function calculatePendingToPay($vouchers) {
+        return $vouchers->map(function ($voucher) {
+            $voucher->pendingToPay = $voucher->totalAmount;
+
+            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                    $voucher->pendingToPay -= $voucherToTreasury->amount;
+                    if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                }
+            }
+
+            return $voucher;
+        });
     }
 }

@@ -113,6 +113,9 @@ const taxVoucherDataStructure = (taxVoucher) => {
     return [{
         id: taxVoucher.id,
         amount: taxVoucher.originalVoucher.amount,
+        incomeTaxAmount: taxVoucher.originalVoucher.incomeTaxAmount,
+        socialTaxAmount: taxVoucher.originalVoucher.socialTaxAmount,
+        vatTaxAmount: taxVoucher.originalVoucher.vatTaxAmount,
         totalAmount: taxVoucher.originalVoucher.totalAmount,
         paymentDate: taxVoucher.originalVoucher.supplier.paymentDate,
         cuit: taxVoucher.originalVoucher.supplier.cuit,
@@ -401,7 +404,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             </span>
                         </template>
                     </Column>
-                    <Column header="Importe" class="w-1/4">
+                    <Column header="A pagar" class="w-1/4">
                         <template #body="{ data }">
                             {{ currencyNumber(data.amount) }}
                         </template>
@@ -439,27 +442,42 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             Sin comprobantes
                         </div>
                     </template>
-                    <Column header="Cuit" class="w-1/5">
+                    <Column header="Cuit" class="w-1/12">
                         <template #body="{ data }">
                             {{ data.cuit }}
                         </template>
                     </Column>
-                    <Column header="Proveedor" class="w-1/5">
+                    <Column header="Proveedor" class="w-2/12">
                         <template #body="{ data }">
                             {{ data.businessName }}
                         </template>
                     </Column>
-                    <Column header="Importe" class="w-1/5">
+                    <Column header="Importe" class="w-1/12">
                         <template #body="{ data }">
                             {{ currencyNumber(data.amount) }}
                         </template>
                     </Column>
-                    <Column header="Pagado" class="w-1/5">
+                    <Column header="GCIAS" class="w-1/12" v-if="data.incomeTaxAmount != 0">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.incomeTaxAmount) }}
+                        </template>
+                    </Column>
+                    <Column header="SUSS" class="w-1/12" v-if="data.socialTaxAmount != 0">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.socialTaxAmount) }}
+                        </template>
+                    </Column>
+                    <Column header="I.V.A." class="w-1/12" v-if="data.vatTaxAmount != 0">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.vatTaxAmount) }}
+                        </template>
+                    </Column>
+                    <Column header="Pagado" class="w-1/12">
                         <template #body="{ data }">
                             {{ currencyNumber(data.totalAmount) }}
                         </template>
                     </Column>
-                    <Column header="F. Pagado" class="w-1/5">
+                    <Column header="F. Pagado" class="w-1/12">
                         <template #body="{ data }">
                             {{ dateFormat(data.paymentDate) }}
                         </template>

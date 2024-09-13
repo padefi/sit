@@ -185,7 +185,7 @@ const info = (id) => {
                     <ProgressSpinner class="!w-10 !h-10" />
                 </template>
                 <Column expander class="min-w-2 w-2 !px-0" />
-                <Column field="voucherTypeName" header="Tipo" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column field="voucherTypeName" header="Tipo">
                     <template #body="{ data }">
                         {{ data.voucherTypeName }}
                     </template>
@@ -195,7 +195,7 @@ const info = (id) => {
                             style="min-width: 12rem" />
                     </template>
                 </Column>
-                <Column field="voucherStatusName" header="Estado" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column field="voucherStatusName" header="Estado">
                     <template #body="{ data }">
                         {{ data.voucherStatusName }}
                     </template>
@@ -205,14 +205,49 @@ const info = (id) => {
                             style="min-width: 12rem" />
                     </template>
                 </Column>
-                <Column field="totalAmount" header="Importe" dataType="numeric" class="rounded-tl-lg min-w-56 max-w-56">
+                <Column header="Importe" class="w-1/12">
                     <template #body="{ data }">
-                        {{ currencyNumber(data.totalAmount) }}
+                        {{ currencyNumber(data.amount) }}
+                    </template>
+                </Column>
+                <Column header="GCIAS">
+                    <template #body="{ data }">
+                        {{ currencyNumber(data.incomeTaxAmount) }}
+                    </template>
+                </Column>
+                <Column header="SUSS">
+                    <template #body="{ data }">
+                        {{ currencyNumber(data.socialTaxAmount) }}
+                    </template>
+                </Column>
+                <Column header="I.V.A.">
+                    <template #body="{ data }">
+                        {{ currencyNumber(data.vatTaxAmount) }}
+                    </template>
+                </Column>
+                <Column field="totalAmount" header="Pagado" dataType="numeric" class="font-bold">
+                    <template #body="{ data }">
+                        <template v-if="data.paymentDate">
+                            {{ currencyNumber(data.totalAmount) }}
+                        </template>
+                        <template v-else>
+                            {{ currencyNumber(0) }}
+                        </template>
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
                             locale="es-AR" name="totalAmount" :min="0" :max="99999999" :minFractionDigits="2"
                             :pt="{ input: { root: { autocomplete: 'off' } } }" />
+                    </template>
+                </Column>
+                <Column header="F. Pagado">
+                    <template #body="{ data }">
+                        <template v-if="data.paymentDate">
+                            {{ dateFormat(data.paymentDate) }}
+                        </template>
+                        <template v-else>
+                            00/00/0000
+                        </template>
                     </template>
                 </Column>
                 <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">

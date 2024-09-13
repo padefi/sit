@@ -53,6 +53,7 @@ class SupplierResource extends JsonResource {
                     'related_at' => $subtype->pivot->related_at,
                 ];
             }),
+            'pendingToPay' => $this->pendingToPay ? $this->pendingToPay : 0,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,

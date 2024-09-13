@@ -23,7 +23,7 @@ use Illuminate\Validation\ValidationException;
 
 class VoucherController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view vouchers')->only(['index', 'show', 'invoiceTypes', 'typesRelated', 'invoiceTypesRelated']);
+        $this->middleware('check.permission:view vouchers')->only(['show', 'invoiceTypes', 'typesRelated', 'invoiceTypesRelated']);
         $this->middleware('check.permission:create vouchers')->only('store');
         $this->middleware('check.permission:edit vouchers')->only(['update', 'voidVoucher']);
         $this->middleware('check.permission:view treasury vouchers')->only('vouchersPendingToPay');
@@ -249,7 +249,6 @@ class VoucherController extends Controller {
         $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
             ->where('idSupplier', $id)
             ->get();
-
         $vouchers = $this->calculatePendingToPay($vouchers);
 
         return response()->json([

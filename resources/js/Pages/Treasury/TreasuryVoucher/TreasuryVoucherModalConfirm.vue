@@ -385,9 +385,9 @@ onMounted(async () => {
                     <Skeleton></Skeleton>
                 </template>
                 <template v-if="!loading">
-                    <div class="w-fit text-left font-bold" :class="data.totalAmount < 0 ? 'text-red-500' : ''">
+                    <span class="w-fit text-left font-bold" :class="data.totalAmount < 0 ? 'text-red-500' : ''">
                         {{ currencyNumber(data.totalAmount) }}
-                    </div>
+                    </span>
                 </template>
             </template>
         </Column>
@@ -480,9 +480,9 @@ onMounted(async () => {
                 </div>
             </template>
             <template v-if="!loading">
-                <div class="w-fit text-left font-bold" :class="totalPaymentAmount < 0 ? 'text-red-500' : ''">
+                <span class="w-fit text-left font-bold" :class="totalPaymentAmount < 0 ? 'text-red-500' : ''">
                     {{ currencyNumber(totalPaymentAmount) }}
-                </div>
+                </span>
             </template>
         </div>
 
