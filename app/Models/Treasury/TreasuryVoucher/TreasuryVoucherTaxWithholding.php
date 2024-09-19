@@ -13,6 +13,7 @@ class TreasuryVoucherTaxWithholding extends Model {
     public $timestamps = false;
 
     protected $fillable = [
+        // 'idVoucher',
         'idOTV',
         'idNTV',
         'idTT',

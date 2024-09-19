@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Treasury\TreasuryVoucher;
 
+use App\Http\Resources\Treasury\Voucher\VoucherResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,7 @@ class TreasuryVoucherTaxWithholdingResource extends JsonResource {
     public function toArray(Request $request): array {
         return [
             'id' => $this->id,
+            // 'voucher' => $this->voucher ? new VoucherResource($this->voucher) : null,
             'originalVoucher' => $this->originalVoucher ? new TreasuryVoucherResource($this->originalVoucher) : null,
             // 'newVoucher' => $this->newVoucher ? new TreasuryVoucherResource($this->newVoucher) : null,
             'taxType' => $this->taxType ? [

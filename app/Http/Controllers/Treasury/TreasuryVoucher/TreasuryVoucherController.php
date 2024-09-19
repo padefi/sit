@@ -21,6 +21,8 @@ use App\Models\Treasury\TreasuryVoucher\TreasuryCustomVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherTaxWithholding;
+use App\Models\Treasury\Voucher\Voucher;
+use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -171,7 +173,7 @@ class TreasuryVoucherController extends Controller {
 
         if (!is_array($voucherIds) || empty($voucherIds)) {
             throw ValidationException::withMessages([
-                'message' => trans('No se proporcionaron voucherIds válidos.')
+                'message' => trans('No se proporcionaron comprobantes válidos.')
             ]);
         }
 
@@ -182,7 +184,7 @@ class TreasuryVoucherController extends Controller {
         }
 
         $tax = 21;
-        $amountWithoutTax = round($treasuryVoucher->amount / (1 + ($tax / 100)), 2);
+        $amountWithoutTax = $this->calculateTotalAmountCollected($treasuryVoucher, $tax);
         $totalAmountCollected = $amountWithoutTax;
         $totalIncomeTaxAmountCollected = 0;
         $totalSocialTaxAmountCollected = 0;
@@ -202,10 +204,11 @@ class TreasuryVoucherController extends Controller {
             ->get();
 
         if ($pendingTreasuryVoucher->count() > 0) {
-            $totalAmountCollected += round($pendingTreasuryVoucher->sum('amount') / (1 + ($tax / 100)), 2);
+            foreach ($pendingTreasuryVoucher as $voucher) {
+                $totalAmountCollected += $this->calculateTotalAmountCollected($voucher, $tax);
+            }
+
             $totalIncomeTaxAmountCollected += round($pendingTreasuryVoucher->sum('incomeTaxAmount'), 2);
-            /* $totalSocialTaxAmountCollected += round($pendingTreasuryVoucher->sum('socialTaxAmount'), 2);
-            $totalVatTaxAmountCollected += round($pendingTreasuryVoucher->sum('vatTaxAmount'), 2); */
         }
 
         $paidTreasuryVoucher = TreasuryVoucher::where('idSupplier', $supplier->id)
@@ -218,10 +221,11 @@ class TreasuryVoucherController extends Controller {
             ->get();
 
         if ($paidTreasuryVoucher->count() > 0) {
-            $totalAmountCollected += round($paidTreasuryVoucher->sum('amount') / (1 + ($tax / 100)), 2);
+            foreach ($paidTreasuryVoucher as $voucher) {
+                $totalAmountCollected += $this->calculateTotalAmountCollected($voucher, $tax);
+            }
+
             $totalIncomeTaxAmountCollected += round($paidTreasuryVoucher->sum('incomeTaxAmount'), 2);
-            /* $totalSocialTaxAmountCollected += round($paidTreasuryVoucher->sum('socialTaxAmount'), 2);
-            $totalVatTaxAmountCollected += round($paidTreasuryVoucher->sum('vatTaxAmount'), 2); */
         }
 
         if ($supplier->incomeTaxWithholding == 1) {
@@ -286,7 +290,7 @@ class TreasuryVoucherController extends Controller {
 
     public function confirmTreasuryVoucher(Request $request) {
         foreach ($request->input('vouchers', []) as $item) {
-            $treasuryVoucherExist = TreasuryVoucher::where('id', $item['id'])
+            $treasuryVoucherExist = TreasuryVoucher::with(['voucherToTreasury'])->where('id', $item['id'])
                 ->where('idSupplier', $item['supplierId'])
                 ->first();
 
@@ -315,6 +319,14 @@ class TreasuryVoucherController extends Controller {
                 'idUserConfirmed' => auth()->user()->id,
                 'confirmed_at' => now(),
             ]);
+
+            /* if ($treasuryVoucherExist->voucherToTreasury->isEmpty()) {
+                $voucherIds = null;
+            } else {
+                foreach ($treasuryVoucherExist->voucherToTreasury as $voucher) {
+                    $voucherIds[] = $voucher->id;
+                }
+            } */
 
             if ($item["withholdings"]['incomeTax'] > 0) {
                 $incomeTaxTreasuryVoucher = TreasuryVoucher::create([
@@ -487,5 +499,44 @@ class TreasuryVoucherController extends Controller {
         }
 
         return new TreasuryVoucherResource($treasuryVoucher);
+    }
+
+    private function calculateTotalAmountCollected(TreasuryVoucher $treasuryVoucher, $tax) {
+        $amountCollected = 0;
+        $treasuryVoucher->load('voucherToTreasury');
+
+        if ($treasuryVoucher->voucherToTreasury->isEmpty()) {
+            $amountCollected = round($treasuryVoucher->amount / (1 + (21 / 100)), 2);
+        } else {
+            foreach ($treasuryVoucher->voucherToTreasury as $voucher) {
+                $voucherData = Voucher::where('id', $voucher->id)->first();
+
+                if ($voucherData) {
+                    $amountCollected += round($this->calculateTaxAmount($voucherData), 2);
+                } else {
+                    $amountCollected += round($treasuryVoucher->amount / (1 + ($tax / 100)), 2);
+                }
+            }
+        }
+
+        return $amountCollected;
+    }
+
+    private function calculateTaxAmount(Voucher $voucher) {
+        $amountWithoutTax = 0;
+        $voucher->load('items');
+
+        foreach ($voucher->items as $item) {
+            if ($item->idVat !== 1) {
+                if ($voucher->idType === 1) {
+                    $amountWithoutTax -= $item->amount;
+                    continue;
+                }
+
+                $amountWithoutTax += $item->amount;
+            }
+        }
+
+        return $amountWithoutTax;
     }
 }

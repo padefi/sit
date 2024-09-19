@@ -98,6 +98,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
 
 const voucherDataStructure = (voucherToTreasury) => {
     const data = voucherToTreasury.voucher;
+    const amountWithoutTax = data.items.reduce((acc, item) => acc + item.amount, 0);
 
     return {
         invoiceTypeName: data.invoiceType.name,
@@ -105,6 +106,8 @@ const voucherDataStructure = (voucherToTreasury) => {
         pointOfNumber: data.pointOfNumber,
         invoiceNumber: data.invoiceNumber,
         invoiceDueDate: data.invoiceDueDate,
+        amountWithoutTax: amountWithoutTax,
+        totalAmount: data.totalAmount,
         amount: voucherToTreasury.amount,
     }
 }
@@ -129,6 +132,7 @@ const customVoucherDataStructure = (customVoucher) => {
         id: customVoucher.id,
         voucherSubtype: customVoucher.voucherSubtype.name,
         voucherExpense: customVoucher.voucherExpense ? customVoucher.voucherExpense.name : 'SIN DATOS',
+        amountWithoutTax: customVoucher.amount / 1.21,
         amount: customVoucher.amount,
         notes: customVoucher.notes,
         voucherDate: customVoucher.voucherDate,
@@ -386,25 +390,35 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             Sin comprobantes
                         </div>
                     </template>
-                    <Column header="Comprobante" class="w-1/4">
+                    <Column header="Comprobante" class="w-1/6">
                         <template #body="{ data }">
                             {{ data.invoiceTypeName }}
                             <span class="font-bold">{{ data.invoiceTypeCodeName }}</span>
                         </template>
                     </Column>
-                    <Column header="Número" class="w-1/4">
+                    <Column header="Número" class="w-1/6">
                         <template #body="{ data }">
                             {{ invoiceNumberFormat(data.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.invoiceNumber, 8) }}
                         </template>
                     </Column>
-                    <Column header="F. vencimiento" class="w-1/4">
+                    <Column header="F. vencimiento" class="w-1/6">
                         <template #body="{ data }">
                             <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
                                 {{ dateFormat(data.invoiceDueDate) }}
                             </span>
                         </template>
                     </Column>
-                    <Column header="A pagar" class="w-1/4">
+                    <Column header="Neto" class="w-1/6">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.amountWithoutTax) }}
+                        </template>
+                    </Column>
+                    <Column header="Total" class="w-1/6">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.totalAmount) }}
+                        </template>
+                    </Column>
+                    <Column header="A pagar" class="w-1/6">
                         <template #body="{ data }">
                             {{ currencyNumber(data.amount) }}
                         </template>
@@ -418,19 +432,24 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                             Sin comprobantes
                         </div>
                     </template>
-                    <Column header="Subtipo" class="w-1/3">
+                    <Column header="Subtipo" class="w-1/4">
                         <template #body="{ data }">
                             {{ data.voucherSubtype }}
                         </template>
                     </Column>
-                    <Column header="Gasto" class="w-1/3">
+                    <Column header="Gasto" class="w-1/4">
                         <template #body="{ data }">
                             {{ data.voucherExpense }}
                         </template>
                     </Column>
-                    <Column header="F. Comprobante" class="w-1/3">
+                    <Column header="F. Comprobante" class="w-1/4">
                         <template #body="{ data }">
                             {{ dateFormat(data.voucherDate) }}
+                        </template>
+                    </Column>
+                    <Column header="Neto" class="w-1/4">
+                        <template #body="{ data }">
+                            {{ currencyNumber(data.amountWithoutTax)}}
                         </template>
                     </Column>
                 </DataTable>
