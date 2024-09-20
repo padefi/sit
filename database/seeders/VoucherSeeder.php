@@ -34,7 +34,7 @@ class VoucherSeeder extends Seeder {
 
             ['idSupplier' => 20, 'idType' => 2, 'idSubtype' => 4, 'idExpense' => 4, 'idIT' => 1, 'idITCode' => 2, 'pointOfNumber' => 1, 'invoiceNumber' => 269936, 'invoiceDate' => '2024-08-01', 'invoiceDueDate' => '2024-08-01', 'idPC' => 1, 'notes' => 'RESPUESTA INTIMACIÓN DE LA EMPRESA', 'totalAmount' => 8700.00,  'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null,  'status' => true],
 
-            ['idSupplier' => 2, 'idType' => 2, 'idSubtype' => 4, 'idExpense' => 20, 'idIT' => 1, 'idITCode' => 2, 'pointOfNumber' => 2, 'invoiceNumber' => 965, 'invoiceDate' => '2024-08-24', 'invoiceDueDate' => '2024-08-31', 'idPC' => 2, 'notes' => NULL, 'totalAmount' => 15412773.74,  'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null,  'status' => true],
+            ['idSupplier' => 2, 'idType' => 2, 'idSubtype' => 4, 'idExpense' => 20, 'idIT' => 1, 'idITCode' => 2, 'pointOfNumber' => 2, 'invoiceNumber' => 965, 'invoiceDate' => '2024-08-24', 'invoiceDueDate' => '2024-08-31', 'idPC' => 2, 'notes' => NULL, 'totalAmount' => 18649456.22,  'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null,  'status' => true],
         ];
 
         foreach ($vouchers as $voucher) {

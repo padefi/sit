@@ -24,9 +24,9 @@ class VoucherItemSeeder extends Seeder {
 
             ['idVoucher' => 4, 'description' => "MONITOR 24''", 'amount' => 200000.00, 'idVat' => 3, 'subtotalAmount' => 242000.00],
         
-            ['idVoucher' => 5, 'description' => "ABONO INTERNET FULL", 'amount' => 947713.27, 'idVat' => 1, 'subtotalAmount' => 947713.27],
+            ['idVoucher' => 5, 'description' => "ABONO INTERNET FULL", 'amount' => 783234.11, 'idVat' => 3, 'subtotalAmount' => 947713.27],
 
-            ['idVoucher' => 6, 'description' => "ABONO INTERNET FULL", 'amount' => 816542.24, 'idVat' => 1, 'subtotalAmount' => 816542.24],
+            ['idVoucher' => 6, 'description' => "ABONO INTERNET FULL", 'amount' => 674828.30, 'idVat' => 3, 'subtotalAmount' => 816542.24],
 
             ['idVoucher' => 7, 'description' => "LÍNEA 0975", 'amount' => 50044.79, 'idVat' => 1, 'subtotalAmount' => 50044.79],
             ['idVoucher' => 7, 'description' => "LÍNEA 0650", 'amount' => 50044.79, 'idVat' => 1, 'subtotalAmount' => 50044.79],
@@ -57,7 +57,7 @@ class VoucherItemSeeder extends Seeder {
 
             ['idVoucher' => 16, 'description' => "CARTA DOCUMENTO", 'amount' => 8700.00, 'idVat' => 1, 'subtotalAmount' => 8700.00],
 
-            ['idVoucher' => 17, 'description' => "ABONO MENSUAL", 'amount' => 15412773.74, 'idVat' => 1, 'subtotalAmount' => 15412773.74],
+            ['idVoucher' => 17, 'description' => "ABONO MENSUAL", 'amount' => 15412773.74, 'idVat' => 3, 'subtotalAmount' => 18649456.22],
         ];
 
         foreach ($voucherItems as $item) {

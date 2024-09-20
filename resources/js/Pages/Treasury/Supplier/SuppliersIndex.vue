@@ -361,8 +361,8 @@ const info = (data, id) => {
                                                     <div class="w-full text-surface-900/60 font-bold">
                                                         Suss
                                                     </div>
-                                                    <div :class="{ 'text-red-500': !data.socialSecurityTax }">
-                                                        {{ (data.socialSecurityTax) ? 'SI' : 'NO' }}
+                                                    <div :class="{ 'text-red-500': !data.socialTax }">
+                                                        {{ (data.socialTax) ? 'SI' : 'NO' }}
                                                     </div>
                                                 </div>
                                             </div>

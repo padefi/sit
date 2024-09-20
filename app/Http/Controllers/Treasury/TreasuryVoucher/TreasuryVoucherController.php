@@ -509,7 +509,7 @@ class TreasuryVoucherController extends Controller {
             $amountCollected = round($treasuryVoucher->amount / (1 + (21 / 100)), 2);
         } else {
             foreach ($treasuryVoucher->voucherToTreasury as $voucher) {
-                $voucherData = Voucher::where('id', $voucher->id)->first();
+                $voucherData = Voucher::where('id', $voucher->idVoucher)->first();
 
                 if ($voucherData) {
                     $amountCollected += round($this->calculateTaxAmount($voucherData), 2);

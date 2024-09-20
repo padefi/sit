@@ -41,8 +41,9 @@ class DatabaseSeeder extends Seeder {
         $this->call(VoucherSeeder::class);
         $this->call(VoucherItemSeeder::class);
         $this->call(TreasuryVoucherStatusSeeder::class);
-        $this->call(TreasuryVoucherSeeder::class);
+        $this->call(TreasuryVoucherSeeder::class);        
         $this->call(VoucherToTreasurySeeder::class);
+        $this->call(TreasuryCustomVoucherSeeder::class);
         $this->call(PaymentMethodSeeder::class);
     }
 }
