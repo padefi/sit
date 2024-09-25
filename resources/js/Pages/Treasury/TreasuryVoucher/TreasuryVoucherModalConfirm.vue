@@ -71,14 +71,14 @@ const calculateWithholdingTax = async (voucher, voucherBySupplier) => {
 
         const data = response.data;
         voucher.withholdings.incomeTax = 0;
-        const incomeTaxWithholdingAmount = treasuryVouchersArray.value
+        const incomeTaxWithholdingAmount = await treasuryVouchersArray.value
             .filter(voucher => voucherIds.includes(voucher.id))
             .reduce((total, voucher) => total + (voucher.withholdings.incomeTax || 0), 0);
 
-        voucher.withholdings.incomeTax = data.incomeTaxWithholdingAmount - incomeTaxWithholdingAmount;
+        const incomeTaxAmount = data.incomeTaxWithholdingAmount - incomeTaxWithholdingAmount;
+        voucher.withholdings.incomeTax = incomeTaxAmount > 0 ? incomeTaxAmount : 0;
         voucher.withholdings.socialTax = data.socialTaxAmount;
         voucher.withholdings.vatTax = data.vatTaxAmount;
-
         const totalAmount = voucher.amount - (voucher.withholdings.incomeTax + voucher.withholdings.socialTax + voucher.withholdings.vatTax);
 
         if (voucher.withholdings.incomeTax > totalAmount) {
@@ -261,36 +261,31 @@ onMounted(async () => {
     treasuryVouchersArray.value = dialogRef.value.data.form.vouchers;
     totalPaymentAmount.value = dialogRef.value.data.form.totalPaymentAmount;
     await getPaymentMethods();
-    const maxAmountVoucherBySupplier = {};
-    const promises = [];
+    const voucherBySupplier = {};
 
-    treasuryVouchersArray.value.forEach(async (voucher) => {
-        if (!maxAmountVoucherBySupplier[voucher.supplierId]) {
-            maxAmountVoucherBySupplier[voucher.supplierId] = {
+    for (const voucher of treasuryVouchersArray.value) {
+        if (!voucherBySupplier[voucher.supplierId]) {
+            voucherBySupplier[voucher.supplierId] = {
                 ...voucher,
                 voucherId: [voucher.id],
             };
         } else {
-            if (voucher.amount > maxAmountVoucherBySupplier[voucher.supplierId].amount) {
-                const voucherId = maxAmountVoucherBySupplier[voucher.supplierId].voucherId;
+            if (voucher.amount > voucherBySupplier[voucher.supplierId].amount) {
+                const voucherId = voucherBySupplier[voucher.supplierId].voucherId;
                 voucherId.push(voucher.id);
-                maxAmountVoucherBySupplier[voucher.supplierId] = {
+                voucherBySupplier[voucher.supplierId] = {
                     ...voucher,
                     voucherId,
                 };
             } else {
-                maxAmountVoucherBySupplier[voucher.supplierId].voucherId.push(voucher.id);
+                voucherBySupplier[voucher.supplierId].voucherId.push(voucher.id);
             }
         }
 
-        const data = [maxAmountVoucherBySupplier[voucher.supplierId]];
-        const promise = calculateWithholdingTax(voucher, data); // Calculate withholding tax for each voucher as it's added
-        promises.push(promise);
-    });
+        const data = [voucherBySupplier[voucher.supplierId]];
+        await calculateWithholdingTax(voucher, data); // Calculate withholding tax for each voucher as it's added
+    }
 
-    /* const voucherBySupplier = Object.values(maxAmountVoucherBySupplier);
-    const promises = treasuryVouchersArray.value.map((voucher) => calculateWithholdingTax(voucher, voucherBySupplier)); */
-    await Promise.all(promises);
     totalPaymentAmount.value = treasuryVouchersArray.value.reduce((total, voucher) => total + voucher.totalAmount, 0);
     loading.value = false;
 });

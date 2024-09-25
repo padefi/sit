@@ -13,6 +13,7 @@ use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
+use App\Models\Treasury\Taxes\TaxType;
 use App\Models\Treasury\Taxes\VatTaxWithholding;
 use App\Models\Treasury\TreasuryVoucher\BankTransaction;
 use App\Models\Treasury\TreasuryVoucher\CashTransaction;
@@ -22,7 +23,7 @@ use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherTaxWithholding;
 use App\Models\Treasury\Voucher\Voucher;
-use App\Models\Treasury\Voucher\VoucherItem;
+use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -184,11 +185,14 @@ class TreasuryVoucherController extends Controller {
         }
 
         $tax = 21;
-        $amountWithoutTax = $this->calculateTotalAmountCollected($treasuryVoucher, $tax);
+        $amountWithoutTax = $this->calculateTotalAmountCollected($treasuryVoucher, $tax) - $this->withheldTaxVoucher($treasuryVoucher, 1)['amountWithoutTax'];
         $totalAmountCollected = $amountWithoutTax;
-        $totalIncomeTaxAmountCollected = 0;
+        /* $totalIncomeTaxAmountCollected = 0;
         $totalSocialTaxAmountCollected = 0;
-        $totalVatTaxAmountCollected = 0;
+        $totalVatTaxAmountCollected = 0; */
+        $totalIncomeTaxAmountCollected = $this->withheldTaxVoucher($treasuryVoucher, 1)['amountWithheldTax'];
+        $totalSocialTaxAmountCollected = $this->withheldTaxVoucher($treasuryVoucher, 2)['amountWithheldTax'];
+        $totalVatTaxAmountCollected = $this->withheldTaxVoucher($treasuryVoucher, 3)['amountWithheldTax'];
         $incomeTaxWithholdingAmount = 0;
         $socialTaxAmount = 0;
         $vatTaxAmount = 0;
@@ -209,6 +213,7 @@ class TreasuryVoucherController extends Controller {
             }
 
             $totalIncomeTaxAmountCollected += round($pendingTreasuryVoucher->sum('incomeTaxAmount'), 2);
+            // $totalIncomeTaxAmountCollected = $this->withheldTaxVoucher($treasuryVoucher, 1)['amountWithheldTax'] + round($pendingTreasuryVoucher->sum('incomeTaxAmount'), 2);
         }
 
         $paidTreasuryVoucher = TreasuryVoucher::where('idSupplier', $supplier->id)
@@ -319,14 +324,6 @@ class TreasuryVoucherController extends Controller {
                 'idUserConfirmed' => auth()->user()->id,
                 'confirmed_at' => now(),
             ]);
-
-            /* if ($treasuryVoucherExist->voucherToTreasury->isEmpty()) {
-                $voucherIds = null;
-            } else {
-                foreach ($treasuryVoucherExist->voucherToTreasury as $voucher) {
-                    $voucherIds[] = $voucher->id;
-                }
-            } */
 
             if ($item["withholdings"]['incomeTax'] > 0) {
                 $incomeTaxTreasuryVoucher = TreasuryVoucher::create([
@@ -512,7 +509,7 @@ class TreasuryVoucherController extends Controller {
                 $voucherData = Voucher::where('id', $voucher->idVoucher)->first();
 
                 if ($voucherData) {
-                    $amountCollected += round($this->calculateTaxAmount($voucherData), 2);
+                    $amountCollected += round($this->calculateWithoutTaxAmount($voucherData), 2);
                 } else {
                     $amountCollected += round($treasuryVoucher->amount / (1 + ($tax / 100)), 2);
                 }
@@ -522,7 +519,7 @@ class TreasuryVoucherController extends Controller {
         return $amountCollected;
     }
 
-    private function calculateTaxAmount(Voucher $voucher) {
+    private function calculateWithoutTaxAmount(Voucher $voucher) {
         $amountWithoutTax = 0;
         $voucher->load('items');
 
@@ -538,5 +535,37 @@ class TreasuryVoucherController extends Controller {
         }
 
         return $amountWithoutTax;
+    }
+
+    private function withheldTaxVoucher(TreasuryVoucher $treasuryVoucher, $taxType) {
+        $treasuryVoucher->load('voucherToTreasury');
+        $data = [
+            'amountWithheldTax' => 0,
+            'amountWithoutTax' => 0,
+        ];
+
+        $voucherIds = $treasuryVoucher->voucherToTreasury->pluck('idVoucher')->toArray();
+        $voucheridTVs = $treasuryVoucher->voucherToTreasury->pluck('idTV')->toArray();
+        $voucherPaided = VoucherToTreasury::whereIn('idVoucher', $voucherIds)
+            ->whereNotIn('idTV', $voucheridTVs)->get();
+
+        $voucherPaidedidTVs = $voucherPaided->pluck('idTV')->toArray();
+        $treasuryVoucherWithheldTax = TreasuryVoucherTaxWithholding::whereIn('idOTV', $voucherPaidedidTVs)
+            ->where('idTT', $taxType)->get();
+
+        foreach ($treasuryVoucherWithheldTax as $treasuryVoucherWithheldTax) {
+            $data['amountWithheldTax'] += $treasuryVoucherWithheldTax->amount;
+        }
+
+        if ($treasuryVoucherWithheldTax->count() > 0) {
+            $voucherData = Voucher::whereIn('id', $voucherIds)->get();
+            foreach ($voucherData as $voucherData) {
+                if ($voucherData) {
+                    $data['amountWithoutTax'] += round($this->calculateWithoutTaxAmount($voucherData), 2);
+                }
+            }
+        }
+
+        return $data;
     }
 }

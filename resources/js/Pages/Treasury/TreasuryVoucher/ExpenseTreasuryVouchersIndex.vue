@@ -113,6 +113,10 @@ const voucherDataStructure = (voucherToTreasury) => {
 }
 
 const taxVoucherDataStructure = (taxVoucher) => {
+    if (taxVoucher.originalVoucher.voucherToTreasury.length > 0) {
+        return taxVoucher.originalVoucher.voucherToTreasury.map(voucher => voucherDataStructure(voucher));
+    }
+
     return [{
         id: taxVoucher.id,
         amount: taxVoucher.originalVoucher.amount,
@@ -369,7 +373,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                                 @click="info(data.id)"></i></button>
                     </template>
                     <template v-if="hasPermission('edit treasury vouchers')">
-                        <template v-if="data.customVoucher">
+                        <template v-if="data.customVoucher && data.status === 1">
                             <button v-tooltip="'Editar'" class="bottom-[0.2rem] relative"><i
                                     class="pi pi-pencil text-orange-500 text-lg font-extrabold" @click="editTreasuryVoucher(data)"></i></button>
                         </template>
@@ -449,59 +453,103 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                     </Column>
                     <Column header="Neto" class="w-1/4">
                         <template #body="{ data }">
-                            {{ currencyNumber(data.amountWithoutTax)}}
+                            {{ currencyNumber(data.amountWithoutTax) }}
                         </template>
                     </Column>
                 </DataTable>
             </template>
             <template v-else-if="data.taxVoucher">
-                <DataTable :value="data.taxVoucher" scrollable class="m-3 data-table-expanded">
-                    <template #empty>
-                        <div class="text-center text-lg text-red-500">
-                            Sin comprobantes
-                        </div>
-                    </template>
-                    <Column header="Cuit" class="w-1/12">
-                        <template #body="{ data }">
-                            {{ data.cuit }}
+                <template v-if="data.taxVoucher[0].invoiceTypeName">
+                    <DataTable :value="data.taxVoucher" scrollable class="m-3 data-table-expanded">
+                        <template #empty>
+                            <div class="text-center text-lg text-red-500">
+                                Sin comprobantes
+                            </div>
                         </template>
-                    </Column>
-                    <Column header="Proveedor" class="w-2/12">
-                        <template #body="{ data }">
-                            {{ data.businessName }}
+                        <Column header="Comprobante" class="w-1/6">
+                            <template #body="{ data }">
+                                {{ data.invoiceTypeName }}
+                                <span class="font-bold">{{ data.invoiceTypeCodeName }}</span>
+                            </template>
+                        </Column>
+                        <Column header="Número" class="w-1/6">
+                            <template #body="{ data }">
+                                {{ invoiceNumberFormat(data.pointOfNumber, 5) }} - {{ invoiceNumberFormat(data.invoiceNumber, 8) }}
+                            </template>
+                        </Column>
+                        <Column header="F. vencimiento" class="w-1/6">
+                            <template #body="{ data }">
+                                <span :class="{ 'text-red-500': compareDates(data.invoiceDueDate, '', 'before') }">
+                                    {{ dateFormat(data.invoiceDueDate) }}
+                                </span>
+                            </template>
+                        </Column>
+                        <Column header="Neto" class="w-1/6">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.amountWithoutTax) }}
+                            </template>
+                        </Column>
+                        <Column header="Total" class="w-1/6">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.totalAmount) }}
+                            </template>
+                        </Column>
+                        <Column header="A pagar" class="w-1/6">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.amount) }}
+                            </template>
+                        </Column>
+                    </DataTable>
+                </template>
+                <template v-else>
+                    <DataTable :value="data.taxVoucher" scrollable class="m-3 data-table-expanded">
+                        <template #empty>
+                            <div class="text-center text-lg text-red-500">
+                                Sin comprobantes
+                            </div>
                         </template>
-                    </Column>
-                    <Column header="Importe" class="w-1/12">
-                        <template #body="{ data }">
-                            {{ currencyNumber(data.amount) }}
-                        </template>
-                    </Column>
-                    <Column header="GCIAS" class="w-1/12" v-if="data.incomeTaxAmount != 0">
-                        <template #body="{ data }">
-                            {{ currencyNumber(data.incomeTaxAmount) }}
-                        </template>
-                    </Column>
-                    <Column header="SUSS" class="w-1/12" v-if="data.socialTaxAmount != 0">
-                        <template #body="{ data }">
-                            {{ currencyNumber(data.socialTaxAmount) }}
-                        </template>
-                    </Column>
-                    <Column header="I.V.A." class="w-1/12" v-if="data.vatTaxAmount != 0">
-                        <template #body="{ data }">
-                            {{ currencyNumber(data.vatTaxAmount) }}
-                        </template>
-                    </Column>
-                    <Column header="Pagado" class="w-1/12">
-                        <template #body="{ data }">
-                            {{ currencyNumber(data.totalAmount) }}
-                        </template>
-                    </Column>
-                    <Column header="F. Pagado" class="w-1/12">
-                        <template #body="{ data }">
-                            {{ dateFormat(data.paymentDate) }}
-                        </template>
-                    </Column>
-                </DataTable>
+                        <Column header="Cuit" class="w-1/12">
+                            <template #body="{ data }">
+                                {{ data.cuit }}
+                            </template>
+                        </Column>
+                        <Column header="Proveedor" class="w-2/12">
+                            <template #body="{ data }">
+                                {{ data.businessName }}
+                            </template>
+                        </Column>
+                        <Column header="Importe" class="w-1/12">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.amount) }}
+                            </template>
+                        </Column>
+                        <Column header="GCIAS" class="w-1/12" v-if="data.incomeTaxAmount != 0">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.incomeTaxAmount) }}
+                            </template>
+                        </Column>
+                        <Column header="SUSS" class="w-1/12" v-if="data.socialTaxAmount != 0">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.socialTaxAmount) }}
+                            </template>
+                        </Column>
+                        <Column header="I.V.A." class="w-1/12" v-if="data.vatTaxAmount != 0">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.vatTaxAmount) }}
+                            </template>
+                        </Column>
+                        <Column header="Pagado" class="w-1/12">
+                            <template #body="{ data }">
+                                {{ currencyNumber(data.totalAmount) }}
+                            </template>
+                        </Column>
+                        <Column header="F. Pagado" class="w-1/12">
+                            <template #body="{ data }">
+                                {{ dateFormat(data.paymentDate) }}
+                            </template>
+                        </Column>
+                    </DataTable>
+                </template>
             </template>
         </template>
     </DataTable>
