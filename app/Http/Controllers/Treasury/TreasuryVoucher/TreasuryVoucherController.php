@@ -308,6 +308,18 @@ class TreasuryVoucherController extends Controller {
                     'message' => trans('Comprobante no encontrado.')
                 ]);
             }
+
+            if ($treasuryVoucherExist->idVS === 2) {
+                throw ValidationException::withMessages([
+                    'message' => trans('El comprobante ya ha sido confirmado.')
+                ]);
+            }
+
+            if ($treasuryVoucherExist->idVS === 3) {
+                throw ValidationException::withMessages([
+                    'message' => trans('El comprobante ya ha sido anulado.')
+                ]);
+            }
         }
 
         foreach ($request->input('vouchers', []) as $item) {

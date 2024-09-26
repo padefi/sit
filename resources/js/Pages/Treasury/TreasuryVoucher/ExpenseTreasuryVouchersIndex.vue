@@ -9,7 +9,7 @@ import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
-import treasuryVoucherModalConfirm from './TreasuryVoucherModalConfirm.vue';
+import expenseTreasuryVoucherModalConfirm from './ExpenseTreasuryVoucherModalConfirm.vue';
 
 const form = useForm({
     vouchers: [],
@@ -190,7 +190,7 @@ const confirmTreasuryVoucherModal = () => {
     if (form.totalPaymentAmount === 0) {
         toast.add({
             severity: 'error',
-            detail: 'Debe agregar al menos un item.',
+            detail: 'Debe seleccionar al menos un comprobante.',
             life: 3000,
         });
 
@@ -215,7 +215,7 @@ const confirmTreasuryVoucherModal = () => {
         vouchers: voucher.vouchers,
     }));
 
-    dialogInfo.open(treasuryVoucherModalConfirm, {
+    dialogInfo.open(expenseTreasuryVoucherModalConfirm, {
         props: {
             header: 'Comprobantes a egresar',
             style: {

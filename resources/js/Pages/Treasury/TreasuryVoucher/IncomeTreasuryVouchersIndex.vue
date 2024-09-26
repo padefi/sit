@@ -9,12 +9,19 @@ import { useConfirm } from "primevue/useconfirm";
 import { useForm } from "@inertiajs/vue3";
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
+import incomeTreasuryVoucherModalConfirm from './IncomeTreasuryVoucherModalConfirm.vue';
+
+const form = useForm({
+    vouchers: [],
+    totalIncomeAmount: 0,
+});
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
 
@@ -70,6 +77,13 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         paymentMethod: data.paymentMethod ? data.paymentMethod.name : '',
         bank: data.bankAccount.bank ? data.bankAccount.bank.name : '',
         bankAccount: data.bankAccount ? data.bankAccount.accountNumber : '',
+        paymentDate: data.paymentDate ?? null,
+        withholdings: {
+            incomeTax: 0,
+            socialTax: 0,
+            vatTax: 0,
+        },
+        totalAmount: data.totalAmount,
         vouchers: data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)),
         customVoucher: data.treasuryCustomVoucher ? customVoucherDataStructure(data.treasuryCustomVoucher) : null,
     }
@@ -98,6 +112,12 @@ const customVoucherDataStructure = (customVoucher) => {
         voucherDate: customVoucher.voucherDate,
     }];
 }
+
+const setTotalIncomeAmount = (event, data) => {
+    form.totalIncomeAmount = event.target.checked ? form.totalIncomeAmount + data.amount : form.totalIncomeAmount - data.amount;
+    if (!event.target.checked) data.paymentAmount = data.pendingToPay;
+}
+
 
 const editTreasuryVoucher = (data) => {
     dialogInfo.open(treasuryVoucherModal, {
@@ -132,6 +152,60 @@ const voidTreasuryVoucher = (event, data) => {
                 onError: (error) => {
                 },
             });
+        },
+    });
+}
+
+const confirmTreasuryVoucherModal = () => {
+    if (form.totalIncomeAmount === 0) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe seleccionar al menos un comprobante.',
+            life: 3000,
+        });
+
+        return;
+    }
+
+    const filteredVouchers = treasuryVouchersArray.value.filter(voucher => voucher.checked);
+
+    form.vouchers = filteredVouchers.map(voucher => ({
+        id: voucher.id,
+        supplierId: voucher.supplierId,
+        businessName: voucher.businessName,
+        amount: voucher.amount,
+        withholdings: voucher.withholdings,
+        totalAmount: voucher.totalAmount,
+        paymentMethod: undefined,
+        bankId: undefined,
+        bankAccountId: undefined,
+        transactionNumber: undefined,
+        transactionNumberStatus: 0,
+        paymentDate: undefined,
+        vouchers: voucher.vouchers,
+    }));
+
+    dialogInfo.open(incomeTreasuryVoucherModalConfirm, {
+        props: {
+            header: 'Comprobantes a egresar',
+            style: {
+                width: '98vw',
+            },
+            breakpoints: {
+                '960px': '75vw',
+                '640px': '98vw'
+            },
+            modal: true
+        },
+        data: {
+            form,
+            status: selectStatus.value,
+        },
+        onClose: (response) => {
+            if (response.data === 'confirm') {
+                form.vouchers = [];
+                form.totalIncomeAmount = 0;
+            }
         },
     });
 }
@@ -244,14 +318,14 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             <template #body="{ data }">
                 <div class="space-x-2 flex justify-center">
                     <template v-if="data.status === 1">
-                        <Checkbox v-model="data.checked" binary />
+                        <Checkbox v-model="data.checked" binary @click="setTotalIncomeAmount($event, data)" />
                     </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                 @click="info(data.id)"></i></button>
                     </template>
                     <template v-if="hasPermission('edit treasury vouchers')">
-                        <template v-if="data.customVoucher">
+                        <template v-if="data.customVoucher && data.status === 1">
                             <button v-tooltip="'Editar'" class="bottom-[0.2rem] relative"><i
                                     class="pi pi-pencil text-orange-500 text-lg font-extrabold" @click="editTreasuryVoucher(data)"></i></button>
                         </template>
@@ -323,4 +397,18 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             </template>
         </template>
     </DataTable>
+
+    <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
+        <div class="flex w-fit space-x-4">
+            <div class="w-fit text-left text-surface-900/60 font-bold">Total a Ingresar: </div>
+            <div class="w-fit text-left font-bold" :class="form.totalIncomeAmount < 0 ? 'text-red-500' : ''">
+                {{ currencyNumber(form.totalIncomeAmount) }}
+            </div>
+        </div>
+
+        <div>
+            <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalIncomeAmount === 0 || isProcessing"
+                @click="confirmTreasuryVoucherModal()" />
+        </div>
+    </div>
 </template>
