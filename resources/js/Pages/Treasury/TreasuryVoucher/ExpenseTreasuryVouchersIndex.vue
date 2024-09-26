@@ -101,6 +101,7 @@ const voucherDataStructure = (voucherToTreasury) => {
     const amountWithoutTax = data.items.reduce((acc, item) => acc + item.amount, 0);
 
     return {
+        id: data.id,
         invoiceTypeName: data.invoiceType.name,
         invoiceTypeCodeName: data.invoiceTypeCode.name,
         pointOfNumber: data.pointOfNumber,
@@ -211,6 +212,7 @@ const confirmTreasuryVoucherModal = () => {
         transactionNumber: undefined,
         transactionNumberStatus: 0,
         paymentDate: undefined,
+        vouchers: voucher.vouchers,
     }));
 
     dialogInfo.open(treasuryVoucherModalConfirm, {

@@ -268,22 +268,30 @@ onMounted(async () => {
             voucherBySupplier[voucher.supplierId] = {
                 ...voucher,
                 voucherId: [voucher.id],
+                vouchersSupplierIds: voucher.vouchers.map(v => v.id),
             };
+
+            const data = [voucherBySupplier[voucher.supplierId]];
+            await calculateWithholdingTax(voucher, data); // Calculate withholding tax for each voucher as it's added
         } else {
-            if (voucher.amount > voucherBySupplier[voucher.supplierId].amount) {
-                const voucherId = voucherBySupplier[voucher.supplierId].voucherId;
-                voucherId.push(voucher.id);
+            const vouchersSupplierIds = voucher.vouchers.map(v => v.id);
+            const flatVouchersSupplierIds = voucherBySupplier[voucher.supplierId].vouchersSupplierIds.flat();
+            
+            if (!flatVouchersSupplierIds.some(v => vouchersSupplierIds.includes(v))) {
                 voucherBySupplier[voucher.supplierId] = {
-                    ...voucher,
-                    voucherId,
+                    ...voucherBySupplier[voucher.supplierId],
+                    voucherId: [...voucherBySupplier[voucher.supplierId].voucherId, voucher.id],
+                    vouchersSupplierIds: [...voucherBySupplier[voucher.supplierId].vouchersSupplierIds, vouchersSupplierIds],
                 };
+
+                const data = [voucherBySupplier[voucher.supplierId]];
+                await calculateWithholdingTax(voucher, data); // Calculate withholding tax for each voucher as it's added
             } else {
-                voucherBySupplier[voucher.supplierId].voucherId.push(voucher.id);
+                voucher.withholdings.incomeTax = 0;
+                voucher.withholdings.socialTax = 0;
+                voucher.withholdings.vatTax = 0;
             }
         }
-
-        const data = [voucherBySupplier[voucher.supplierId]];
-        await calculateWithholdingTax(voucher, data); // Calculate withholding tax for each voucher as it's added
     }
 
     totalPaymentAmount.value = treasuryVouchersArray.value.reduce((total, voucher) => total + voucher.totalAmount, 0);

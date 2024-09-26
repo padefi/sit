@@ -12,7 +12,8 @@ class TreasuryVoucherSeeder extends Seeder {
     public function run(): void {
         $treasuryVouchers = [
             ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 255812.5, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 255812.5, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
-            ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 1258000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 1258000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
+            // ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 1258000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 1258000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
+            ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 1500000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 1500000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 7, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 150134.38, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 150134.38, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 8, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 639516.92, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 639516.92, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 4, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 97870.85, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 97870.85, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
@@ -20,6 +21,7 @@ class TreasuryVoucherSeeder extends Seeder {
             ['idType' => 2, 'idSupplier' => 6, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 1764255.51, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 1764255.51, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 2, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 10000000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 10000000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 500000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 500000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
+            ['idType' => 1, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 242000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 242000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
         ];
 
         foreach ($treasuryVouchers as $treasuryVoucher) {
