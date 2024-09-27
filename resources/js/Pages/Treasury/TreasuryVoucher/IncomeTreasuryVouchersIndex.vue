@@ -314,6 +314,27 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 {{ currencyNumber(data.amount) }}
             </template>
         </Column>
+        
+        <Column field="paymentMethod" header="Forma de ingreso" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.paymentMethod }}
+            </template>
+        </Column>
+        <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.bank }}
+            </template>
+        </Column>
+        <Column field="bankAccount" header="Cta. bancaria" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ data.bankAccount }}
+            </template>
+        </Column>
+        <Column field="paymentDate" header="F. pago" v-if="selectStatus === 2" sortable>
+            <template #body="{ data }">
+                {{ dateFormat(data.paymentDate) }}
+            </template>
+        </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
             <template #body="{ data }">
                 <div class="space-x-2 flex justify-center">

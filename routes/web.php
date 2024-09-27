@@ -13,6 +13,7 @@ use App\Http\Controllers\Treasury\Voucher\VoucherTypeController;
 use App\Http\Controllers\Treasury\supplier\SupplierController;
 use App\Http\Controllers\Treasury\Taxes\SocialSecurityTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\VatTaxWithholdingController;
+use App\Http\Controllers\Treasury\TreasuryVoucher\DailyTransactionController;
 use App\Http\Controllers\Treasury\TreasuryVoucher\PaymentMethodController;
 use App\Http\Controllers\Treasury\TreasuryVoucher\TreasuryVoucherController;
 use App\Http\Controllers\Treasury\Voucher\VoucherController;
@@ -124,6 +125,10 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
 
     Route::get('/vatTaxWithholdings/{vatTaxWithholding}/info', [VatTaxWithholdingController::class, 'info'])->name('vatTaxWithholdings.info');
     Route::resource('vatTaxWithholdings', VatTaxWithholdingController::class);
+});
+
+Route::group(['middleware' => ['auth', 'check.permission:view daily transactions']], function () {
+    Route::resource('daily-transactions', DailyTransactionController::class)->only(['index', 'show']);
 });
 
 Route::middleware('auth')->group(function () {

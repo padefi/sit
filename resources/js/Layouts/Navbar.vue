@@ -75,6 +75,13 @@ const allItems = ref([
                 name: 'treasury vouchers',
             },
             {
+                label: 'Mov. Diarios',
+                icon: 'pi pi-calendar-clock',
+                method: 'get',
+                route: 'daily-transactions.index',
+                name: 'daily transactions',
+            },
+            {
                 label: 'Proveedores',
                 icon: 'pi pi-truck',
                 method: 'get',

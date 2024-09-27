@@ -41,6 +41,7 @@ class PermissionSeeder extends Seeder {
             ['name' => 'view treasury vouchers', 'description' => 'Comp. Tesorería', 'show' => true],
             ['name' => 'create treasury vouchers', 'description' => 'Comp. Tesorería', 'show' => true],
             ['name' => 'edit treasury vouchers', 'description' => 'Comp. Tesorería', 'show' => true],
+            ['name' => 'view daily transactions', 'description' => 'Mov. Diarios', 'show' => true],
             ['name' => 'view income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
             ['name' => 'create income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
             ['name' => 'edit income tax withholdings', 'description' => 'Imp. Gcias', 'show' => true],
