@@ -11,7 +11,7 @@ import treasuryVoucherModal from './TreasuryVoucherModal.vue';
 toastService();
 const dialog = useDialog();
 
-const { hasPermission, hasPermissionColumn } = usePermissions();
+const { hasPermission } = usePermissions();
 const activeIndex = ref(0);
 const voucherStatusesSelect = ref([]);
 const status = ref(0);

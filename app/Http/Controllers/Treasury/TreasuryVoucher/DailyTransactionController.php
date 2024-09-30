@@ -28,7 +28,7 @@ class DailyTransactionController extends Controller {
      */
 
     public function index(): Response {
-        return Inertia::render('Treasury/TreasuryVoucher/DailyTransactions');
+        return Inertia::render('Treasury/TreasuryVoucher/DailyTransactions/DailyTransactionsIndex');
     }
 
     public function show($date) {
@@ -36,6 +36,14 @@ class DailyTransactionController extends Controller {
         $dailyTransactions = [];
 
         foreach ($voucherTypes as $voucherType) {
+            $previousCash = CashTransaction::with('treasuryVoucher')
+                ->whereHas('treasuryVoucher', function ($query) use ($date, $voucherType) {
+                    $query->where('paymentDate', '<', $date)
+                        ->where('idVS', 2)
+                        ->where('idType', $voucherType->id);
+                })
+                ->sum('amount');
+
             $cashTransactions = CashTransaction::with('treasuryVoucher')
                 ->whereHas('treasuryVoucher', function ($query) use ($date, $voucherType) {
                     $query->where('paymentDate', $date)
@@ -64,6 +72,7 @@ class DailyTransactionController extends Controller {
                 ->get();
 
             $dailyTransactions[$voucherType->id] = [
+                'previousCash' => $previousCash,
                 'cashTransactions' => CashTransactionResource::collection($cashTransactions),
                 'bankTransactions' => BankTransactionResource::collection($bankTransactions),
                 'checkTransactions' => CheckTransactionResource::collection($checkTransactions),

@@ -14,6 +14,7 @@ class BankTransactionResource extends JsonResource {
     public function toArray(Request $request): array {
         return [
             'id' => $this->id,
+            'number' => $this->number,
             'treasuryVoucher' => new TreasuryVoucherResource($this->treasuryVoucher),
         ];
     }
