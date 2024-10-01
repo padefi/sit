@@ -26,7 +26,7 @@ use Inertia\Response;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'subtypeRelated']);
+        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'subtypeRelated', 'invoicePendingToPay']);
         $this->middleware('check.permission:create suppliers')->only('store');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
@@ -208,5 +208,30 @@ class SupplierController extends Controller {
 
             return $voucher;
         });
+    }
+
+    public function invoicePendingToPay() {
+        $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
+        $countInvoicePendingToPay = 0;
+
+        foreach ($suppliers as $supplier) {
+            $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+            $vouchers->each(function ($voucher) use (&$countInvoicePendingToPay) {
+                $voucher->pendingToPay = $voucher->totalAmount;
+
+                foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                    if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                        $voucher->pendingToPay -= $voucherToTreasury->amount;
+                        if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                    }
+                }
+
+                if ($voucher->pendingToPay > 0) $countInvoicePendingToPay++;
+            });
+        }
+
+        return response()->json([
+            'countInvoicePendingToPay' => $countInvoicePendingToPay,
+        ]);
     }
 }

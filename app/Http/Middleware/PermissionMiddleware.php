@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PermissionMiddleware {
     /**
@@ -19,6 +20,7 @@ class PermissionMiddleware {
 
         if (!$user) {
             abort(403, 'Sin autorización.');
+            return Inertia::render('403');
         }
 
         foreach ($permissions as $permission) {
@@ -33,7 +35,8 @@ class PermissionMiddleware {
             return $next($request);
         }
 
-        abort(403, 'Sin autorización.');
+        // abort(403, 'Sin autorización.');
+        return Inertia::render('403');
 
         /*  if (!$user || !$user->hasDirectPermission($permission)) {
             abort(403, 'Sin autorización.');

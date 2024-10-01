@@ -6,15 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Treasury\TreasuryVoucher\BankTransactionResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\CashTransactionResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\CheckTransactionResource;
-use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
 use App\Models\Treasury\TreasuryVoucher\BankTransaction;
 use App\Models\Treasury\TreasuryVoucher\CashTransaction;
 use App\Models\Treasury\TreasuryVoucher\CheckTransaction;
-use App\Models\Treasury\TreasuryVoucher\PaymentMethod;
-use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\Voucher\VoucherType;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Inertia\Inertia;
 
@@ -28,7 +23,7 @@ class DailyTransactionController extends Controller {
      */
 
     public function index(): Response {
-        return Inertia::render('Treasury/TreasuryVoucher/DailyTransactions/DailyTransactionsIndex');
+        return Inertia::render('Treasury/DailyTransactions/DailyTransactionsIndex');
     }
 
     public function show($date) {

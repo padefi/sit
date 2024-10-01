@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Treasury\Taxes\IncomeTaxWithholdingController;
 use App\Http\Controllers\Treasury\Taxes\IncomeTaxWithholdingScaleController;
 use Inertia\Inertia;
@@ -138,3 +139,10 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+
+Route::get('/{any}', function () {
+    return Inertia::render('404');
+})->where('any', '.*')->middleware('auth');
+
