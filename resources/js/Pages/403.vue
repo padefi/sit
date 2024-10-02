@@ -17,7 +17,7 @@ import { Link } from '@inertiajs/vue3';
 <template>
     <div class="flex items-center justify-center min-h-[90vh]">
         <div class="card-container border-gradient">
-            <Card class="overflow-hidden rounded-3xl">
+            <Card class="overflow-hidden !rounded-3xl">
                 <template #title>
                     <div class="flex items-center justify-center">
                         <i class="pi pi-times-circle text-4xl text-red-500"></i>

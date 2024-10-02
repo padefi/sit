@@ -62,6 +62,11 @@ watch(transactionDate, async () => {
 
 onMounted(async () => {
     await getDailyTransactions();
+
+    Echo.channel('treasuryVouchers')
+        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', async () => {
+            await getDailyTransactions();
+        });
 });
 </script>
 <style>

@@ -2,6 +2,7 @@
 import { inject, onMounted, ref } from "vue";
 import { currencyNumber, dateFormat, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
+import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
 import treasuryVoucherModal from './TreasuryVoucherModal.vue';
@@ -14,6 +15,7 @@ const expandedRows = ref([]);
 const voucherTypesSelect = ref([]);
 const voucherStatusesSelect = ref([]);
 const dialog = useDialog();
+const toast = useToast();
 const dialogRef = inject("dialogRef");
 
 const filters = ref({
@@ -112,6 +114,16 @@ onMounted(async () => {
                 }
             }
         });
+
+    Echo.channel('treasuryVouchers')
+        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', async (e) => {
+            const index = treasuryVouchersArray.value.findIndex(treasuryVoucher => treasuryVoucher.id === e.treasuryVoucher.id);
+            const dataTreasuryVoucher = treasuryVoucherDataStructure(e.treasuryVoucher);
+
+            if (index !== -1) {
+                treasuryVouchersArray.value[index] = dataTreasuryVoucher;
+            }
+        });
 });
 
 /*  */
@@ -120,7 +132,7 @@ import infoModal from '@/Components/InfoModal.vue';
 const dialogInfo = useDialog();
 
 const info = (id) => {
-    axios.get(`/treasury-vouchers/${id}/info`)
+    axios.get(`/treasury-voucher/${id}/info`)
         .then((response) => {
             const header = 'Información del comprobante de tesorería';
 

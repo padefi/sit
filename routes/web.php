@@ -142,7 +142,11 @@ require __DIR__ . '/auth.php';
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
-Route::get('/{any}', function () {
+/* Route::get('/{any}', function () {
     return Inertia::render('404');
-})->where('any', '.*')->middleware('auth');
+})->where('any', '.*')->middleware('auth'); */
+
+Route::fallback(function () {
+    return Inertia::render('404');
+});
 

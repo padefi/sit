@@ -11,12 +11,23 @@ use Illuminate\Support\Facades\Date;
 
 class DashboardController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view treasury vouchers, view daily transactions, view vouchers')->only(['index']);
+        $this->middleware('check.permission:view treasury vouchers,view daily transactions,view vouchers')->only(['index']);
     }
 
     public function index() {
+        /* Treasury Vouchers */
+        $treasuryVoucherController = new TreasuryVoucherController();
+        $incomeTreasuryVouchers = $treasuryVoucherController->treasuryVouchers(VoucherType::where('id', 1)->first(), 1);
+        $expenseTreasuryVouchers = $treasuryVoucherController->treasuryVouchers(VoucherType::where('id', 2)->first(), 1);
+
+        $totalIncomeTreasuryVouchers = count($incomeTreasuryVouchers->original['treasuryVouchers']);
+        $totalExpenseTreasuryVouchers = count($expenseTreasuryVouchers->original['treasuryVouchers']);
+        $totalTreasuryVouchers = $totalIncomeTreasuryVouchers + $totalExpenseTreasuryVouchers;
+        /* Treasury Vouchers */
+
+        /* Daily Transactions */
         $dailyTransactionController = new DailyTransactionController();
-        $dailyTransactions = $dailyTransactionController->show(Date::now()->format('Y-09-30'));
+        $dailyTransactions = $dailyTransactionController->show(Date::now()->format('Y-m-d'));
 
         $totalCashTransactions = 0;
         $totalBankTransactions = 0;
@@ -29,22 +40,17 @@ class DashboardController extends Controller {
         }
 
         $totalTransactions = $totalCashTransactions + $totalBankTransactions + $totalCheckTransactions;
+        /* Daily Transactions */
 
-        $treasuryVoucherController = new TreasuryVoucherController();
-        $incomeTreasuryVouchers = $treasuryVoucherController->treasuryVouchers(VoucherType::where('id', 1)->first(), 1);
-        $expenseTreasuryVouchers = $treasuryVoucherController->treasuryVouchers(VoucherType::where('id', 2)->first(), 1);
-
-        $totalIncomeTreasuryVouchers = count($incomeTreasuryVouchers->original['treasuryVouchers']);
-        $totalExpenseTreasuryVouchers = count($expenseTreasuryVouchers->original['treasuryVouchers']);
-        $totalTreasuryVouchers = $totalIncomeTreasuryVouchers + $totalExpenseTreasuryVouchers;
-
+        /* Invoice Suppliers pending to pay */
         $supplierController = new SupplierController();
         $suppliers = $supplierController->invoicePendingToPay();
         $totalInvoiceSuppliers = $suppliers->original['countInvoicePendingToPay'];
+        /* Invoice Suppliers pending to pay */
 
         return [
-            'totalTransactions' => $totalTransactions,
             'totalTreasuryVouchers' => $totalTreasuryVouchers,
+            'totalTransactions' => $totalTransactions,
             'totalInvoiceSuppliers' => $totalInvoiceSuppliers,
         ];
     }

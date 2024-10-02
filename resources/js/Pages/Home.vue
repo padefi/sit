@@ -10,7 +10,8 @@ const loading = ref(true);
 const treasuryVouchers = ref(0);
 const dailyTransactions = ref(0);
 const invoiceSuppliers = ref(0);
-onMounted(async () => {
+
+const getData = async () => {
     const response = await fetch('/dashboard');
 
     if (!response.ok) {
@@ -22,6 +23,22 @@ onMounted(async () => {
     dailyTransactions.value = data.totalTransactions;
     invoiceSuppliers.value = data.totalInvoiceSuppliers;
     loading.value = false;
+}
+onMounted(async () => {
+    loading.value = true;
+    await getData();
+
+    Echo.channel('treasuryVouchers')
+        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', async () => {
+            loading.value = true;
+            await getData();
+        });
+
+    Echo.channel('vouchers')
+        .listen('Treasury\\Voucher\\VoucherEvent', async () => {
+            loading.value = true;
+            await getData();
+        });
 });
 </script>
 
@@ -67,7 +84,7 @@ onMounted(async () => {
                         </template>
                         <template v-else>
                             <div class="text-primary text-lg">
-                                <template v-if="dailyTransactions > 0">
+                                <template v-if="treasuryVouchers > 0">
                                     <span class="text-emerald-500 font-bold">{{ treasuryVouchers }}</span>
                                     <span> comprobantes pendientes.</span>
                                 </template>
