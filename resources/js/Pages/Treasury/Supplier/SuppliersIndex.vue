@@ -199,7 +199,6 @@ const info = (data, id) => {
 }
 /*  */
 </script>
-
 <template>
     <AuthenticatedLayout>
         <Card class="mt-5 mx-4 uppercase">
@@ -268,7 +267,7 @@ const info = (data, id) => {
                     <Column field="pendingToPay" header="Saldo" dataType="numeric" sortable class="w-1/6">
                         <template #body="{ data }">
                             <span :class="data.pendingToPay < 0 ? 'text-red-500' : ''">
-                                {{ currencyNumber(data.pendingToPay) }}
+                                {{ Number(data.pendingToPay) ? currencyNumber(data.pendingToPay) : currencyNumber(0) }}
                             </span>
                         </template>
                         <template #filter="{ filterModel, filterCallback }">

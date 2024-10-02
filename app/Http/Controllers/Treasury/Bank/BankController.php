@@ -11,6 +11,7 @@ use App\Http\Resources\Treasury\Bank\BankResource;
 use App\Models\Treasury\Bank\Bank;
 use App\Models\Treasury\Bank\BankAccount;
 use App\Models\Treasury\Bank\BankAccountType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -53,7 +54,7 @@ class BankController extends Controller {
             'address' => $request->address,
             'phone' => $request->phone,
             'email' => $request->email,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -97,7 +98,7 @@ class BankController extends Controller {
             'address' => $request->address,
             'phone' => $request->phone,
             'email' => $request->email,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 

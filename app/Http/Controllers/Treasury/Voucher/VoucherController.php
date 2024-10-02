@@ -18,6 +18,7 @@ use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -65,7 +66,7 @@ class VoucherController extends Controller {
             'idPC' => $request->payCondition,
             'notes' => $request->notes,
             'totalAmount' => $request->totalAmount,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -155,7 +156,7 @@ class VoucherController extends Controller {
             'idPC' => $request->payCondition,
             'notes' => $request->notes,
             'totalAmount' => $request->totalAmount,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
             'status' => true,
         ]);
@@ -314,7 +315,7 @@ class VoucherController extends Controller {
             'idVS' => 1,
             'amount' => $amount,
             'totalAmount' => $amount,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -324,7 +325,7 @@ class VoucherController extends Controller {
                 'idVoucher' => $item['id'],
                 'idTV' => $treasuryVoucher->id,
                 'amount' => $item['paymentAmount'],
-                'idUserSent' => auth()->user()->id,
+                'idUserSent' => Auth::id(),
                 'related_at' => now(),
             ]);
         }

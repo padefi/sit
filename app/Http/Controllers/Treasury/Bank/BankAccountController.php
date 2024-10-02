@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Bank\BankAccountRequest;
 use App\Http\Resources\Treasury\Bank\BankAccountResource;
 use App\Models\Treasury\Bank\BankAccount;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -34,7 +35,7 @@ class BankAccountController extends Controller {
             'cbu' => $request->cbu,
             'alias' => $request->alias,
             'status' => $request->status ? 1 : 0,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -85,7 +86,7 @@ class BankAccountController extends Controller {
             'cbu' => $request->cbu,
             'alias' => $request->alias,
             'status' => ($request->status) ? 1 : 0,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 

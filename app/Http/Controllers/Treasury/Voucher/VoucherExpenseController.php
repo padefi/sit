@@ -8,6 +8,7 @@ use App\Http\Requests\Treasury\Voucher\VoucherExpenseRequest;
 use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -47,7 +48,7 @@ class VoucherExpenseController extends Controller {
 
         $voucherExpense = VoucherExpense::create([
             'name' => $request->name,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
             'status' => ($request->status) ? 1 : 0,
@@ -81,7 +82,7 @@ class VoucherExpenseController extends Controller {
 
         $voucherExpense->update([
             'name' => $request->name,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
             'status' => ($request->status) ? 1 : 0,
         ]);

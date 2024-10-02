@@ -9,6 +9,7 @@ use App\Http\Resources\Treasury\Voucher\VoucherTypeResource;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -50,7 +51,7 @@ class VoucherTypeController extends Controller {
             $voucherType->subtypes()->detach($voucherSubtype->id);
         } else {
             $voucherType->subtypes()->attach($voucherSubtype->id, [
-                'idUserRelated' => auth()->user()->id,
+                'idUserRelated' => Auth::id(),
                 'related_at' => now(),
             ]);
         }

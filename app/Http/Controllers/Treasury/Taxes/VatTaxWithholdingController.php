@@ -9,6 +9,7 @@ use App\Http\Requests\Treasury\Taxes\VatTaxWithholdingRequest;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\VatTaxWithholdingResource;
 use App\Models\Treasury\Taxes\Category;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -44,7 +45,7 @@ class VatTaxWithholdingController extends Controller {
             'fixedAmount' => $request->fixedAmount,
             'startAt' => date('Y-m-d', strtotime($request->startAt)),
             'endAt' => date('Y-m-d', strtotime($request->endAt)),
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -73,7 +74,7 @@ class VatTaxWithholdingController extends Controller {
             'fixedAmount' => $request->fixedAmount,
             'startAt' => date('Y-m-d', strtotime($request->startAt)),
             'endAt' => date('Y-m-d', strtotime($request->endAt)),
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 

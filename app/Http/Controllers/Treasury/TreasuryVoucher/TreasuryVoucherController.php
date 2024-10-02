@@ -25,6 +25,7 @@ use App\Models\Treasury\Voucher\Voucher;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Response;
@@ -56,7 +57,7 @@ class TreasuryVoucherController extends Controller {
             'idVS' => 1,
             'amount' => $request->amount,
             'totalAmount' => $request->amount,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -70,7 +71,7 @@ class TreasuryVoucherController extends Controller {
             'amount' => $request->amount,
             'notes' => $request->notes,
             'voucherDate' => date('Y-m-d', strtotime($request->voucherDate)),
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -122,7 +123,7 @@ class TreasuryVoucherController extends Controller {
             'idSupplier' => $request->supplier,
             'amount' => $request->amount,
             'totalAmount' => $request->amount,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 
@@ -134,7 +135,7 @@ class TreasuryVoucherController extends Controller {
             'amount' => $request->amount,
             'notes' => $request->notes,
             'voucherDate' => date('Y-m-d', strtotime($request->voucherDate)),
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 
@@ -337,7 +338,7 @@ class TreasuryVoucherController extends Controller {
                 'vatTaxAmount' => $item["withholdings"]['vatTax'],
                 'totalAmount' => $item['totalAmount'],
                 'paymentDate' => date('Y-m-d', strtotime($item['paymentDate'])),
-                'idUserConfirmed' => auth()->user()->id,
+                'idUserConfirmed' => Auth::id(),
                 'confirmed_at' => now(),
             ]);
 
@@ -348,7 +349,7 @@ class TreasuryVoucherController extends Controller {
                     'idVS' => 1,
                     'amount' => $item["withholdings"]['incomeTax'],
                     'totalAmount' => $item["withholdings"]['incomeTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                     'updated_at' => null,
                 ]);
@@ -358,7 +359,7 @@ class TreasuryVoucherController extends Controller {
                     'idNTV' => $incomeTaxTreasuryVoucher->id,
                     'idTT' => 1,
                     'amount' => $item["withholdings"]['incomeTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                 ]);
 
@@ -372,7 +373,7 @@ class TreasuryVoucherController extends Controller {
                     'idVS' => 1,
                     'amount' => $item["withholdings"]['socialTax'],
                     'totalAmount' => $item["withholdings"]['socialTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                     'updated_at' => null,
                 ]);
@@ -382,7 +383,7 @@ class TreasuryVoucherController extends Controller {
                     'idNTV' => $socialTaxTreasuryVoucher->id,
                     'idTT' => 2,
                     'amount' => $item["withholdings"]['socialTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                 ]);
 
@@ -396,7 +397,7 @@ class TreasuryVoucherController extends Controller {
                     'idVS' => 1,
                     'amount' => $item["withholdings"]['vatTax'],
                     'totalAmount' => $item["withholdings"]['vatTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                     'updated_at' => null,
                 ]);
@@ -406,7 +407,7 @@ class TreasuryVoucherController extends Controller {
                     'idNTV' => $vatTaxTreasuryVoucher->id,
                     'idTT' => 3,
                     'amount' => $item["withholdings"]['vatTax'],
-                    'idUserCreated' => auth()->user()->id,
+                    'idUserCreated' => Auth::id(),
                     'created_at' => now(),
                 ]);
 
@@ -421,7 +422,7 @@ class TreasuryVoucherController extends Controller {
                         'idTV' => $item['id'],
                         'number' => $item['transactionNumber'],
                         'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => auth()->user()->id,
+                        'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
                     ]);
@@ -433,7 +434,7 @@ class TreasuryVoucherController extends Controller {
                         'idTV' => $item['id'],
                         'number' => $item['transactionNumber'],
                         'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => auth()->user()->id,
+                        'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
                     ]);
@@ -443,7 +444,7 @@ class TreasuryVoucherController extends Controller {
                     CashTransaction::create([
                         'idTV' => $item['id'],
                         'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => auth()->user()->id,
+                        'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
                     ]);
@@ -485,7 +486,7 @@ class TreasuryVoucherController extends Controller {
 
         $treasuryVoucher->update([
             'idVS' => 3,
-            'idUserVoided' => auth()->user()->id,
+            'idUserVoided' => Auth::id(),
             'voided_at' => now(),
         ]);
 

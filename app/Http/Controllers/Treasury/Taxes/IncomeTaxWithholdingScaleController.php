@@ -10,6 +10,7 @@ use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 
@@ -33,7 +34,7 @@ class IncomeTaxWithholdingScaleController extends Controller {
             'fixedAmount' => $request->fixedAmount,
             'startAt' => date('Y-m-d', strtotime($request->startAt)),
             'endAt' => date('Y-m-d', strtotime($request->endAt)),
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -51,7 +52,7 @@ class IncomeTaxWithholdingScaleController extends Controller {
                 'fixedAmount' => $incomeTaxWithholding->fixedAmount,
                 'startAt' => date('Y-m-d', strtotime($incomeTaxWithholding->startAt)),
                 'endAt' => date('Y-m-d', strtotime($incomeTaxWithholding->endAt)),
-                'idUserCreated' => auth()->user()->id,
+                'idUserCreated' => Auth::id(),
                 'created_at' => now(),
                 'updated_at' => null,
             ]);
@@ -87,7 +88,7 @@ class IncomeTaxWithholdingScaleController extends Controller {
             'fixedAmount' => $request->fixedAmount,
             'startAt' => date('Y-m-d', strtotime($request->startAt)),
             'endAt' => date('Y-m-d', strtotime($request->endAt)),
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 

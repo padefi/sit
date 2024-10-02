@@ -13,6 +13,7 @@ use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -57,7 +58,7 @@ class VoucherSubtypeController extends Controller {
 
         $voucherSubtype = VoucherSubtype::create([
             'name' => $request->name,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
             'status' => ($request->status) ? 1 : 0,
@@ -91,7 +92,7 @@ class VoucherSubtypeController extends Controller {
 
         $voucherSubtype->update([
             'name' => $request->name,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
             'status' => ($request->status) ? 1 : 0,
         ]);
@@ -135,7 +136,7 @@ class VoucherSubtypeController extends Controller {
             $voucherSubtype->expenses()->detach($voucherExpense->id);
         } else {
             $voucherSubtype->expenses()->attach($voucherExpense->id, [
-                'idUserRelated' => auth()->user()->id,
+                'idUserRelated' => Auth::id(),
                 'related_at' => now(),
             ]);
         }
@@ -168,7 +169,7 @@ class VoucherSubtypeController extends Controller {
             $voucherSubtype->suppliers()->detach($supplier->id);
         } else {
             $voucherSubtype->suppliers()->attach($supplier->id, [
-                'idUserRelated' => auth()->user()->id,
+                'idUserRelated' => Auth::id(),
                 'related_at' => now(),
             ]);
         }

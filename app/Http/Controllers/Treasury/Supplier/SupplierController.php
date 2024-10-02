@@ -19,6 +19,7 @@ use App\Models\Treasury\TreasuryVoucher\PayCondition;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use App\Models\Treasury\Voucher\VoucherType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -96,7 +97,7 @@ class SupplierController extends Controller {
             'incomeTaxWithholding' => $request->incomeTaxWithholding ? 1 : 0,
             'socialTax' => $request->socialTax ? 1 : 0,
             'vatTax' => $request->vatTax ? 1 : 0,
-            'idUserCreated' => auth()->user()->id,
+            'idUserCreated' => Auth::id(),
             'created_at' => now(),
             'updated_at' => null,
         ]);
@@ -159,7 +160,7 @@ class SupplierController extends Controller {
             'incomeTaxWithholding' => $request->incomeTaxWithholding ? 1 : 0,
             'socialTax' => $request->socialTax ? 1 : 0,
             'vatTax' => $request->vatTax ? 1 : 0,
-            'idUserUpdated' => auth()->user()->id,
+            'idUserUpdated' => Auth::id(),
             'updated_at' => now(),
         ]);
 

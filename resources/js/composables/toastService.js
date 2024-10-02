@@ -31,8 +31,8 @@ export function toastService() {
             }
 
             toast.add({
-                severity: next.flash.info.type,
-                detail: next.flash.info.message,
+                severity: next.flash.info?.type ?? 'info',
+                detail: next.flash.info?.message ?? '',
                 life: 3000,
             });
         }
