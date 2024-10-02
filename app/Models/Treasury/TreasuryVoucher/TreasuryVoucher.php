@@ -76,6 +76,18 @@ class TreasuryVoucher extends Model {
         return $this->hasOne(TreasuryCustomVoucher::class, 'idTV');
     }
 
+    public function bankTransaction() {
+        return $this->hasOne(BankTransaction::class, 'idTV');
+    }
+
+    public function cashTransaction() {
+        return $this->hasOne(CashTransaction::class, 'idTV');
+    }
+
+    public function checkTransaction() {
+        return $this->hasOne(CheckTransaction::class, 'idTV');
+    }
+
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }

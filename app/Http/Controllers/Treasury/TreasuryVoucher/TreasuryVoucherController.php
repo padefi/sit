@@ -30,6 +30,16 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class TreasuryVoucherController extends Controller {
     protected $vouchersIds = []; //This value store the ids of the vouchers for been stored in calculateTotalAmountCollected function to not repeat them.
@@ -587,5 +597,117 @@ class TreasuryVoucherController extends Controller {
         }
 
         return $data;
+    }
+
+    public function exportTreasuryVouchers($type, $status) {
+        $treasuryVouchers = TreasuryVoucher::with(['supplier', 'bankAccount', 'bankTransaction', 'cashTransaction', 'checkTransaction', 'userCreated', 'userConfirmed', 'userVoided'])
+            ->where('idType', $type)
+            ->where('idVS', $status)
+            ->get();
+
+        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'comprobantes-tesoreria-' . date('d-m-Y') . '.xlsx');
+    }
+}
+
+class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeadings, ShouldAutoSize, WithEvents, WithStyles {
+    protected $treasuryVouchers;
+    protected $type;
+    protected $status;
+
+    public function __construct($treasuryVouchers, $type, $status) {
+        $this->treasuryVouchers = $treasuryVouchers;
+        $this->type = $type;
+        $this->status = $status;
+    }
+
+    public function collection() {
+        return $this->treasuryVouchers;
+    }
+
+    public function headings(): array {
+        return [
+            'Cuit',
+            'Proveedor',
+            'Importe',
+            'Estado',
+            'Ret. gcias',
+            'Ret. suss',
+            'Ret. iva',
+            'Importe Pagado',
+            'Forma de pago',
+            'Banco',
+            'Cta. bancaria',
+            'N° operación',
+            'F. pago',
+            'Usuario',
+        ];
+    }
+
+    public function map($treasuryVoucher): array {
+        return [
+            $treasuryVoucher->supplier->cuit,
+            strtoupper($treasuryVoucher->supplier->businessName),
+            $treasuryVoucher->amount,
+            match ($this->status) {
+                '2' => 'CONFIRMADO',
+                '3' => 'ANULADO',
+                default => 'PENDIENTE',
+            },
+            $treasuryVoucher->incomeTaxAmount > 0 ? $treasuryVoucher->incomeTaxAmount : '0',
+            $treasuryVoucher->socialTaxAmount > 0 ? $treasuryVoucher->socialTaxAmount : '0',
+            $treasuryVoucher->vatTaxAmount > 0 ? $treasuryVoucher->vatTaxAmount : '0',
+            $treasuryVoucher->totalAmount,
+            $treasuryVoucher->paymentMethod->name ?? '',
+            $treasuryVoucher->bankAccount->bank->name ?? '',
+            $treasuryVoucher->bankAccount->accountNumber ?? '',
+            ($treasuryVoucher->bankTransaction?->number ? $treasuryVoucher->bankTransaction?->number : $treasuryVoucher->checkTransaction?->number) ?? '',
+            $treasuryVoucher->paymentDate ? date('d/m/Y', strtotime($treasuryVoucher->paymentDate)) : '00/00/0000',
+            match ($this->status) {
+                '2' => strtoupper($treasuryVoucher->userConfirmed->name . ' ' . $treasuryVoucher->userConfirmed->surname) ?? '',
+                '3' => strtoupper($treasuryVoucher->userVoided->name . ' ' . $treasuryVoucher->userVoided->surname) ?? '',
+                default => strtoupper($treasuryVoucher->userCreated->name . ' ' . $treasuryVoucher->userCreated->surname) ?? '',
+            },
+        ];
+    }
+
+    public function styles(Worksheet $sheet) {
+        $lastRow = $sheet->getHighestRow();
+        return [
+            'C2:C' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
+                ],
+            ],
+            'E2:H' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
+                ],
+            ],
+            'M2:M' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => 'dd/mm/yyyy'
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                ],
+            ],
+            'K2:K' . $lastRow => [
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                ],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getStyle('A1:N1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                    ],
+                ]);
+            },
+        ];
     }
 }
