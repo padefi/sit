@@ -45,7 +45,7 @@ class TreasuryVoucherController extends Controller {
     protected $vouchersIds = []; //This value store the ids of the vouchers for been stored in calculateTotalAmountCollected function to not repeat them.
 
     public function __construct() {
-        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus']);
+        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'exportTreasuryVouchers', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus']);
         $this->middleware('check.permission:edit treasury vouchers')->only(['update', 'voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
         $this->middleware('check.permission:view users')->only('info');
     }
@@ -639,7 +639,7 @@ class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeading
             'Cta. bancaria',
             'N° operación',
             'F. pago',
-            'Usuario',
+            // 'Usuario',
         ];
     }
 
@@ -656,17 +656,17 @@ class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeading
             $treasuryVoucher->incomeTaxAmount > 0 ? $treasuryVoucher->incomeTaxAmount : '0',
             $treasuryVoucher->socialTaxAmount > 0 ? $treasuryVoucher->socialTaxAmount : '0',
             $treasuryVoucher->vatTaxAmount > 0 ? $treasuryVoucher->vatTaxAmount : '0',
-            $treasuryVoucher->totalAmount,
+            $this->status === '2' ? $treasuryVoucher->totalAmount : '0',
             $treasuryVoucher->paymentMethod->name ?? '',
             $treasuryVoucher->bankAccount->bank->name ?? '',
             $treasuryVoucher->bankAccount->accountNumber ?? '',
             ($treasuryVoucher->bankTransaction?->number ? $treasuryVoucher->bankTransaction?->number : $treasuryVoucher->checkTransaction?->number) ?? '',
             $treasuryVoucher->paymentDate ? date('d/m/Y', strtotime($treasuryVoucher->paymentDate)) : '00/00/0000',
-            match ($this->status) {
+            /* match ($this->status) {
                 '2' => strtoupper($treasuryVoucher->userConfirmed->name . ' ' . $treasuryVoucher->userConfirmed->surname) ?? '',
                 '3' => strtoupper($treasuryVoucher->userVoided->name . ' ' . $treasuryVoucher->userVoided->surname) ?? '',
                 default => strtoupper($treasuryVoucher->userCreated->name . ' ' . $treasuryVoucher->userCreated->surname) ?? '',
-            },
+            }, */
         ];
     }
 

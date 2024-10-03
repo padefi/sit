@@ -201,6 +201,10 @@ const treasuryVoucher = () => {
     });
 }
 
+const exportSupplierVouchers = async () => {
+    window.location.href = route('vouchers.export', dialogRef.value.data.supplierId);
+}
+
 onMounted(async () => {
     await getInvoiceTypeData();
     await getVouchers();
@@ -397,6 +401,9 @@ const info = (id) => {
                         </div>
                     </template>
                 </Column>
+                <template #paginatorend>
+                    <Button icon="pi pi-download" iconClass="text-xl" text @click="exportSupplierVouchers()" />
+                </template>
                 <template #expansion="{ data }">
                     <DataTable :value="data.items" scrollable class="m-3 data-table-expanded">
                         <template #empty>

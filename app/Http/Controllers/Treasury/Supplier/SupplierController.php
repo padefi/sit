@@ -24,10 +24,19 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only(['index', 'show', 'subtypeRelated', 'invoicePendingToPay']);
+        $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'invoicePendingToPay']);
         $this->middleware('check.permission:create suppliers')->only('store');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
@@ -234,5 +243,86 @@ class SupplierController extends Controller {
         return response()->json([
             'countInvoicePendingToPay' => $countInvoicePendingToPay,
         ]);
+    }
+
+    public function exportSuppliers() {
+        $suppliers = Supplier::with(['vatCondition', 'category'])->orderBy('name', 'asc')->get();
+
+        foreach ($suppliers as $supplier) {
+            $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+            $vouchers = $this->calculatePendingToPay($vouchers);
+            $supplier->pendingToPay = $vouchers->sum('pendingToPay');
+        }
+
+        return Excel::download(new SuppliersExport($suppliers), 'proveedores-' . date('d-m-Y') . '.xlsx');
+    }
+}
+
+class SuppliersExport implements FromCollection, WithMapping, WithHeadings, ShouldAutoSize, WithEvents, WithStyles {
+    protected $suppliers;
+
+    public function __construct($suppliers) {
+        $this->suppliers = $suppliers;
+    }
+
+    public function collection() {
+        return $this->suppliers;
+    }
+
+    public function headings(): array {
+        return [
+            'Cuit',
+            'Razón Social',
+            'Nombre Fantasía',
+            'Teléfono',
+            'Email',
+            'CBU',
+            'Cond. IVA',
+            'Rubro',
+            'Ret. gcias',
+            'Ret. suss',
+            'Ret. iva',
+            'Saldo',
+        ];
+    }
+
+    public function map($supplier): array {       
+        return [
+            $supplier->cuit,
+            strtoupper($supplier->name),
+            strtoupper($supplier->businessName),
+            $supplier->phone,
+            $supplier->email,
+            $supplier->cbu,
+            $supplier->vatCondition->name,
+            $supplier->Category->name,
+            $supplier->incomeTaxWithholding ? 'SI' : 'NO',
+            $supplier->socialTax ? 'SI' : 'NO',
+            $supplier->incomeTaxWithholding ? 'SI' : 'NO',
+            $supplier->pendingToPay > 0 ? $supplier->pendingToPay : '0',
+        ];
+    }
+
+    public function styles(Worksheet $sheet) {
+        $lastRow = $sheet->getHighestRow();
+        return [
+            'L2:L' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
+                ],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                    ],
+                ]);
+            },
+        ];
     }
 }

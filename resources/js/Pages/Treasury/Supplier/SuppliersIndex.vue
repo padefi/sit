@@ -142,6 +142,10 @@ const viewOnMap = async (data, event) => {
     L.marker([data.latitude, data.longitude]).addTo(map).openPopup();
 }
 
+const exportSuppliers = async () => {
+    window.location.href = route('suppliers.export');
+}
+
 onMounted(() => {
     suppliersArray.value = props.suppliers;
     loading.value = false;
@@ -294,6 +298,9 @@ const info = (data, id) => {
                             </div>
                         </template>
                     </Column>
+                    <template #paginatorend>
+                        <Button icon="pi pi-download" iconClass="text-xl" text @click="exportSuppliers()" />
+                    </template>
                     <template #expansion="{ data }">
                         <div class="data-table-expanded">
                             <div class="flex w-6/6 gap-3 mx-1 my-0 text-sm uppercase tracking-tight">

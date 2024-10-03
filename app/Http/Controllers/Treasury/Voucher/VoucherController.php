@@ -11,6 +11,7 @@ use App\Http\Requests\Treasury\Voucher\VoucherRequest;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
+use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Voucher\InvoiceType;
 use App\Models\Treasury\Voucher\InvoiceTypeCode;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
@@ -21,10 +22,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class VoucherController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view vouchers')->only(['show', 'invoiceTypes', 'typesRelated', 'invoiceTypesRelated']);
+        $this->middleware('check.permission:view vouchers')->only(['show', 'invoiceTypes', 'typesRelated', 'invoiceTypesRelated', 'showVouchers', 'exportSupplierVouchers']);
         $this->middleware('check.permission:create vouchers')->only('store');
         $this->middleware('check.permission:edit vouchers')->only(['update', 'voidVoucher']);
         $this->middleware('check.permission:view treasury vouchers')->only('vouchersPendingToPay');
@@ -408,5 +419,88 @@ class VoucherController extends Controller {
         return $vouchers->filter(function ($voucher) {
             return $voucher->pendingToPay > 0;
         });
+    }
+
+    public function exportSupplierVouchers(string $id) {
+        $supplier = Supplier::where('id', $id)->first();
+
+        if (!$supplier) {
+            throw ValidationException::withMessages([
+                'message' => trans('Proveedor no encontrado.')
+            ]);
+        }
+
+        $vouchers = Voucher::with(['voucherType', 'voucherSubtype', 'voucherExpense', 'invoiceType', 'invoiceTypeCode', 'payCondition', 'items', 'userCreated', 'userUpdated'])
+            ->where('idSupplier', $id)
+            ->get();
+        $vouchers = $this->calculatePendingToPay($vouchers);
+
+        return Excel::download(new SupplierVouchersExport($vouchers), strtoupper($supplier->businessName) . ' - ' . 'facturas-' . date('d-m-Y') . '.xlsx');
+    }
+}
+
+class SupplierVouchersExport implements FromCollection, WithMapping, WithHeadings, ShouldAutoSize, WithEvents, WithStyles {
+    protected $vouchers;
+
+    public function __construct($vouchers) {
+        $this->vouchers = $vouchers;
+    }
+
+    public function collection() {
+        return $this->vouchers;
+    }
+
+    public function headings(): array {
+        return [
+            'T. Comp',
+            'T. Fac',
+            'Número',
+            'Fecha',
+            'Vencimiento',
+            'Cond. Pago',
+            'Importe',
+            'Saldo',
+        ];
+    }
+
+    public function map($voucher): array {
+        return [
+            strtoupper($voucher->invoiceType->name),
+            strtoupper($voucher->InvoiceTypeCode->name),
+            str_pad($voucher->pointOfNumber, 5, '0', STR_PAD_LEFT) . '-' .str_pad($voucher->invoiceNumber, 8, '0', STR_PAD_LEFT),
+            date('d/m/Y', strtotime($voucher->invoiceDate)),
+            date('d/m/Y', strtotime($voucher->invoiceDueDate)),
+            strtoupper($voucher->payCondition->name),
+            $voucher->totalAmount,
+            $voucher->pendingToPay > 0 ? $voucher->pendingToPay : '0',
+        ];
+    }
+
+    public function styles(Worksheet $sheet) {
+        $lastRow = $sheet->getHighestRow();
+        return [
+            'D2:E' . $lastRow => [
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                ],
+            ],
+            'G2:H' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
+                ],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                    ],
+                ]);
+            },
+        ];
     }
 }

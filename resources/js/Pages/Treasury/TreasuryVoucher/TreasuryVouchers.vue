@@ -79,6 +79,10 @@ onMounted(async () => {
 });
 </script>
 <style>
+div[data-pc-name="tabpanel"] {
+    padding: 1.25rem 0;
+}
+
 .card-treasury-vouchers>div[data-pc-section="body"]>div[data-pc-section="content"] {
     padding-top: 0;
     padding-bottom: 0;

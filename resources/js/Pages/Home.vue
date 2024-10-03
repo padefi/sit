@@ -43,24 +43,13 @@ onMounted(async () => {
 </script>
 
 <style>
-.dashboard-container {
-    padding: 2rem;
-}
-
-.dashboard-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 1rem;
-    padding: 1rem;
-    transition: box-shadow 0.3s;
-}
-
 .dashboard-card:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 </style>
 <template>
     <AuthenticatedLayout>
-        <div class="dashboard-container">
+        <div class="p-5">
             <h1 class="text-3xl mb-4">Bienvenido {{ user() }}</h1>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card v-if="hasPermission('view treasury vouchers')" class="dashboard-card">

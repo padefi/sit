@@ -81,12 +81,14 @@ Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], func
     Route::get('/suppliers/{voucher_subtype}/subtype-related', [SupplierController::class, 'subtypeRelated'])->name('suppliers.subtype-related');
     Route::get('/voucher-subtypes/{voucher_type}/data-related', [VoucherSubtypeController::class, 'dataRelated'])->name('voucher-subtypes.data-related');
     Route::get('/voucher-expenses/{voucher_subtype}/data-related', [VoucherExpenseController::class, 'dataRelated'])->name('voucher-expenses.data-related');
+    Route::get('/suppliers/export', [SupplierController::class, 'exportSuppliers'])->name('suppliers.export');
     Route::resource('suppliers', SupplierController::class);
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], function () {
     Route::get('/invoice-types', [VoucherController::class, 'invoiceTypes'])->name('vouchers.invoice-types');
     Route::get('/show-vouchers/{supplier}', [VoucherController::class, 'showVouchers'])->name('vouchers.show-vouchers');
+    Route::get('/show-vouchers/{supplier}/export', [VoucherController::class, 'exportSupplierVouchers'])->name('vouchers.export');
     Route::get('/vouchers/{voucher_type}/types-related', [VoucherController::class, 'typesRelated'])->name('vouchers.types-related');
     Route::get('/vouchers/{invoice_type}/invoice-types-related', [VoucherController::class, 'invoiceTypesRelated'])->name('vouchers.invoice-types-related');
     Route::get('/vouchers/{voucher}/info', [VoucherController::class, 'info'])->name('vouchers.info');
