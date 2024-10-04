@@ -56,6 +56,11 @@ const getDailyTransactions = async () => {
     }
 }
 
+const generatePdf = async () => {
+    const date = getFormattedDate(transactionDate.value);
+    window.open(route('daily-transactions.pdf', date), '_blank');
+}
+
 watch(transactionDate, async () => {
     await getDailyTransactions();
 });
@@ -92,17 +97,20 @@ onMounted(async () => {
 </style>
 <template>
     <AuthenticatedLayout>
-        <Card class="mt-5 mx-4 uppercase">
+        <Card class="my-5 mx-4 uppercase">
             <template #title>
                 <div class="grid w-full justify-center">
                     <span class="text-3xl font-bold text-teal-700">Movimientos diarios</span>
-                    <FloatLabel class="w-2/5 justify-self-center mt-2">
-                        <Calendar v-model="transactionDate" placeholder="DD/MM/AAAA" showButtonBar id="transactiontransactionDate"
-                            inputClass="w-full text-lg" class="w-full"
-                            :class="transactionDate !== null && transactionDate !== undefined ? 'filled' : ''" :invalid="transactionDate === null"
-                            :maxDate="new Date()" />
-                        <label for="transactionDate" class="text-base">F. Movimientos</label>
-                    </FloatLabel>
+                    <div class="flex justify-center space-x-2">
+                        <FloatLabel class="w-2/5 justify-self-center mt-2">
+                            <Calendar v-model="transactionDate" placeholder="DD/MM/AAAA" showButtonBar id="transactiontransactionDate"
+                                inputClass="w-full text-lg" class="w-full"
+                                :class="transactionDate !== null && transactionDate !== undefined ? 'filled' : ''" :invalid="transactionDate === null"
+                                :maxDate="new Date()" />
+                            <label for="transactionDate" class="text-base">F. Movimientos</label>
+                        </FloatLabel>
+                        <Button icon="pi pi-file-pdf" iconClass="text-4xl text-red-500" class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent" text @click="generatePdf()" />
+                    </div>
                 </div>
             </template>
             <template #content>

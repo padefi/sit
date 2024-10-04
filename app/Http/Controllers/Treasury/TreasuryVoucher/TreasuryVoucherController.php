@@ -606,7 +606,7 @@ class TreasuryVoucherController extends Controller {
             ->where('idVS', $status)
             ->get();
 
-        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'Comprobantes de tesoreria -' . $voucherType .'.xlsx');
+        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'Comprobantes de tesoreria - ' . $voucherType .'.xlsx');
     }
 }
 

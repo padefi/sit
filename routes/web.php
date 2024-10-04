@@ -132,6 +132,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view income tax withhol
 });
 
 Route::group(['middleware' => ['auth', 'check.permission:view daily transactions']], function () {
+    Route::get('/daily-transactions/pdf/{date}', [DailyTransactionController::class, 'generatePdf'])->name('daily-transactions.pdf');
     Route::resource('daily-transactions', DailyTransactionController::class)->only(['index', 'show']);
 });
 
@@ -152,4 +153,3 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 Route::fallback(function () {
     return Inertia::render('404');
 });
-
