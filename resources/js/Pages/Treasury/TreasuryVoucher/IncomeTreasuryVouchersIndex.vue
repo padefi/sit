@@ -210,6 +210,10 @@ const confirmTreasuryVoucherModal = () => {
     });
 }
 
+const exportTreasuryVouchers = async () => {
+    window.location.href = route('treasury-vouchers.export', [1, selectStatus.value]);
+}
+
 onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
@@ -359,6 +363,9 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 </div>
             </template>
         </Column>
+        <template #paginatorend>
+            <Button icon="pi pi-download" iconClass="text-xl" text @click="exportTreasuryVouchers()" />
+        </template>
         <template #expansion="{ data }">
             <template v-if="data.vouchers.length > 0">
                 <DataTable :value="data.vouchers" scrollable class="m-3 data-table-expanded">

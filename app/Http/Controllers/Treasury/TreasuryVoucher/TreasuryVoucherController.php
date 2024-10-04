@@ -600,12 +600,13 @@ class TreasuryVoucherController extends Controller {
     }
 
     public function exportTreasuryVouchers($type, $status) {
+        $voucherType = VoucherType::where('id', $type)->first()->name;
         $treasuryVouchers = TreasuryVoucher::with(['supplier', 'bankAccount', 'bankTransaction', 'cashTransaction', 'checkTransaction', 'userCreated', 'userConfirmed', 'userVoided'])
             ->where('idType', $type)
             ->where('idVS', $status)
             ->get();
 
-        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'comprobantes-tesoreria-' . date('d-m-Y') . '.xlsx');
+        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'Comprobantes de tesoreria -' . $voucherType .'.xlsx');
     }
 }
 
@@ -625,6 +626,21 @@ class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeading
     }
 
     public function headings(): array {
+        if ($this->type == 1) {
+            return [
+                'Cuit',
+                'Proveedor',
+                'Importe',
+                'Estado',
+                'Importe',
+                'Forma de pago',
+                'Banco',
+                'Cta. bancaria',
+                'N° operación',
+                'F. confirmación',
+            ];
+        }
+
         return [
             'Cuit',
             'Proveedor',
@@ -639,11 +655,29 @@ class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeading
             'Cta. bancaria',
             'N° operación',
             'F. pago',
-            // 'Usuario',
         ];
     }
 
     public function map($treasuryVoucher): array {
+        if ($this->type == 1) {
+            return [
+                $treasuryVoucher->supplier->cuit,
+                strtoupper($treasuryVoucher->supplier->businessName),
+                $treasuryVoucher->amount,
+                match ($this->status) {
+                    '2' => 'CONFIRMADO',
+                    '3' => 'ANULADO',
+                    default => 'PENDIENTE',
+                },
+                $this->status === '2' ? $treasuryVoucher->totalAmount : '0',
+                $treasuryVoucher->paymentMethod->name ?? '',
+                $treasuryVoucher->bankAccount->bank->name ?? '',
+                $treasuryVoucher->bankAccount->accountNumber ?? '',
+                ($treasuryVoucher->bankTransaction?->number ? $treasuryVoucher->bankTransaction?->number : $treasuryVoucher->checkTransaction?->number) ?? '',
+                $treasuryVoucher->paymentDate ? date('d/m/Y', strtotime($treasuryVoucher->paymentDate)) : '00/00/0000',
+            ];
+        }
+
         return [
             $treasuryVoucher->supplier->cuit,
             strtoupper($treasuryVoucher->supplier->businessName),
@@ -662,11 +696,6 @@ class TreasuryVouchersExport implements FromCollection, WithMapping, WithHeading
             $treasuryVoucher->bankAccount->accountNumber ?? '',
             ($treasuryVoucher->bankTransaction?->number ? $treasuryVoucher->bankTransaction?->number : $treasuryVoucher->checkTransaction?->number) ?? '',
             $treasuryVoucher->paymentDate ? date('d/m/Y', strtotime($treasuryVoucher->paymentDate)) : '00/00/0000',
-            /* match ($this->status) {
-                '2' => strtoupper($treasuryVoucher->userConfirmed->name . ' ' . $treasuryVoucher->userConfirmed->surname) ?? '',
-                '3' => strtoupper($treasuryVoucher->userVoided->name . ' ' . $treasuryVoucher->userVoided->surname) ?? '',
-                default => strtoupper($treasuryVoucher->userCreated->name . ' ' . $treasuryVoucher->userCreated->surname) ?? '',
-            }, */
         ];
     }
 

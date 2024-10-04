@@ -435,7 +435,7 @@ class VoucherController extends Controller {
             ->get();
         $vouchers = $this->calculatePendingToPay($vouchers);
 
-        return Excel::download(new SupplierVouchersExport($vouchers), strtoupper($supplier->businessName) . ' - ' . 'facturas-' . date('d-m-Y') . '.xlsx');
+        return Excel::download(new SupplierVouchersExport($vouchers), 'Comprobantes de ' . strtoupper($supplier->businessName) . '.xlsx');
     }
 }
 

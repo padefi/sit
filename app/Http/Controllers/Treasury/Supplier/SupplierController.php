@@ -254,7 +254,7 @@ class SupplierController extends Controller {
             $supplier->pendingToPay = $vouchers->sum('pendingToPay');
         }
 
-        return Excel::download(new SuppliersExport($suppliers), 'proveedores-' . date('d-m-Y') . '.xlsx');
+        return Excel::download(new SuppliersExport($suppliers), 'Proveedores.xlsx');
     }
 }
 
@@ -286,7 +286,7 @@ class SuppliersExport implements FromCollection, WithMapping, WithHeadings, Shou
         ];
     }
 
-    public function map($supplier): array {       
+    public function map($supplier): array {
         return [
             $supplier->cuit,
             strtoupper($supplier->name),
