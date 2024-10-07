@@ -4,22 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Transactions Report</title>
+    <title>Movimientos diarios - {{ $date }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
-            /* line-height: 1.4; */
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            color: #0e7490;
+            margin: 0.5rem;
         }
 
         h2 {
-            color: #444;
-            /* margin-top: 30px; */
+            color: #71717a;
+            margin: 0.5rem;
         }
 
         table {
@@ -33,10 +33,26 @@
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
+            border: 0;
+            border-bottom: 1px solid #cbd5e1;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #f8fafc;
+            color: #334155;
+            border: 0;
+        }
+
+        .section-title {
+            text-align: center;
+            border-top: 1.25px solid #cbd5e1;
+            border-bottom: 1px solid #cbd5e1;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .text-left {
+            text-align: left;
         }
 
         .text-center {
@@ -55,18 +71,21 @@
         .page-break {
             page-break-after: always;
         }
-
-        .pagenum:before {
-            content: 'Página: ' counter(page);
-        }
     </style>
 </head>
 
 <body>
     @php
-    $header = '<div align="center">
-        <h1 style="color:#326d46;">Movimientos diarios - ' . $date . '</h1>
-    </div>';
+    $header = '
+    <table style="width: 100%;">
+        <tr>
+            <td style="text-align: left;border: 0; padding: 0px;width: 20%;"><b>Página: {PAGENO}/{nbpg}</b></td>
+            <td style="text-align: center;border: 0; padding: 0px;width: 60%;">
+                <h1 style="color: #326d46;">Movimientos diarios - ' . $date . '</h1>
+            </td>
+            <td style="text-align: right;border: 0; padding: 0px;width: 20%;"><b>Fecha y hora: ' . date('d/m/Y H:i:s') . '</b></td>
+        </tr>
+    </table>';
     @endphp
 
     <div class="header">
@@ -74,31 +93,31 @@
     </div>
 
     <!-- Cash Transactions -->
-    <div>
-        <div style="text-align: center;">
+    <div class="section">
+        <div class="section-title">
             <h2>CAJA</h2>
         </div>
 
-        <div align="right" style="background:transparent;width:95%;margin-left:12px;border-bottom-style:solid;">
-            <b style="font-size:16px;">SALDO ANTERIOR: </b><b style="font-size:18px;">${{ number_format($previousCash, 2, ',', '.') }}</b>
+        <div align="center" style="font-size:16px; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+            <b>SALDO ANTERIOR: </b><b style="font-size:18px;">${{ number_format($previousCash, 2, ',', '.') }}</b>
         </div>
 
-        <div style="text-align: center;">
-            <h2>Ingresos</h2>
+        <div style="text-align: center; margin-bottom: 0.75rem;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">INGRESOS</span>
         </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th class="text-right">Importe</th>
+                    <th class="text-left" style="width: 20%;">CUIT</th>
+                    <th class="text-center" style="width: 60%;">PROVEEDOR</th>
+                    <th class="text-right" style="width: 20%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($dailyCashInTransactions as $transaction)
                 <tr>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
-                    <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
+                    <td class="text-center">{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -108,22 +127,24 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Ingresos: {{ number_format($totalCashIn, 2, ',', '.') }}</div>
+        <div class="total text-right">Total Ingresos: ${{ number_format($totalCashIn, 2, ',', '.') }}</div>
 
-        <h3>Egresos</h3>
+        <div style="text-align: center;border-top: 1.25px solid #cbd5e1; padding-top: 0.75rem; margin: 0.75rem 0;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">EGRESOS</span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th class="text-right">Importe</th>
+                    <th class="text-left" style="width: 20%;">CUIT</th>
+                    <th class="text-center" style="width: 60%;">PROVEEDOR</th>
+                    <th class="text-right" style="width: 20%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($dailyCashOutTransactions as $transaction)
                 <tr>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
-                    <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
+                    <td class="text-center">{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -133,12 +154,10 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Egresos: {{ number_format($totalCashOut, 2, ',', '.') }}</div>
+        <div class="total text-right">Total Egresos: ${{ number_format($totalCashOut, 2, ',', '.') }}</div>
 
-        <div class="text-center" style="font-weight: bold; font-size: 16px; margin: 20px 0;">
-            <span>
-                Saldo Actual: {{ number_format($totalCash, 2, ',', '.') }}
-            </span>
+        <div align="center" style="font-size:16px; border-top: 1.25px solid #cbd5e1; padding-top: 0.75rem; margin-top: 0.75rem;">
+            <b>SALDO ACTUAL: </b><b style="font-size:18px;">${{ number_format($totalCash, 2, ',', '.') }}</b>
         </div>
     </div>
 

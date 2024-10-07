@@ -109,7 +109,7 @@ class DailyTransactionController extends Controller {
         $totalCheckOut = collect($dailyTransactions['dailyTransactions'][2]['checkTransactions'])->sum('treasuryVoucher.totalAmount') ?? 0;
 
         $mpdf = new \Mpdf\Mpdf;
-        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'mode' => 'c', 'orientation' => 'L', 'margin_left' => 2, 'margin_right' => 2, 'margin_top' => 2, 'margin_header' => 5]);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'mode' => 'c', 'orientation' => 'L', 'margin_left' => 2, 'margin_right' => 2, 'margin_top' => 5, 'margin_header' => 5]);
         $mpdf->use_kwt = true;
         $mpdf->SetAutoPageBreak(true, 10);
 
