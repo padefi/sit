@@ -98,7 +98,7 @@
             <h2>CAJA</h2>
         </div>
 
-        <div align="center" style="font-size:16px; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+        <div align="center" style="font-size:16px; color: #334155; border-bottom: 1px solid #000000; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
             <b>SALDO ANTERIOR: </b><b style="font-size:18px;">${{ number_format($previousCash, 2, ',', '.') }}</b>
         </div>
 
@@ -127,9 +127,9 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Ingresos: ${{ number_format($totalCashIn, 2, ',', '.') }}</div>
+        <div class="total text-right">TOTAL INGRESOS: ${{ number_format($totalCashIn, 2, ',', '.') }}</div>
 
-        <div style="text-align: center;border-top: 1.25px solid #cbd5e1; padding-top: 0.75rem; margin: 0.75rem 0;">
+        <div style="text-align: center;border-top: 1.25px solid #000000; padding-top: 2rem; margin: 0.75rem 0;">
             <span style="font-size:15px;font-weight: bold; color: #334155;">EGRESOS</span>
         </div>
         <table>
@@ -154,9 +154,9 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Egresos: ${{ number_format($totalCashOut, 2, ',', '.') }}</div>
+        <div class="total text-right">TOTAL EGRESOS: ${{ number_format($totalCashOut, 2, ',', '.') }}</div>
 
-        <div align="center" style="font-size:16px; border-top: 1.25px solid #cbd5e1; padding-top: 0.75rem; margin-top: 0.75rem;">
+        <div align="center" style="font-size:16px; border-top: 1.25px solid #000000; padding-top: 0.75rem; margin-top: 0.75rem;">
             <b>SALDO ACTUAL: </b><b style="font-size:18px;">${{ number_format($totalCash, 2, ',', '.') }}</b>
         </div>
     </div>
@@ -169,17 +169,21 @@
     </div>
 
     <div class="section">
-        <h2>Banco</h2>
+        <div class="section-title" style="border-bottom: 1px solid #000000;">
+            <h2>BANCO</h2>
+        </div>
 
-        <h3>Ingresos</h3>
+        <div style="text-align: center; margin-bottom: 0.75rem;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">INGRESOS</span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th>Banco</th>
-                    <th>N° Operación</th>
-                    <th class="text-right">Importe</th>
+                    <th style="width: 12.5%;">CUIT</th>
+                    <th style="width: 30%;">PROVEEDOR</th>
+                    <th style="width: 30%;">BANCO</th>
+                    <th style="width: 12.5%;">N° OPERACIÓN</th>
+                    <th class="text-right" style="width: 15%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
@@ -198,17 +202,19 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Ingresos: {{ number_format($totalBankIn, 2, ',', '.') }}</div>
+        <div class="total text-right">TOTAL INGRESOS: ${{ number_format($totalBankIn, 2, ',', '.') }}</div>
 
-        <h3>Egresos</h3>
+        <div style="text-align: center;border-top: 1.25px solid #000000; padding-top: 2rem; margin: 0.75rem 0;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">EGRESOS</span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th>Banco</th>
-                    <th>N° Operación</th>
-                    <th class="text-right">Importe</th>
+                    <th style="width: 12.5%;">CUIT</th>
+                    <th style="width: 30%;">PROVEEDOR</th>
+                    <th style="width: 30%;">BANCO</th>
+                    <th style="width: 12.5%;">N° OPERACIÓN</th>
+                    <th class="text-right" style="width: 15%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
@@ -227,7 +233,7 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Egresos: {{ number_format($totalBankOut, 2, ',', '.') }}</div>
+        <div class="total text-right" style="border-bottom: 1.25px solid #000000; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">TOTAL EGRESOS: ${{ number_format($totalBankOut, 2, ',', '.') }}</div>
     </div>
 
     <div class="page-break"></div>
@@ -238,17 +244,21 @@
     </div>
 
     <div class="section">
-        <h2>Cheque</h2>
+        <div class="section-title" style="border-bottom: 1px solid #000000;">
+            <h2>CHEQUE</h2>
+        </div>
 
-        <h3>Ingresos</h3>
+        <div style="text-align: center; margin-bottom: 0.75rem;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">INGRESOS</span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th>Banco</th>
-                    <th>N° Operación</th>
-                    <th class="text-right">Importe</th>
+                    <th style="width: 12.5%;">CUIT</th>
+                    <th style="width: 30%;">PROVEEDOR</th>
+                    <th style="width: 30%;">BANCO</th>
+                    <th style="width: 12.5%;">N° OPERACIÓN</th>
+                    <th class="text-right" style="width: 15%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
@@ -267,17 +277,19 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Ingresos: {{ number_format($totalCheckIn, 2, ',', '.') }}</div>
+        <div class="total text-right">TOTAL INGRESOS: ${{ number_format($totalCheckIn, 2, ',', '.') }}</div>
 
-        <h3>Egresos</h3>
+        <div style="text-align: center;border-top: 1.25px solid #000000; padding-top: 2rem; margin: 0.75rem 0;">
+            <span style="font-size:15px;font-weight: bold; color: #334155;">EGRESOS</span>
+        </div>
         <table>
             <thead>
                 <tr>
-                    <th>Cuit</th>
-                    <th>Proveedor</th>
-                    <th>Banco</th>
-                    <th>N° Operación</th>
-                    <th class="text-right">Importe</th>
+                    <th style="width: 12.5%;">CUIT</th>
+                    <th style="width: 30%;">PROVEEDOR</th>
+                    <th style="width: 30%;">BANCO</th>
+                    <th style="width: 12.5%;">N° OPERACIÓN</th>
+                    <th class="text-right" style="width: 15%;">IMPORTE</th>
                 </tr>
             </thead>
             <tbody>
@@ -296,7 +308,7 @@
                 @endforelse
             </tbody>
         </table>
-        <div class="total text-right">Total Egresos: {{ number_format($totalCheckOut, 2, ',', '.') }}</div>
+        <div class="total text-right" style="border-bottom: 1.25px solid #000000; padding-bottom: 0.75rem; margin-bottom: 0.75rem;">TOTAL EGRESOS: ${{ number_format($totalCheckOut, 2, ',', '.') }}</div>
     </div>
 </body>
 

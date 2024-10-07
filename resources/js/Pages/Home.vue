@@ -74,7 +74,7 @@ onMounted(async () => {
                         <template v-else>
                             <div class="text-primary text-lg">
                                 <template v-if="treasuryVouchers > 0">
-                                    <span class="text-emerald-500 font-bold">{{ treasuryVouchers }}</span>
+                                    <span class="text-red-500 font-bold">{{ treasuryVouchers }}</span>
                                     <span> comprobantes pendientes.</span>
                                 </template>
                                 <template v-else>
@@ -138,7 +138,7 @@ onMounted(async () => {
                         <template v-else>
                             <div class="text-primary text-lg">
                                 <template v-if="invoiceSuppliers > 0">
-                                    <span class="text-emerald-500 font-bold">{{ invoiceSuppliers }}</span>
+                                    <span class="text-red-500 font-bold">{{ invoiceSuppliers }}</span>
                                     <span> facturas pendientes.</span>
                                 </template>
                                 <template v-else>

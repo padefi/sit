@@ -22,6 +22,7 @@ class TreasuryVoucherSeeder extends Seeder {
             ['idType' => 2, 'idSupplier' => 2, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 10000000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 10000000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 2, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 500000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 500000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
             ['idType' => 1, 'idSupplier' => 23, 'idPM' => NULL, 'idBA' => NULL, 'number' => NULL, 'idVS' => 1, 'amount' => 242000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 242000.00, 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
+            ['idType' => 1, 'idSupplier' => 1, 'idPM' => 4, 'idBA' => NULL, 'number' => NULL, 'idVS' => 2, 'amount' => 1000000.00, 'incomeTaxAmount' => 0, 'socialTaxAmount' => 0, 'vatTaxAmount' => 0, 'totalAmount' => 1000000.00, 'paymentDate' => '2024-01-01', 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null, 'idUserConfirmed' => 1, 'confirmed_at' => now()],
         ];
 
         foreach ($treasuryVouchers as $treasuryVoucher) {

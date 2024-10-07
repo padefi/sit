@@ -13,6 +13,7 @@ class TreasuryCustomVoucherSeeder extends Seeder {
     public function run(): void {
         $treasuryCustomVouchers = [
             ['idTV' => 9, 'idSupplier' => 23, 'idType' => 2, 'idSubtype' => 2, 'idExpense' => 3, 'amount' => 500000.00, 'notes' => 'SEÑA PARA SERVIDOR HPE PROLIANT DL380 GEN10', 'voucherDate' => now(), 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
+            ['idTV' => 11, 'idSupplier' => 1, 'idType' => 1, 'idSubtype' => 1, 'idExpense' => null, 'amount' => 1000000.00, 'notes' => 'SALDO INICIAL', 'voucherDate' => now(), 'idUserCreated' => 1, 'created_at' => now(), 'updated_at' => null],
         ];
 
         foreach ($treasuryCustomVouchers as $treasuryCustomVoucher) {
