@@ -161,6 +161,26 @@ const handleTransactionNumber = (index) => {
     treasuryVouchersArray.value[index].transactionNumberStatus = treasuryVouchersArray.value[index].paymentMethod === 4 ? 0 : 1;
 }
 
+const validateTransactionNumber = async (data) => {
+    if (data.value > 9999999999999) return;
+    console.log(data.value);
+
+    /* try {
+        const response = await fetch('/treasury-vouchers/status');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de los tipos de comprobantes');
+        }
+
+        const data = await response.json();
+        voucherStatusesSelect.value = data.treasuryVoucherStatus.map((treasuryVoucherStatus) => {
+            return { label: treasuryVoucherStatus.name, value: treasuryVoucherStatus.id };
+        });
+    } catch (error) {
+        console.error(error);
+    } */
+}
+
 const isFormInvalid = computed(() => {
     return treasuryVouchersArray.value.some(voucher => {
         if (voucher.totalAmount <= 0) return true;
@@ -276,7 +296,7 @@ onMounted(async () => {
         } else {
             const vouchersSupplierIds = voucher.vouchers.map(v => v.id);
             const flatVouchersSupplierIds = voucherBySupplier[voucher.supplierId].vouchersSupplierIds.flat();
-            
+
             if (!flatVouchersSupplierIds.some(v => vouchersSupplierIds.includes(v))) {
                 voucherBySupplier[voucher.supplierId] = {
                     ...voucherBySupplier[voucher.supplierId],
@@ -453,8 +473,12 @@ onMounted(async () => {
                     <FloatLabel>
                         <InputNumber v-model="data[field]" placeholder="12345678" :useGrouping="false" inputId="transactionNumber"
                             id="transactionNumber" class="w-full" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :min="1"
-                            :max="9999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null"
-                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
+                            :max="999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null"
+                            :pt="{ input: { root: { autocomplete: 'off' } } }" @input="validateTransactionNumber($event)" />
+                        <!-- <InputText v-model="data[field]" :useGrouping="false" inputId="transactionNumber"
+                            id="transactionNumber" class="w-full uppercase" :minlength="1" :maxlength="13" :disabled="data.transactionNumberStatus === 0"
+                            :invalid="data[field] === null" :pt="{ input: { root: { autocomplete: 'off' } } }"
+                            @input="validateTransactionNumber($event)" /> -->
                         <label for="rate">N° Operación</label>
                     </FloatLabel>
                     <InputError :message="data[field] === null && data.transactionNumberStatus === 1 ? rules : ''" />

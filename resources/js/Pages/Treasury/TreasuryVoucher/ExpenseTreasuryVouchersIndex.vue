@@ -24,6 +24,7 @@ const expandedRows = ref([]);
 const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
+const expenseTreasuryVouchersCount = ref(0);
 
 const filters = ref({
     cuit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -46,6 +47,7 @@ const fetchExpenseTreasuryVouchers = async (type, status) => {
 
             const data = await response.json();
             treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
+            expenseTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         } catch (error) {
             console.error(error);
         }
@@ -270,6 +272,8 @@ onMounted(() => {
                     treasuryVouchersArray.value.splice(index, 1);
                 }
             }
+
+            if (e.treasuryVoucher.voucherType.id === 2) expenseTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         });
 });
 
@@ -309,7 +313,7 @@ const info = (id) => {
 }
 /*  */
 
-defineExpose({ fetchExpenseTreasuryVouchers });
+defineExpose({ fetchExpenseTreasuryVouchers, expenseTreasuryVouchersCount });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable

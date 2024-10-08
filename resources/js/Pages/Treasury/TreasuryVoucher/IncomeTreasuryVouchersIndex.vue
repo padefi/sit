@@ -24,6 +24,7 @@ const expandedRows = ref([]);
 const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
+const incomeTreasuryVouchersCount = ref(0);
 
 const filters = ref({
     cuit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -46,6 +47,7 @@ const fetchIncomeTreasuryVouchers = async (type, status) => {
 
             const data = await response.json();
             treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
+            incomeTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         } catch (error) {
             console.error(error);
         }
@@ -240,6 +242,8 @@ onMounted(() => {
                     treasuryVouchersArray.value.splice(index, 1);
                 }
             }
+
+            if (e.treasuryVoucher.voucherType.id === 1) incomeTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         });
 });
 
@@ -279,7 +283,7 @@ const info = (id) => {
 }
 /*  */
 
-defineExpose({ fetchIncomeTreasuryVouchers });
+defineExpose({ fetchIncomeTreasuryVouchers, incomeTreasuryVouchersCount });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
@@ -318,7 +322,7 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 {{ currencyNumber(data.amount) }}
             </template>
         </Column>
-        
+
         <Column field="paymentMethod" header="Forma de ingreso" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ data.paymentMethod }}
