@@ -78,6 +78,8 @@ const getTreasuryVoucherStatusData = async () => {
 }
 
 const getTreasuryVoucherCountData = async () => {
+    loading.value = true;
+
     for (let i = 2; i >= 0; i--) {
         handleTabChange({ index: i });
     }
@@ -86,6 +88,10 @@ const getTreasuryVoucherCountData = async () => {
         loading.value = false;
     }, 500);
 }
+
+watch(status, async () => {
+    await getTreasuryVoucherCountData();
+});
 
 onMounted(async () => {
     await getTreasuryVoucherStatusData();
@@ -139,11 +145,14 @@ div[data-pc-name="tabpanel"] {
                         <template #header>
                             <div class="flex align-items-center gap-2">
                                 <span class="font-bold white-space-nowrap">Egresos</span>
-                                <template v-if="loading">
-                                    <Skeleton shape="circle" size="1.5rem"></Skeleton>
-                                </template>
-                                <template v-else>
-                                    <Badge :value="expenseTreasuryVouchersCount" :severity="expenseTreasuryVouchersCount > 0 ? 'info' : 'success'" />
+                                <template v-if="status === 1">
+                                    <template v-if="loading">
+                                        <Skeleton shape="circle" size="1.5rem"></Skeleton>
+                                    </template>
+                                    <template v-else>
+                                        <Badge :value="expenseTreasuryVouchersCount"
+                                            :severity="expenseTreasuryVouchersCount > 0 ? 'info' : 'success'" />
+                                    </template>
                                 </template>
                             </div>
                         </template>
@@ -153,11 +162,14 @@ div[data-pc-name="tabpanel"] {
                         <template #header>
                             <div class="flex align-items-center gap-2">
                                 <span class="font-bold white-space-nowrap">Ingresos</span>
-                                <template v-if="loading">
-                                    <Skeleton shape="circle" size="1.5rem"></Skeleton>
-                                </template>
-                                <template v-else>
-                                    <Badge :value="incomeTreasuryVouchersCount" :severity="incomeTreasuryVouchersCount > 0 ? 'info' : 'success'" />
+                                <template v-if="status === 1">
+                                    <template v-if="loading">
+                                        <Skeleton shape="circle" size="1.5rem"></Skeleton>
+                                    </template>
+                                    <template v-else>
+                                        <Badge :value="incomeTreasuryVouchersCount"
+                                            :severity="incomeTreasuryVouchersCount > 0 ? 'info' : 'success'" />
+                                    </template>
                                 </template>
                             </div>
                         </template>

@@ -45,7 +45,7 @@ class TreasuryVoucherController extends Controller {
     protected $vouchersIds = []; //This value store the ids of the vouchers for been stored in calculateTotalAmountCollected function to not repeat them.
 
     public function __construct() {
-        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'exportTreasuryVouchers', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus']);
+        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'exportTreasuryVouchers', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus', 'validateTransactionNumber']);
         $this->middleware('check.permission:edit treasury vouchers')->only(['update', 'voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
         $this->middleware('check.permission:view users')->only('info');
     }
@@ -308,6 +308,31 @@ class TreasuryVoucherController extends Controller {
         ]);
     }
 
+    public function validateTransactionNumber(Request $request) {
+        $bankAccountId = $request->input('bankAccountId');
+        $paymentMethod = $request->input('paymentMethod');
+        $transactionNumber = $request->input('transactionNumber');
+        $transaction = null;
+
+        if ($paymentMethod == 1 || $paymentMethod == 3) {
+            $transaction = BankTransaction::where('number', $transactionNumber)
+                ->where('idBA', $bankAccountId)
+                ->where('status', 1)
+                ->first();
+        }
+
+        if ($paymentMethod == 2) {
+            $transaction = CheckTransaction::where('idBA', $bankAccountId)
+                ->where('number', $transactionNumber)
+                ->where('status', 1)
+                ->first();
+        }
+
+        return response()->json([
+            'transaction' => $transaction ? true : false,
+        ]);
+    }
+
     public function confirmTreasuryVoucher(Request $request) {
         foreach ($request->input('vouchers', []) as $item) {
             $treasuryVoucherExist = TreasuryVoucher::with(['voucherToTreasury'])->where('id', $item['id'])
@@ -330,6 +355,19 @@ class TreasuryVoucherController extends Controller {
                 throw ValidationException::withMessages([
                     'message' => trans('El comprobante ya ha sido anulado.')
                 ]);
+            }
+
+            if ($item['paymentMethod'] == 2) {
+                $transaction = CheckTransaction::where('idBA', $item['bankAccountId'])
+                    ->where('number', $item['transactionNumber'])
+                    ->where('status', 1)
+                    ->first();
+
+                if ($transaction) {
+                    throw ValidationException::withMessages([
+                        'message' => trans('El número de operación ya ha sido utilizado.')
+                    ]);
+                }
             }
         }
 
@@ -606,7 +644,7 @@ class TreasuryVoucherController extends Controller {
             ->where('idVS', $status)
             ->get();
 
-        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'Comprobantes de tesoreria - ' . $voucherType .'.xlsx');
+        return Excel::download(new TreasuryVouchersExport($treasuryVouchers, $type, $status), 'Comprobantes de tesoreria - ' . $voucherType . '.xlsx');
     }
 }
 

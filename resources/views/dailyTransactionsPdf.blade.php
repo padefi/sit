@@ -81,9 +81,9 @@
         <tr>
             <td style="text-align: left;border: 0; padding: 0px;width: 20%;"><b>Página: {PAGENO}/{nbpg}</b></td>
             <td style="text-align: center;border: 0; padding: 0px;width: 60%;">
-                <h1 style="color: #326d46;">Movimientos diarios - ' . $date . '</h1>
+                <b style="font-size: 22px;color: #326d46;">MOVIMIENTOS DIARIOS - ' . $date . '</b>
             </td>
-            <td style="text-align: right;border: 0; padding: 0px;width: 20%;"><b>Fecha y hora: ' . date('d/m/Y H:i:s') . '</b></td>
+            <td style="text-align: right;border: 0; padding: 0px;width: 20%;"><b>' . date('d/m/Y H:i:s') . '</b></td>
         </tr>
     </table>';
     @endphp

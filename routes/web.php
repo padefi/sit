@@ -101,6 +101,7 @@ Route::group(['middleware' => ['auth', 'check.permission:view vouchers']], funct
 
 Route::group(['middleware' => ['auth', 'check.permission:view treasury vouchers']], function () {
     Route::get('/treasury-vouchers/status', [TreasuryVoucherController::class, 'treasuryVoucherStatus'])->name('treasury-vouchers.status');
+    Route::get('/treasury-vouchers/validate-transaction-number', [TreasuryVoucherController::class, 'validateTransactionNumber'])->name('treasury-vouchers.validate-transaction-number');
     Route::get('/treasury-vouchers/{voucher_type}/{voucher_status}', [TreasuryVoucherController::class, 'treasuryVouchers'])->name('treasury-vouchers.get-treasury-vouchers');
     Route::get('/treasury-custom-vouchers/{treasury_custom_voucher}', [TreasuryVoucherController::class, 'treasuryCustomVouchers'])->name('treasury-custom-vouchers.get-treasury-custom-vouchers');
     Route::put('/treasury-custom-vouchers/{treasury_custom_voucher}', [TreasuryVoucherController::class, 'update'])->name('treasury-custom-vouchers.update');
