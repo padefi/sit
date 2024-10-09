@@ -567,7 +567,7 @@ const info = (data) => {
                                         class="p-column-filter" placeholder="Buscar por gasto" />
                                 </template>
                             </Column>
-                            <Column field="related" header="Relacionado" dataType="boolean" class="action-column text-center"
+                            <Column field="related" header="RELACIONADO" dataType="boolean" class="action-column text-center"
                                 headerClass="min-w-28 w-28">
                                 <template #body="{ data }">
                                     <div class="space-x-4">
@@ -614,7 +614,7 @@ const info = (data) => {
                                         autocomplete="off" class="p-column-filter" placeholder="Buscar por proveedor" />
                                 </template>
                             </Column>
-                            <Column field="related" header="Relacionado" dataType="boolean" class="action-column text-center"
+                            <Column field="related" header="RELACIONADO" dataType="boolean" class="action-column text-center"
                                 headerClass="min-w-28 w-28">
                                 <template #body="{ data }">
                                     <div class="space-x-4">

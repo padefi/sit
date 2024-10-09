@@ -40,24 +40,26 @@ const addNewVoucher = () => {
 }
 
 const handleTabChange = async (e) => {
+    loading.value = true;
     activeIndex.value = e.index;
 
     switch (e.index) {
         case 0:
             if (expenseTreasuryVouchersRef.value) {
                 await expenseTreasuryVouchersRef.value.fetchExpenseTreasuryVouchers(e.index + 2, status.value);
-                expenseTreasuryVouchersCount.value = expenseTreasuryVouchersRef.value.expenseTreasuryVouchersCount;
             }
 
             break;
         case 1:
             if (incomeTreasuryVouchersRef.value) {
                 await incomeTreasuryVouchersRef.value.fetchIncomeTreasuryVouchers(e.index, status.value);
-                incomeTreasuryVouchersCount.value = incomeTreasuryVouchersRef.value.incomeTreasuryVouchersCount;
             }
 
             break;
     }
+
+    await getTreasuryVoucherCountData();
+    loading.value = false;
 }
 
 const getTreasuryVoucherStatusData = async () => {
@@ -78,31 +80,32 @@ const getTreasuryVoucherStatusData = async () => {
 }
 
 const getTreasuryVoucherCountData = async () => {
-    loading.value = true;
+    try {
+        const response = await fetch('/treasury-vouchers/count');
 
-    for (let i = 2; i >= 0; i--) {
-        handleTabChange({ index: i });
+        if (!response.ok) {
+            throw new Error('Error al obtener la cantidad de comprobantes');
+        }
+
+        const data = await response.json();
+        expenseTreasuryVouchersCount.value = data.countTreasuryVouchers.find((item) => item.voucherType === 2).count;
+        incomeTreasuryVouchersCount.value = data.countTreasuryVouchers.find((item) => item.voucherType === 1).count;
+    } catch (error) {
+        console.error(error);
     }
-
-    setTimeout(() => {
-        loading.value = false;
-    }, 500);
 }
-
-watch(status, async () => {
-    await getTreasuryVoucherCountData();
-});
 
 onMounted(async () => {
     await getTreasuryVoucherStatusData();
     status.value = voucherStatusesSelect.value[0]?.value;
-    await getTreasuryVoucherCountData();
+    await handleTabChange({ index: 0 });
 
     Echo.channel('treasuryVouchers')
-        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
-            setTimeout(() => {
-                expenseTreasuryVouchersCount.value = expenseTreasuryVouchersRef.value.expenseTreasuryVouchersCount;
-                incomeTreasuryVouchersCount.value = incomeTreasuryVouchersRef.value.incomeTreasuryVouchersCount;
+        .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', async (e) => {
+            loading.value = true;
+            setTimeout(async () => {
+                await getTreasuryVoucherCountData();
+                loading.value = false;
             }, 500);
         });
 });

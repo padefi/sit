@@ -2,8 +2,7 @@
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
-import { percentNumber, addDate, currencyNumber } from "@/utils/formatterFunctions";
-import { useToast } from "primevue/usetoast";
+import { addDate } from "@/utils/formatterFunctions";
 import { useConfirm } from "primevue/useconfirm";
 import InputError from '@/Components/InputError.vue';
 
@@ -26,7 +25,6 @@ const voucherExpenses = ref([]);
 const suppliers = ref([]);
 const editingVoucher = ref(false);
 const confirm = useConfirm();
-const toast = useToast();
 
 const isFormInvalid = computed(() => {
     if (!form.voucherDate) return true;
@@ -195,10 +193,12 @@ const loadSupplierData = async (voucherSubtype) => {
 }
 
 watch(() => form.voucherType, async (voucherTypeId) => {
+    if (loading.value) return;
     await loadVoucherSubtypeData(voucherTypeId);
 });
 
 watch(() => form.voucherSubtype, async (voucherSubtype) => {
+    if (loading.value) return;
     await loadVoucherExpenseData(voucherSubtype);
     await loadSupplierData(voucherSubtype);
 });

@@ -21,10 +21,11 @@ const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const paymentMethodPanel = ref();
+const dataPaymentMethodArray = ref([]);
 const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
-const expenseTreasuryVouchersCount = ref(0);
 
 const filters = ref({
     cuit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
@@ -47,7 +48,6 @@ const fetchExpenseTreasuryVouchers = async (type, status) => {
 
             const data = await response.json();
             treasuryVouchersArray.value = data.treasuryVouchers.map(treasuryVoucher => treasuryVoucherDataStructure(treasuryVoucher));
-            expenseTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         } catch (error) {
             console.error(error);
         }
@@ -154,7 +154,7 @@ const setTotalPaymentAmount = (event, data) => {
 const editTreasuryVoucher = (data) => {
     dialogInfo.open(treasuryVoucherModal, {
         props: {
-            header: 'Nuevo comprobante',
+            header: 'Editar comprobante',
             style: {
                 width: '55vw',
             },
@@ -246,6 +246,21 @@ const exportTreasuryVouchers = async () => {
     window.location.href = route('treasury-vouchers.export', [2, selectStatus.value]);
 }
 
+const paymentMethodInfo = (data, event) => {
+    // console.log(data);
+    dataPaymentMethodArray.value = [];
+
+    const dataArray = [
+        {
+            bank: data.bank,
+            bankAccount: data.bankAccount,
+        }
+    ];
+
+    dataPaymentMethodArray.value = dataArray;
+    paymentMethodPanel.value.toggle(event);
+}
+
 onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
@@ -272,8 +287,6 @@ onMounted(() => {
                     treasuryVouchersArray.value.splice(index, 1);
                 }
             }
-
-            if (e.treasuryVoucher.voucherType.id === 2) expenseTreasuryVouchersCount.value = treasuryVouchersArray.value.length;
         });
 });
 
@@ -313,7 +326,7 @@ const info = (id) => {
 }
 /*  */
 
-defineExpose({ fetchExpenseTreasuryVouchers, expenseTreasuryVouchersCount });
+defineExpose({ fetchExpenseTreasuryVouchers });
 </script>
 <template>
     <DataTable :value="treasuryVouchersArray" v-model:filters="filters" v-model:expandedRows="expandedRows" :loading="loading" scrollable
@@ -355,9 +368,11 @@ defineExpose({ fetchExpenseTreasuryVouchers, expenseTreasuryVouchersCount });
         <Column field="paymentMethod" header="Forma de pago" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ data.paymentMethod }}
+                <button v-tooltip="'+Info'" @click="paymentMethodInfo(data, $event)" class="btn-info"><i
+                        class="pi pi-plus-circle text-emerald-500 text-xl"></i></button>
             </template>
         </Column>
-        <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
+        <!-- <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ data.bank }}
             </template>
@@ -366,7 +381,7 @@ defineExpose({ fetchExpenseTreasuryVouchers, expenseTreasuryVouchersCount });
             <template #body="{ data }">
                 {{ data.bankAccount }}
             </template>
-        </Column>
+        </Column> -->
         <Column field="paymentDate" header="F. pago" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ dateFormat(data.paymentDate) }}
@@ -566,6 +581,26 @@ defineExpose({ fetchExpenseTreasuryVouchers, expenseTreasuryVouchersCount });
             </template>
         </template>
     </DataTable>
+
+    <OverlayPanel ref="paymentMethodPanel" appendTo="body">
+        <DataTable :value="dataPaymentMethodArray" scrollable scrollHeight="70vh" dataKey="id" class="data-table">
+            <Column field="bank" header="BANCO">
+                <template #body="{ data }">
+                    {{ data.bank }}
+                </template>
+            </Column>
+            <Column field="bankAccount" header="CTA. BANCARIA">
+                <template #body="{ data }">
+                    {{ data.bankAccount }}
+                </template>
+            </Column>
+            <Column field="transactionNumber" header="N° OPERACIÓN">
+                <template #body="{ data }">
+                    {{ data.transactionNumber }}
+                </template>
+            </Column>
+        </DataTable>
+    </OverlayPanel>
 
     <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
         <div class="flex w-fit space-x-4">

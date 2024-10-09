@@ -9,7 +9,7 @@
         "barryvdh/laravel-dompdf": "v3.0.0",
         "guzzlehttp/guzzle": "^7.9.2",
         "inertiajs/inertia-laravel": "v1.3.0",
-        "laravel/framework": "v11.27.1",
+        "laravel/framework": "v11.27.2",
         "laravel/reverb": "@beta",
         "laravel/sanctum": "v4.0.3",
         "laravel/tinker": "v2.10.0",

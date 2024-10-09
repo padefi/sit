@@ -176,8 +176,9 @@ onMounted(() => {
                     </Column>
                     <Column header="Subtipos relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="related(data, $event)">{{
-                    data.subtypes.length }}</Button>
+                            <Button severity="info" raised rounded outlined @click="related(data, $event)">
+                                {{ data.subtypes.length }}
+                            </Button>
                         </template>
                     </Column>
                 </DataTable>
@@ -202,7 +203,7 @@ onMounted(() => {
                                         class="p-column-filter" placeholder="Buscar por subtipo" />
                                 </template>
                             </Column>
-                            <Column field="related" header="Relacionado" dataType="boolean" class="action-column text-center"
+                            <Column field="related" header="RELACIONADO" dataType="boolean" class="action-column text-center"
                                 headerClass="min-w-28 w-28">
                                 <template #body="{ data }">
                                     <div class="space-x-4">

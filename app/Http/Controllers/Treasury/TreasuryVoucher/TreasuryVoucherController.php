@@ -45,7 +45,7 @@ class TreasuryVoucherController extends Controller {
     protected $vouchersIds = []; //This value store the ids of the vouchers for been stored in calculateTotalAmountCollected function to not repeat them.
 
     public function __construct() {
-        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'exportTreasuryVouchers', 'treasuryCustomVouchers', 'treasuryVouchers', 'treasuryVoucherStatus', 'validateTransactionNumber']);
+        $this->middleware('check.permission:view treasury vouchers')->only(['index', 'exportTreasuryVouchers', 'treasuryCustomVouchers', 'treasuryVouchers', 'countTreasuryVouchers', 'treasuryVoucherStatus', 'validateTransactionNumber']);
         $this->middleware('check.permission:edit treasury vouchers')->only(['update', 'voidTreasuryVoucher', 'calculateWithholdingTax', 'confirmTreasuryVoucher']);
         $this->middleware('check.permission:view users')->only('info');
     }
@@ -114,17 +114,17 @@ class TreasuryVoucherController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(TreasuryCustomVoucherRequest $request, TreasuryCustomVoucher $treasuryCustomVoucher) {
-        if ($treasuryCustomVoucher->idVS != 1) {
-            throw ValidationException::withMessages([
-                'message' => trans('El comprobante ha cambiado de estado.')
-            ]);
-        }
-
         $treasuryVoucher = TreasuryVoucher::where('id', $treasuryCustomVoucher->idTV)->first();
 
         if (!$treasuryVoucher) {
             throw ValidationException::withMessages([
                 'message' => trans('Comprobante no encontrado.')
+            ]);
+        }
+
+        if ($treasuryVoucher->idVS != 1) {
+            throw ValidationException::withMessages([
+                'message' => trans('El comprobante ha cambiado de estado.')
             ]);
         }
 
@@ -178,6 +178,23 @@ class TreasuryVoucherController extends Controller {
 
         return response()->json([
             'treasuryVouchers' => TreasuryVoucherResource::collection($treasuryVouchers),
+        ]);
+    }
+
+    public function countTreasuryVouchers() {
+        foreach (VoucherType::all() as $voucherType) {
+            $treasuryVouchers = TreasuryVoucher::where('idType', $voucherType->id)
+                ->where('idVS', 1)
+                ->count();
+
+            $countTreasuryVouchers[] = [
+                'voucherType' => $voucherType->id,
+                'count' => $treasuryVouchers,
+            ];
+        }
+
+        return response()->json([
+            'countTreasuryVouchers' => $countTreasuryVouchers,
         ]);
     }
 
