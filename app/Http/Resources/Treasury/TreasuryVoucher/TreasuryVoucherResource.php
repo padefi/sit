@@ -55,6 +55,9 @@ class TreasuryVoucherResource extends JsonResource {
             }) : [],
             'treasuryVoucherTaxWithholding' => $this->treasuryVoucherTaxWithholding ? new TreasuryVoucherTaxWithholdingResource($this->treasuryVoucherTaxWithholding) : null,
             'treasuryCustomVoucher' => $this->treasuryCustomVoucher ? new TreasuryCustomVoucherResource($this->treasuryCustomVoucher) : null,
+            'bankTransaction' => $this->bankTransaction,
+            'cashTransaction' => $this->cashTransaction,
+            'checkTransaction' => $this->checkTransaction,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,

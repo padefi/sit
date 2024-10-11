@@ -170,7 +170,7 @@ class TreasuryVoucherController extends Controller {
     }
 
     public function treasuryVouchers(VoucherType $voucherType, string $status) {
-        $treasuryVouchers = TreasuryVoucher::with(['userCreated', 'userUpdated'])
+        $treasuryVouchers = TreasuryVoucher::with(['userCreated', 'userUpdated', 'bankTransaction', 'cashTransaction', 'checkTransaction'])
             ->where('idType', $voucherType->id)
             ->where('idVS', $status)
             ->orderBy('id', 'asc')

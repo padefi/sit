@@ -110,6 +110,37 @@ const handleTransactionNumber = (index) => {
     treasuryVouchersArray.value[index].transactionNumberStatus = treasuryVouchersArray.value[index].paymentMethod === 4 ? 0 : 1;
 }
 
+const validateTransactionNumber = async (data, index) => {
+    if (data.length > 15) return;
+
+    const bankAccountId = treasuryVouchersArray.value[index].bankAccountId;
+    const paymentMethod = treasuryVouchersArray.value[index].paymentMethod;
+    const transactionNumber = data;
+
+    try {
+        const response = await fetch(`/treasury-vouchers/validate-transaction-number?bankAccountId=${bankAccountId}&paymentMethod=${paymentMethod}&transactionNumber=${transactionNumber}`);
+
+        if (!response.ok) {
+            throw new Error('Error al validar el número de operación');
+        }
+
+        const data = await response.json();
+        if (data.transaction) {
+            if (treasuryVouchersArray.value[index].paymentMethod === 2) {
+                treasuryVouchersArray.value[index].transactionNumber = undefined;
+            }
+
+            toast.add({
+                severity: 'error',
+                detail: `El N° de operación ${transactionNumber} ya fue utilizado`,
+                life: 3000,
+            });
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 const isFormInvalid = computed(() => {
     return treasuryVouchersArray.value.some(voucher => {
         if (voucher.totalAmount <= 0) return true;
@@ -297,10 +328,10 @@ onMounted(async () => {
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
-                        <InputNumber v-model="data[field]" placeholder="12345678" :useGrouping="false" inputId="transactionNumber"
-                            id="transactionNumber" class="w-full" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :min="1"
-                            :max="9999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null"
-                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
+                        <InputText v-model="data[field]" :useGrouping="false" inputId="transactionNumber" id="transactionNumber"
+                            class="w-full uppercase" :minlength="1" :maxlength="15" :disabled="data.transactionNumberStatus === 0"
+                            :invalid="data[field] === null" :pt="{ input: { root: { autocomplete: 'off' } } }"
+                            @blur="validateTransactionNumber(data[field], index)" />
                         <label for="rate">N° Operación</label>
                     </FloatLabel>
                     <InputError :message="data[field] === null && data.transactionNumberStatus === 1 ? rules : ''" />

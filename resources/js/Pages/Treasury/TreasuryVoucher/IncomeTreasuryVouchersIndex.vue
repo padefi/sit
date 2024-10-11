@@ -21,6 +21,8 @@ const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
 const expandedRows = ref([]);
+const paymentMethodPanel = ref();
+const dataPaymentMethodArray = ref([]);
 const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
@@ -77,6 +79,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         paymentMethod: data.paymentMethod ? data.paymentMethod.name : '',
         bank: data.bankAccount.bank ? data.bankAccount.bank.name : '',
         bankAccount: data.bankAccount ? data.bankAccount.accountNumber : '',
+        transactionNumber: data.bankTransaction ? data.bankTransaction.number : data.checkTransaction ? data.checkTransaction.number : '',
         paymentDate: data.paymentDate ?? null,
         withholdings: {
             incomeTax: 0,
@@ -214,6 +217,18 @@ const exportTreasuryVouchers = async () => {
     window.location.href = route('treasury-vouchers.export', [1, selectStatus.value]);
 }
 
+const paymentMethodInfo = (data, event) => {
+    dataPaymentMethodArray.value = [];
+
+    const dataArray = [{
+        bankAccount: data.bankAccount,
+        transactionNumber: data.transactionNumber,
+    }];
+
+    dataPaymentMethodArray.value = dataArray;
+    paymentMethodPanel.value.toggle(event);
+}
+
 onMounted(() => {
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
@@ -308,7 +323,7 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 {{ data.cuit }}
             </template>
         </Column>
-        <Column field="businessName" header="Proveedor" sortable>
+        <Column field="businessName" header="Proveedor" :class="selectStatus === 2 ? 'w-[30%]' : ''" sortable>
             <template #body="{ data }">
                 {{ data.businessName }}
             </template>
@@ -324,16 +339,15 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                 {{ data.paymentMethod }}
             </template>
         </Column>
-        <!-- <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
+        <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
-                {{ data.bank }}
+                <template v-if="data.paymentMethod !== 'EFECTIVO'">
+                    <Button :label="data.bank"
+                        class="!p-1.5 hover:cursor-pointer hover:border-emerald-500 hover:!text-emerald-500 hover:bg-transparent focus:ring-0"
+                        @click="paymentMethodInfo(data, $event)" severity="secondary" outlined />
+                </template>
             </template>
         </Column>
-        <Column field="bankAccount" header="Cta. bancaria" v-if="selectStatus === 2" sortable>
-            <template #body="{ data }">
-                {{ data.bankAccount }}
-            </template>
-        </Column> -->
         <Column field="paymentDate" header="F. pago" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ dateFormat(data.paymentDate) }}
@@ -425,6 +439,21 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             </template>
         </template>
     </DataTable>
+
+    <OverlayPanel ref="paymentMethodPanel" appendTo="body">
+        <DataTable :value="dataPaymentMethodArray" scrollable scrollHeight="70vh" dataKey="id" class="data-table">
+            <Column field="bankAccount" header="CTA. BANCARIA">
+                <template #body="{ data }">
+                    {{ data.bankAccount }}
+                </template>
+            </Column>
+            <Column field="transactionNumber" header="N° OPERACIÓN">
+                <template #body="{ data }">
+                    <span class="uppercase">{{ data.transactionNumber }}</span>
+                </template>
+            </Column>
+        </DataTable>
+    </OverlayPanel>
 
     <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
         <div class="flex w-fit space-x-4">

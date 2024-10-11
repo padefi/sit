@@ -482,10 +482,6 @@ onMounted(async () => {
                 </template>
                 <template v-if="!loading">
                     <FloatLabel>
-                        <!-- <InputNumber v-model="data[field]" placeholder="12345678" :useGrouping="false" inputId="transactionNumber"
-                            id="transactionNumber" class="w-full" :class="data[field] !== null && data[field] !== undefined ? 'filled' : ''" :min="1"
-                            :max="99999999999999" :disabled="data.transactionNumberStatus === 0" :invalid="data[field] === null"
-                            :pt="{ input: { root: { autocomplete: 'off' } } }" @blur="validateTransactionNumber($event, index)" /> -->
                         <InputText v-model="data[field]" :useGrouping="false" inputId="transactionNumber" id="transactionNumber"
                             class="w-full uppercase" :minlength="1" :maxlength="15" :disabled="data.transactionNumberStatus === 0"
                             :invalid="data[field] === null" :pt="{ input: { root: { autocomplete: 'off' } } }"

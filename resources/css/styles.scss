@@ -3,6 +3,7 @@ ul[data-pc-section="submenu"] {
 }
 
 .menubar {
+
     ul[data-pc-section="submenu"],
     div[data-pc-section="content"] {
         border-radius: 6px;
@@ -15,10 +16,15 @@ ul[data-pc-section="submenu"] {
     }
 }
 
-div[data-pc-name="card"]{
+div[data-pc-name="card"],
+div[data-pc-name="overlaypanel"] div[data-pc-section="content"] {
     border: 1px solid #e0e0e0;
     border-radius: 0.5rem;
     transition: box-shadow 0.3s;
+}
+
+div[data-pc-name="overlaypanel"]::after {
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.5));
 }
 
 .data-table {
