@@ -397,7 +397,7 @@ class TreasuryVoucherController extends Controller {
                 'idVS' => 2,
                 'idPM' => $item['paymentMethod'],
                 'idBA' => $item['bankAccountId'] > 0 ? $item['bankAccountId'] : null,
-                'number' => $item['transactionNumber'] ? strtoupper($item['transactionNumber']) : null,
+                'number' => $item['transactionNumberStatus'] === 1 ? strtoupper($item['transactionNumber']) : null,
                 'incomeTaxAmount' => $item["withholdings"]['incomeTax'],
                 'socialTaxAmount' => $item["withholdings"]['socialTax'],
                 'vatTaxAmount' => $item["withholdings"]['vatTax'],
