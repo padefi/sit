@@ -192,7 +192,7 @@
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['bankAccount']['bank']['name'] }} - {{ $transaction['treasuryVoucher']['bankAccount']['accountNumber'] }}</td>
-                    <td>{{ $transaction['number'] }}</td>
+                    <td>{{ strtoupper($transaction['number']) }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -223,7 +223,7 @@
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['bankAccount']['bank']['name'] }} - {{ $transaction['treasuryVoucher']['bankAccount']['accountNumber'] }}</td>
-                    <td>{{ $transaction['number'] }}</td>
+                    <td>{{ strtoupper($transaction['number']) }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -267,7 +267,7 @@
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['bankAccount']['bank']['name'] }} - {{ $transaction['treasuryVoucher']['bankAccount']['accountNumber'] }}</td>
-                    <td>{{ $transaction['number'] }}</td>
+                    <td>{{ strtoupper($transaction['number']) }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -298,7 +298,7 @@
                     <td>{{ $transaction['treasuryVoucher']['supplier']['cuit'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['supplier']['businessName'] }}</td>
                     <td>{{ $transaction['treasuryVoucher']['bankAccount']['bank']['name'] }} - {{ $transaction['treasuryVoucher']['bankAccount']['accountNumber'] }}</td>
-                    <td>{{ $transaction['number'] }}</td>
+                    <td>{{ strtoupper($transaction['number']) }}</td>
                     <td class="text-right">${{ number_format($transaction['treasuryVoucher']['totalAmount'], 2, ',', '.') }}</td>
                 </tr>
                 @empty

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { currencyNumber, dateFormat, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { currencyNumber, dateFormat, invoiceNumberFormat, addDate } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
@@ -25,6 +25,8 @@ const amountPanel = ref();
 const dataAmountArray = ref([]);
 const paymentMethodPanel = ref();
 const dataPaymentMethodArray = ref([]);
+const paymentMethodsSelect = ref([]);
+const banksSelect = ref([]);
 const isProcessing = ref(false);
 const toast = useToast();
 const confirm = useConfirm();
@@ -33,6 +35,10 @@ const filters = ref({
     cuit: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     businessName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
+    amount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    paymentMethod: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    bank: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    paymentDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
 });
 
 const fetchExpenseTreasuryVouchers = async (type, status) => {
@@ -88,7 +94,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         bank: data.bankAccount.bank ? data.bankAccount.bank.name : '',
         bankAccount: data.bankAccount ? data.bankAccount.accountNumber : '',
         transactionNumber: data.bankTransaction ? data.bankTransaction.number : data.checkTransaction ? data.checkTransaction.number : '',
-        paymentDate: data.paymentDate ?? null,
+        paymentDate: addDate(data.paymentDate, 1) ?? null,
         withholdings: {
             incomeTax: undefined,
             incomeTaxStatus: data.supplier.incomeTaxWithholding,
@@ -155,6 +161,40 @@ const customVoucherDataStructure = (customVoucher) => {
 const setTotalPaymentAmount = (event, data) => {
     form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.amount : form.totalPaymentAmount - data.amount;
     if (!event.target.checked) data.paymentAmount = data.pendingToPay;
+}
+
+const getPaymentMethods = async () => {
+    try {
+        const response = await fetch('/payment-methods/1');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de los tipos de pago');
+        }
+
+        const data = await response.json();
+        paymentMethodsSelect.value = data.paymentMethods.map((paymentMethod) => {
+            return { label: paymentMethod.name, value: paymentMethod.name };
+        });
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const getBanks = async () => {
+    try {
+        const response = await fetch('/banks/show-banks');
+
+        if (!response.ok) {
+            throw new Error('Error al obtener los datos de los bancos');
+        }
+
+        const data = await response.json();
+        banksSelect.value = data.banks.map((bank) => {
+            return { label: bank.name, value: bank.name };
+        });
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 const editTreasuryVoucher = (data) => {
@@ -277,7 +317,10 @@ const paymentMethodInfo = (data, event) => {
     paymentMethodPanel.value.toggle(event);
 }
 
-onMounted(() => {
+onMounted(async () => {
+    await getPaymentMethods();
+    await getBanks();
+
     Echo.channel('treasuryVouchers')
         .listen('Treasury\\TreasuryVoucher\\TreasuryVoucherEvent', (e) => {
             if (e.type === 'create') {
@@ -370,13 +413,21 @@ defineExpose({ fetchExpenseTreasuryVouchers });
             <template #body="{ data }">
                 {{ data.cuit }}
             </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="cuit" autocomplete="off" class="p-column-filter"
+                    placeholder="Buscar por CUIT" />
+            </template>
         </Column>
         <Column field="businessName" header="Proveedor" :class="selectStatus === 2 ? 'w-[30%]' : ''" sortable>
             <template #body="{ data }">
                 {{ data.businessName }}
             </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="businessName" autocomplete="off"
+                    class="p-column-filter" placeholder="Buscar por nombre fantasía" />
+            </template>
         </Column>
-        <Column field="amount" header="Importe" sortable>
+        <Column field="amount" header="Importe" dataType="numeric" sortable>
             <template #body="{ data }">
                 <template v-if="data.status === 2 && data.amount !== data.totalAmount">
                     <Button :label="currencyNumber(data.totalAmount)"
@@ -387,10 +438,18 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                     {{ currencyNumber(data.totalAmount) }}
                 </template>
             </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS" locale="es-AR"
+                    name="amount" :min="0" :max="99999999" :minFractionDigits="2" :pt="{ input: { root: { autocomplete: 'off' } } }" />
+            </template>
         </Column>
         <Column field="paymentMethod" header="Forma de pago" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ data.paymentMethod }}
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="paymentMethodsSelect" placeholder="Forma de Pago"
+                    class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
             </template>
         </Column>
         <Column field="bank" header="Banco" v-if="selectStatus === 2" sortable>
@@ -401,10 +460,18 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                         @click="paymentMethodInfo(data, $event)" severity="secondary" outlined />
                 </template>
             </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="banksSelect" placeholder="Forma de Pago"
+                    class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true" />
+            </template>
         </Column>
-        <Column field="paymentDate" header="F. pago" v-if="selectStatus === 2" sortable>
+        <Column field="paymentDate" header="F. pago" dataType="date" v-if="selectStatus === 2" sortable>
             <template #body="{ data }">
                 {{ dateFormat(data.paymentDate) }}
+            </template>
+            <template #filter="{ filterModel, filterCallback }">
+                <Calendar v-model="filterModel.value" @blur="filterCallback();" dateFormat="dd/mm/yy" placeholder="dd/mm/yyyy" mask="99/99/9999"
+                    name="paymentDate" class="p-column-filter" />
             </template>
         </Column>
         <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
@@ -432,7 +499,9 @@ defineExpose({ fetchExpenseTreasuryVouchers });
             </template>
         </Column>
         <template #paginatorend>
-            <Button icon="pi pi-download" iconClass="text-xl" text @click="exportTreasuryVouchers()" />
+            <Button icon="pi pi-download" iconClass="text-xl"
+                class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent focus:ring-0 focus:outline-0"
+                text @click="exportTreasuryVouchers()" />
         </template>
         <template #expansion="{ data }">
             <template v-if="data.vouchers.length > 0">

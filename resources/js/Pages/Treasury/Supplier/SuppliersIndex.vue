@@ -275,9 +275,10 @@ const info = (data, id) => {
                             </span>
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="pendingToPay" autocomplete="off"
-                                class="p-column-filter" placeholder="Buscar por saldo" />
-                        </template>
+                        <InputNumber v-model="filterModel.value" @blur="filterCallback()" placeholder="$ 0,00" mode="currency" currency="ARS"
+                            locale="es-AR" name="pendingToPay" :min="0" :max="99999999" :minFractionDigits="2"
+                            :pt="{ input: { root: { autocomplete: 'off' } } }" />
+                    </template>
                     </Column>
                     <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28"
                         v-if="hasPermissionColumn(['view vouchers', 'edit suppliers', 'view users'])">
@@ -299,7 +300,7 @@ const info = (data, id) => {
                         </template>
                     </Column>
                     <template #paginatorend>
-                        <Button icon="pi pi-download" iconClass="text-xl" text @click="exportSuppliers()" />
+                        <Button icon="pi pi-download" iconClass="text-xl" class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent focus:ring-0 focus:outline-0" text @click="exportSuppliers()" />
                     </template>
                     <template #expansion="{ data }">
                         <div class="data-table-expanded">

@@ -23,11 +23,11 @@ const toast = useToast();
 const confirm = useConfirm();
 
 const filters = ref({
-    invoiceTypeName: { value: null, matchMode: FilterMatchMode.EQUALS },
-    invoiceTypeCodeName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    invoiceTypeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
+    invoiceTypeCodeName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     invoiceFullNumber: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     invoiceDueDate: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-    payConditionName: { value: null, matchMode: FilterMatchMode.EQUALS },
+    payConditionName: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     totalAmount: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
     pendingToPay: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
 });
@@ -316,7 +316,6 @@ const info = (id) => {
                 <Column field="invoiceTypeName" header="T. comp.">
                     <template #body="{ data }">
                         {{ data.invoiceTypeName }}
-
                     </template>
                     <template #filter="{ filterModel, filterCallback }">
                         <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="invoiceTypesSelect" placeholder="T. Comp"
@@ -402,7 +401,9 @@ const info = (id) => {
                     </template>
                 </Column>
                 <template #paginatorend>
-                    <Button icon="pi pi-download" iconClass="text-xl" text @click="exportSupplierVouchers()" />
+                    <Button icon="pi pi-download" iconClass="text-xl"
+                        class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent focus:ring-0 focus:outline-0"
+                        text @click="exportSupplierVouchers()" />
                 </template>
                 <template #expansion="{ data }">
                     <DataTable :value="data.items" scrollable class="m-3 data-table-expanded">

@@ -109,7 +109,7 @@ onMounted(async () => {
                                 :maxDate="new Date()" />
                             <label for="transactionDate" class="text-base">F. Movimientos</label>
                         </FloatLabel>
-                        <Button icon="pi pi-file-pdf" iconClass="text-4xl text-red-500" class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent focus:ring-0" text @click="generatePdf($event)" />
+                        <Button icon="pi pi-file-pdf" iconClass="text-4xl text-red-500" class="p-0 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-transparent focus:ring-0 focus:outline-0" text @click="generatePdf($event)" />
                     </div>
                 </div>
             </template>
