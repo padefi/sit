@@ -16,6 +16,26 @@ ul[data-pc-section="submenu"] {
     }
 }
 
+/* Modal header */
+button[data-pc-section="closebutton"]:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+button[data-pc-section="closebutton"]:hover {
+    background-color: transparent;
+}
+
+/* Modal header */
+
+/* Dropdown */
+div[data-pc-name="dropdown"],
+div[data-pc-section="wrapper"] ul[data-pc-section="list"] li[data-pc-section="item"] span[data-pc-section="itemlabel"] {
+    text-transform: uppercase;
+}
+
+/* Dropdown */
+
 div[data-pc-name="card"],
 div[data-pc-name="overlaypanel"] div[data-pc-section="content"] {
     border: 1px solid #e0e0e0;
@@ -46,6 +66,7 @@ div[data-pc-name="overlaypanel"]::after {
     td,
     th {
         padding: 0.75rem;
+        text-transform: uppercase;
     }
 
     .p-paginator-custom {

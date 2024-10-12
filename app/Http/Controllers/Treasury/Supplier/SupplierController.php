@@ -84,8 +84,8 @@ class SupplierController extends Controller {
 
         $address = $request->address();
         $supplier = Supplier::create([
-            'name' => $request->name,
-            'businessName' => $request->businessName,
+            'name' => strtoupper($request->name),
+            'businessName' => strtoupper($request->businessName),
             'cuit' => $cuit,
             'idVC' => $request->idVC,
             'idCat' => $request->idCat,
@@ -147,8 +147,8 @@ class SupplierController extends Controller {
 
         $address = $request->address();
         $supplier->update([
-            'name' => $request->name,
-            'businessName' => $request->businessName,
+            'name' => strtoupper($request->name),
+            'businessName' => strtoupper($request->businessName),
             'cuit' => $cuit,
             'idVC' => $request->idVC,
             'idCat' => $request->idCat,

@@ -68,7 +68,7 @@ const submit = () => {
                         <FormInput value="Usuario" name="username" type="text" v-model="form.username" :uppercase="false" :blurFunction="blurInput"
                             :colorInput="form.errors.username ? 'alert-input' : 'normal-input'"
                             :colorLabel="form.errors.username ? 'alert-label' : 'normal-label'" />
-                        <UserIcon class="absolute right-0.5 mt-2 h-6 cursor-pointer text-gray-400" />
+                        <i class="pi pi-user absolute text-xl right-1 mt-2 h-6 text-gray-400"></i>
                     </div>
                     <InputError class="mt-2" :message="form.errors.username" />
                 </div>
@@ -77,8 +77,8 @@ const submit = () => {
                         <FormInput value="Contraseña" name="password" :type="visible ? 'text' : 'password'" v-model="form.password"
                             :blurFunction="blurInput" :colorInput="form.errors.password ? 'alert-input' : 'normal-input'"
                             :colorLabel="form.errors.password ? 'alert-label' : 'normal-label'" />
-                        <EyeIcon class="absolute right-0.5 mt-2 h-6 cursor-pointer text-gray-400" @click="togglePassword" v-if="!visible" />
-                        <EyeSlashIcon class="absolute right-0.5 mt-2 h-6 cursor-pointer text-gray-400" @click="togglePassword" v-if="visible" />
+                        <i :class="visible ? 'pi pi-eye' : 'pi pi-eye-slash'" class="absolute text-xl right-1 mt-2 h-6 cursor-pointer text-gray-400"
+                            @click="togglePassword"></i>
                     </div>
                     <InputError class="mt-2" :message="form.errors.password" />
                 </div>

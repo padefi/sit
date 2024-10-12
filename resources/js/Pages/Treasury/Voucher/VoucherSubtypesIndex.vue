@@ -146,6 +146,7 @@ const addNewVoucherSubtype = () => {
         id: crypto.randomUUID(),
         name: newRow.value?.name,
         expenses: [],
+        suppliers: [],
         status: newRow.value?.status,
         condition: 'newVoucherSubtype',
     };
@@ -275,6 +276,7 @@ const onContentMouseDown = () => {
 };
 
 const relateButton = (event, data, status, type) => {
+    if (voucherSubtypeRelated.value.condition === 'newVoucherSubtype') return;
     const descStatus = status ? 'relacionar el' : 'quitar la relación del';
     const desc = type === 'supplier' ? 'proveedor' : 'gasto';
 
@@ -399,6 +401,23 @@ onMounted(() => {
                 }
             }
         });
+
+    Echo.channel('suppliers')
+        .listen('Treasury\\Supplier\\SupplierEvent', (e) => {
+            if (e.type === 'create') {
+                if (!suppliersArray.value.some(supplier => supplier.id === e.supplierId)) {
+                    e.supplier.supplierIndex = 0;
+                    e.supplier.accounts = [];
+                    suppliersArray.value.unshift(e.supplier);
+                }
+            } else if (e.type === 'update') {
+                const index = suppliersArray.value.findIndex(supplier => supplier.id === e.supplier.id);
+
+                if (index !== -1) {
+                    suppliersArray.value[index] = e.supplier;
+                }
+            }
+        });
 });
 
 /*  */
@@ -485,14 +504,16 @@ const info = (data) => {
                     </Column>
                     <Column header="Gastos relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="related(data, $event)">
+                            <Button severity="info" raised rounded outlined @click="related(data, $event)"
+                                :disabled="data.condition === 'newVoucherSubtype'">
                                 {{ data.expenses.length }}
                             </Button>
                         </template>
                     </Column>
                     <Column header="Proveedores relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="supplierRelated(data, $event)">
+                            <Button severity="info" raised rounded outlined @click="supplierRelated(data, $event)"
+                                :disabled="data.condition === 'newVoucherSubtype'">
                                 {{ data.suppliers.length }}
                             </Button>
                         </template>

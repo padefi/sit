@@ -34,13 +34,15 @@ class VoucherSubtypeController extends Controller {
 
     public function index(): Response {
         $voucherSubtypes = VoucherSubtype::with(['userCreated', 'userUpdated', 'expenses.userRelated', 'suppliers.userRelated'])->orderBy('name', 'asc')->get();
-        $voucherExpenses = VoucherExpense::orderBy('name', 'asc')->get();
-        $suppliers = Supplier::orderBy('name', 'asc')->get();
+        $voucherExpenses = VoucherExpense::select('id', 'name')->with(['subtypes'])->orderBy('name', 'asc')->get();
+        $suppliers = Supplier::select('id', 'businessName')->with(['subtypes'])->orderBy('name', 'asc')->get();
 
         return Inertia::render('Treasury/Voucher/VoucherSubtypesIndex', [
             'voucherSubtypes' => VoucherSubtypeResource::collection($voucherSubtypes),
-            'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
-            'suppliers' => SupplierResource::collection($suppliers),
+            // 'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
+            // 'suppliers' => SupplierResource::collection($suppliers),
+            'voucherExpenses' => $voucherExpenses,
+            'suppliers' => $suppliers,
         ]);
     }
 
