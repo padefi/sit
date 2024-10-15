@@ -8,6 +8,7 @@ use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Events\Treasury\Voucher\VoucherToTreasuryEvent;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Treasury\Supplier\SupplierController;
 use App\Http\Requests\Treasury\Voucher\VoidedVoucherRequest;
 use App\Http\Requests\Treasury\Voucher\VoucherRequest;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
@@ -97,6 +98,16 @@ class VoucherController extends Controller {
 
         $voucher->load('userCreated', 'userUpdated', 'items');
         event(new VoucherEvent($voucher, $voucher->id, 'create'));
+
+        $supplier = Supplier::where('id', $voucher->idSupplier)->first();
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+
+        $supplierController = new SupplierController();
+        $vouchers = $supplierController->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 
         return Redirect::back()->with([
             'info' => [
@@ -212,6 +223,16 @@ class VoucherController extends Controller {
         $voucher->load('userCreated', 'userUpdated', 'items');
         event(new VoucherEvent($voucher, $voucher->id, 'update'));
 
+        $supplier = Supplier::where('id', $voucher->idSupplier)->first();
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+
+        $supplierController = new SupplierController();
+        $vouchers = $supplierController->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -248,10 +269,16 @@ class VoucherController extends Controller {
 
         $voucher->load('userCreated', 'userUpdated', 'items');
         event(new VoucherEvent($voucher, $voucher->id, 'update'));
-        
-        /* $supplier = Supplier::where('id', $voucher->idSupplier)->first();
+
+        $supplier = Supplier::where('id', $voucher->idSupplier)->first();
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+
+        $supplierController = new SupplierController();
+        $vouchers = $supplierController->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+
         $supplier->load('userCreated', 'userUpdated');
-        event(new SupplierEvent($supplier, $supplier->id, 'update')); */
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 
         return Redirect::back()->with([
             'info' => [
@@ -465,6 +492,7 @@ class SupplierVouchersExport implements FromCollection, WithMapping, WithHeading
             'Vencimiento',
             'Cond. Pago',
             'Importe',
+            'Estado',
             'Saldo',
         ];
     }
@@ -478,6 +506,7 @@ class SupplierVouchersExport implements FromCollection, WithMapping, WithHeading
             date('d/m/Y', strtotime($voucher->invoiceDueDate)),
             strtoupper($voucher->payCondition->name),
             $voucher->totalAmount,
+            $voucher->status == 1 ? ($voucher->pendingToPay > 0 ? 'PENDIENTE' : 'FINALIZADO') : 'ANULADO',
             $voucher->pendingToPay > 0 ? $voucher->pendingToPay : '0',
         ];
     }
@@ -490,7 +519,12 @@ class SupplierVouchersExport implements FromCollection, WithMapping, WithHeading
                     'horizontal' => Alignment::HORIZONTAL_RIGHT,
                 ],
             ],
-            'G2:H' . $lastRow => [
+            'G2:G' . $lastRow => [
+                'numberFormat' => [
+                    'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
+                ],
+            ],
+            'I2:I' . $lastRow => [
                 'numberFormat' => [
                     'formatCode' => '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)'
                 ],

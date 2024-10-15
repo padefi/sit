@@ -16,6 +16,7 @@ class SupplierEvent implements ShouldBroadcast {
 
     public $supplier;
     public $supplierId;
+    public $pendingToPay;
     public $type;
     /**
      * Create a new event instance.
@@ -23,9 +24,10 @@ class SupplierEvent implements ShouldBroadcast {
      * @param \App\Models\Treasury\Supplier\Supplier $supplier
      * @return void
      */
-    public function __construct(Supplier $supplier, $supplierId, $type) {
+    public function __construct(Supplier $supplier, $supplierId, $pendingToPay, $type) {
         $this->supplier = $supplier;
         $this->supplierId = $supplierId;
+        $this->pendingToPay = $pendingToPay;
         $this->type = $type;
     }
 
@@ -42,6 +44,7 @@ class SupplierEvent implements ShouldBroadcast {
         return [
             'supplier' => $this->supplier,
             'supplierId' => $this->supplierId,
+            'pendingToPay' => $this->pendingToPay,
             'type' => $this->type,
         ];
     }

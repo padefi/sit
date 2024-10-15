@@ -423,14 +423,17 @@ const loadInvoiceTypeData = async (invoiceTypeId) => {
 }
 
 watch(() => form.voucherType, async (voucherTypeId) => {
+    if (loading.value) return;
     await loadVoucherSubtypeData(voucherTypeId);
 });
 
 watch(() => form.voucherSubtype, async (voucherSubtype) => {
+    if (loading.value) return;
     await loadVoucherExpenseData(voucherSubtype);
 });
 
 watch(() => form.invoiceType, async (invoiceTypeId) => {
+    if (loading.value) return;
     await loadInvoiceTypeData(invoiceTypeId);
 });
 </script>

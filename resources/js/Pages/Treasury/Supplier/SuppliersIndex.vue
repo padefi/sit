@@ -162,7 +162,9 @@ onMounted(() => {
                 const index = suppliersArray.value.findIndex(supplier => supplier.id === e.supplier.id);
 
                 if (index !== -1) {
-                    suppliersArray.value[index] = e.supplier;
+                    const data = { ...e.supplier };
+                    data.pendingToPay = e.pendingToPay;
+                    suppliersArray.value[index] = data;
                 }
             }
         });

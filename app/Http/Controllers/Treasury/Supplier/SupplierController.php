@@ -36,7 +36,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'invoicePendingToPay']);
+        $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'calculatePendingToPay', 'invoicePendingToPay']);
         $this->middleware('check.permission:create suppliers')->only('store');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
@@ -112,7 +112,7 @@ class SupplierController extends Controller {
         ]);
 
         $supplier->load('userCreated', 'userUpdated');
-        event(new SupplierEvent($supplier, $supplier->id, 'create'));
+        event(new SupplierEvent($supplier, $supplier->id, 0, 'create'));
 
         return Redirect::back()->with([
             'info' => [
@@ -173,8 +173,12 @@ class SupplierController extends Controller {
             'updated_at' => now(),
         ]);
 
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+        $vouchers = $this->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+
         $supplier->load('userCreated', 'userUpdated');
-        event(new SupplierEvent($supplier, $supplier->id, 'update'));
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 
         return Redirect::back()->with([
             'info' => [
@@ -205,7 +209,7 @@ class SupplierController extends Controller {
         ]);
     }
 
-    private function calculatePendingToPay($vouchers) {
+    public function calculatePendingToPay($vouchers) {
         return $vouchers->map(function ($voucher) {
             if ($voucher->status === 0) {
                 $voucher->pendingToPay = 0;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 use App\Events\Treasury\Supplier\SupplierEvent;
 use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Treasury\Supplier\SupplierController;
 use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryCustomVoucherRequest;
 use App\Http\Requests\Treasury\TreasuryVoucher\VoidedTreasuryVoucherRequest;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryCustomVoucherResource;
@@ -560,9 +561,15 @@ class TreasuryVoucherController extends Controller {
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));
 
-        /* $supplier = Supplier::where('id', $treasuryVoucher->idSupplier)->first();
+        $supplier = Supplier::where('id', $treasuryVoucher->idSupplier)->first();
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+
+        $supplierController = new SupplierController();
+        $vouchers = $supplierController->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+        
         $supplier->load('userCreated', 'userUpdated');
-        event(new SupplierEvent($supplier, $supplier->id, 'update')); */
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 
         return Redirect::back()->with([
             'info' => [
