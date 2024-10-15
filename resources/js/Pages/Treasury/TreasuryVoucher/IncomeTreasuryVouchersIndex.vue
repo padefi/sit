@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { currencyNumber, dateFormat, invoiceNumberFormat, addDate } from "@/utils/formatterFunctions";
+import { dropdownClasses } from '@/utils/cssUtils';
+import { currencyNumber, dateFormat, dateTimeFormat, invoiceNumberFormat, addDate } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
@@ -20,9 +21,12 @@ const { hasPermission, hasPermissionColumn } = usePermissions();
 const loading = ref(true);
 const selectStatus = ref(0);
 const treasuryVouchersArray = ref([]);
+const voidNotesIncome = ref('');
 const expandedRows = ref([]);
 const paymentMethodPanel = ref();
 const dataPaymentMethodArray = ref([]);
+const voidedVoucherPanel = ref();
+const dataVoidedVoucherArray = ref([]);
 const paymentMethodsSelect = ref([]);
 const banksSelect = ref([]);
 const isProcessing = ref(false);
@@ -95,6 +99,7 @@ const treasuryVoucherDataStructure = (treasuryVoucher) => {
         totalAmount: data.totalAmount,
         vouchers: data.voucherToTreasury.map(voucher => voucherDataStructure(voucher)),
         customVoucher: data.treasuryCustomVoucher ? customVoucherDataStructure(data.treasuryCustomVoucher) : null,
+        voidedVoucher: data.voidedTreasuryVoucher ? voidedVoucherDataStructure(data.voidedTreasuryVoucher) : null,
     }
 }
 
@@ -119,6 +124,14 @@ const customVoucherDataStructure = (customVoucher) => {
         amount: customVoucher.amount,
         notes: customVoucher.notes,
         voucherDate: customVoucher.voucherDate,
+    }];
+}
+
+const voidedVoucherDataStructure = (voidedVoucher) => {
+    return [{
+        userVoided: voidedVoucher.userVoided ? voidedVoucher.userVoided.name + ' ' + voidedVoucher.userVoided.surname : 'SIN DATOS',
+        notes: voidedVoucher.notes,
+        voided_at: voidedVoucher.voided_at,
     }];
 }
 
@@ -180,22 +193,63 @@ const editTreasuryVoucher = (data) => {
     });
 }
 
-const voidTreasuryVoucher = (event, data) => {
+const voidTreasuryVoucherIncome = (event, data) => {
+    voidNotesIncome.value = '';
+    const isVoidNoteEmpty = () => !voidNotesIncome.value || voidNotesIncome.value.trim() === '';
+
     confirm.require({
         target: event.currentTarget,
+        group: 'voidTreasuryVoucherIncome',
+        header: 'Anular comprobante',
         message: '¿Está seguro de anular el comprobante?',
-        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        onShow: () => voidNotesIncome.value = '',
+        onHide: () => voidNotesIncome.value = '',
         accept: () => {
+            if (isVoidNoteEmpty()) {
+                toast.add({
+                    severity: 'error',
+                    detail: 'Debe completar el motivo de la anulación.',
+                    life: 3000,
+                });
+
+                return false;
+            }
+
             const form = useForm({
-                id: data.id
+                idTV: data.id,
+                notes: voidNotesIncome.value,
             });
 
             form.put(route("treasury-vouchers.void", data.id), {
                 onError: (error) => {
+                    toast.add({
+                        severity: 'error',
+                        detail: error.response.data.message,
+                        life: 3000,
+                    });
                 },
             });
         },
+        reject: () => {
+            voidNotesIncome.value = '';
+        },
     });
+}
+
+const handleConfirmAccept = (acceptCallback) => {
+    const isVoidNoteEmpty = () => !voidNotesIncome.value || voidNotesIncome.value.trim() === '';
+
+    if (isVoidNoteEmpty()) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar el motivo de la anulación.',
+            life: 3000,
+        });
+
+        return false;
+    }
+
+    acceptCallback();
 }
 
 const confirmTreasuryVoucherModal = () => {
@@ -266,6 +320,11 @@ const paymentMethodInfo = (data, event) => {
 
     dataPaymentMethodArray.value = dataArray;
     paymentMethodPanel.value.toggle(event);
+}
+
+const voidedTreasuryVoucherIncomeInfo = (data, event) => { 
+    dataVoidedVoucherArray.value = data;    
+    voidedVoucherPanel.value.toggle(event);
 }
 
 onMounted(async () => {
@@ -424,6 +483,10 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                     <template v-if="data.status === 1">
                         <Checkbox v-model="data.checked" binary @click="setTotalIncomeAmount($event, data)" />
                     </template>
+                    <template v-if="data.status === 3">
+                        <button v-tooltip="'Motivo anulación'" class="bottom-[0.2rem] relative"><i class="pi pi-info-circle text-red-700 text-2xl"
+                                @click="voidedTreasuryVoucherIncomeInfo(data.voidedVoucher, $event)"></i></button>
+                    </template>
                     <template v-if="hasPermission('view users')">
                         <button v-tooltip="'+Info'" class="bottom-[0.2rem] relative"><i class="pi pi-id-card text-cyan-500 text-2xl"
                                 @click="info(data.id)"></i></button>
@@ -434,9 +497,29 @@ defineExpose({ fetchIncomeTreasuryVouchers });
                                     class="pi pi-pencil text-orange-500 text-lg font-extrabold" @click="editTreasuryVoucher(data)"></i></button>
                         </template>
                         <template v-if="data.status === 1">
-                            <ConfirmPopup></ConfirmPopup>
+                            <ConfirmPopup group="voidTreasuryVoucherIncome">
+                                <template #container="{ message, acceptCallback, rejectCallback }">
+                                    <div class="flex flex-col p-5 items-center">
+                                        <p>{{ message.message }}</p>
+                                        <FloatLabel class="w-full !top-3">
+                                            <Textarea v-model="voidNotesIncome" maxlength="250" rows="2" autocomplete="off" id="voidNotesIncome"
+                                                class="w-full mt-2 resize-none peer uppercase" :class="dropdownClasses(voidNotesIncome)" autofocus />
+                                            <label for="notes" class="peer-focus:!top-[-0.40rem]"
+                                                :class="{ '!top-5': voidNotesIncome.trim() === '', '!top-[-0.40rem]': voidNotesIncome.trim() !== '' }">Motivo
+                                                de anulación</label>
+                                        </FloatLabel>
+                                    </div>
+                                    <div class="flex items-center gap-2 m-4 justify-end">
+                                        <Button label="Cancelar" class="bg-red-500 border-red-500 text-white hover:bg-red-600 hover:border-red-600"
+                                            @click="rejectCallback"></Button>
+                                        <Button label="Aceptar" class="bg-primary-500 text-white hover:bg-primary-600"
+                                            @click="handleConfirmAccept(acceptCallback)"
+                                            :disabled="!voidNotesIncome || voidNotesIncome.trim() === ''"></Button>
+                                    </div>
+                                </template>
+                            </ConfirmPopup>
                             <button v-tooltip="'Anular'" class="bottom-[0.2rem] relative"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
-                                    @click="voidTreasuryVoucher($event, data)"></i></button>
+                                    @click="voidTreasuryVoucherIncome($event, data)"></i></button>
                         </template>
                     </template>
                 </div>
@@ -517,6 +600,26 @@ defineExpose({ fetchIncomeTreasuryVouchers });
             <Column field="transactionNumber" header="N° OPERACIÓN">
                 <template #body="{ data }">
                     <span class="uppercase">{{ data.transactionNumber }}</span>
+                </template>
+            </Column>
+        </DataTable>
+    </OverlayPanel>
+
+    <OverlayPanel ref="voidedVoucherPanel" appendTo="body" class="voidedVoucherPanel">
+        <DataTable :value="dataVoidedVoucherArray" scrollable scrollHeight="70vh" dataKey="id" class="data-table">
+            <Column field="notes" header="Motivo Anulación">
+                <template #body="{ data }">
+                    <span class="uppercase">{{ data.notes }}</span>
+                </template>
+            </Column>
+            <Column field="userVoided" header="Usuario anulación">
+                <template #body="{ data }">
+                    <span class="uppercase">{{ data.userVoided }}</span>
+                </template>
+            </Column>
+            <Column field="voided_at" header="Fecha anulación">
+                <template #body="{ data }">
+                    <span class="uppercase">{{ dateTimeFormat(data.voided_at) }}</span>
                 </template>
             </Column>
         </DataTable>

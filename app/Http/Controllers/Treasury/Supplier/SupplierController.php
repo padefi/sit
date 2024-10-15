@@ -207,12 +207,16 @@ class SupplierController extends Controller {
 
     private function calculatePendingToPay($vouchers) {
         return $vouchers->map(function ($voucher) {
-            $voucher->pendingToPay = $voucher->totalAmount;
+            if ($voucher->status === 0) {
+                $voucher->pendingToPay = 0;
+            } else {
+                $voucher->pendingToPay = $voucher->totalAmount;
 
-            foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
-                if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
-                    $voucher->pendingToPay -= $voucherToTreasury->amount;
-                    if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
+                    if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                        $voucher->pendingToPay -= $voucherToTreasury->amount;
+                        if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                    }
                 }
             }
 
@@ -227,6 +231,11 @@ class SupplierController extends Controller {
         foreach ($suppliers as $supplier) {
             $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
             $vouchers->each(function ($voucher) use (&$countInvoicePendingToPay) {
+                if ($voucher->status === 0) {
+                    $voucher->pendingToPay = 0;
+                    return;
+                }
+
                 $voucher->pendingToPay = $voucher->totalAmount;
 
                 foreach ($voucher->voucherToTreasury as $voucherToTreasury) {

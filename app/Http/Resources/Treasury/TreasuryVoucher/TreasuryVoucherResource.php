@@ -58,6 +58,7 @@ class TreasuryVoucherResource extends JsonResource {
             'bankTransaction' => $this->bankTransaction,
             'cashTransaction' => $this->cashTransaction,
             'checkTransaction' => $this->checkTransaction,
+            'voidedTreasuryVoucher' => $this->voidedTreasuryVoucher ? new VoidedTreasuryVoucherResource($this->voidedTreasuryVoucher) : null,
             'userCreated' => $this->userCreated ? [
                 'name' => $this->userCreated->name,
                 'surname' => $this->userCreated->surname,

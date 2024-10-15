@@ -88,6 +88,10 @@ class TreasuryVoucher extends Model {
         return $this->hasOne(CheckTransaction::class, 'idTV');
     }
 
+    public function voidedTreasuryVoucher() {
+        return $this->hasOne(VoidedTreasuryVoucher::class, 'idTV');
+    }
+
     public function userCreated() {
         return $this->belongsTo(User::class, 'idUserCreated');
     }

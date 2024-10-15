@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Treasury\Voucher;
 
+use App\Events\Treasury\Supplier\SupplierEvent;
 use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Events\Treasury\Voucher\VoucherToTreasuryEvent;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Treasury\Voucher\VoidedVoucherRequest;
 use App\Http\Requests\Treasury\Voucher\VoucherRequest;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
@@ -15,6 +17,7 @@ use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Voucher\InvoiceType;
 use App\Models\Treasury\Voucher\InvoiceTypeCode;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
+use App\Models\Treasury\Voucher\VoidedVoucher;
 use App\Models\Treasury\Voucher\VoucherItem;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
@@ -219,15 +222,7 @@ class VoucherController extends Controller {
         ]);
     }
 
-    public function voidVoucher(Voucher $voucher) {
-        $voucherExist = Voucher::where('id', $voucher->id)->first();
-
-        if (!$voucherExist) {
-            throw ValidationException::withMessages([
-                'message' => trans('Comprobante no encontrado.')
-            ]);
-        }
-
+    public function voidVoucher(VoidedVoucherRequest $request, Voucher $voucher) {
         $treasuryVoucher = VoucherToTreasury::where('idVoucher', $voucher->id)
             ->whereHas('treasuryVoucher', function ($query) {
                 $query->where('idVS', '!=', 3);
@@ -240,12 +235,23 @@ class VoucherController extends Controller {
             ]);
         }
 
+        VoidedVoucher::create([
+            'idVoucher' => $voucher->id,
+            'notes' => strtoupper($request->notes),
+            'idUserVoided' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
         $voucher->update([
             'status' => false,
         ]);
 
         $voucher->load('userCreated', 'userUpdated', 'items');
         event(new VoucherEvent($voucher, $voucher->id, 'update'));
+        
+        /* $supplier = Supplier::where('id', $voucher->idSupplier)->first();
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, 'update')); */
 
         return Redirect::back()->with([
             'info' => [
@@ -467,7 +473,7 @@ class SupplierVouchersExport implements FromCollection, WithMapping, WithHeading
         return [
             strtoupper($voucher->invoiceType->name),
             strtoupper($voucher->InvoiceTypeCode->name),
-            str_pad($voucher->pointOfNumber, 5, '0', STR_PAD_LEFT) . '-' .str_pad($voucher->invoiceNumber, 8, '0', STR_PAD_LEFT),
+            str_pad($voucher->pointOfNumber, 5, '0', STR_PAD_LEFT) . '-' . str_pad($voucher->invoiceNumber, 8, '0', STR_PAD_LEFT),
             date('d/m/Y', strtotime($voucher->invoiceDate)),
             date('d/m/Y', strtotime($voucher->invoiceDueDate)),
             strtoupper($voucher->payCondition->name),

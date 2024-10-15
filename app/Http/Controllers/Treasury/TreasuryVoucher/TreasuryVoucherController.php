@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 
+use App\Events\Treasury\Supplier\SupplierEvent;
 use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryCustomVoucherRequest;
+use App\Http\Requests\Treasury\TreasuryVoucher\VoidedTreasuryVoucherRequest;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryCustomVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherStatusResource;
@@ -21,6 +23,7 @@ use App\Models\Treasury\TreasuryVoucher\TreasuryCustomVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucher;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherStatus;
 use App\Models\Treasury\TreasuryVoucher\TreasuryVoucherTaxWithholding;
+use App\Models\Treasury\TreasuryVoucher\VoidedTreasuryVoucher;
 use App\Models\Treasury\Voucher\Voucher;
 use App\Models\Treasury\Voucher\VoucherToTreasury;
 use App\Models\Treasury\Voucher\VoucherType;
@@ -530,15 +533,7 @@ class TreasuryVoucherController extends Controller {
         ]);
     }
 
-    public function voidTreasuryVoucher(TreasuryVoucher $treasuryVoucher) {
-        $treasuryVoucherExist = TreasuryVoucher::where('id', $treasuryVoucher->id)->first();
-
-        if (!$treasuryVoucherExist) {
-            throw ValidationException::withMessages([
-                'message' => trans('Comprobante no encontrado.')
-            ]);
-        }
-
+    public function voidTreasuryVoucher(VoidedTreasuryVoucherRequest $request, TreasuryVoucher $treasuryVoucher) {
         $treasuryVoucher = TreasuryVoucher::where('id', $treasuryVoucher->id)
             ->where('idVS', 1)
             ->first();
@@ -549,6 +544,13 @@ class TreasuryVoucherController extends Controller {
             ]);
         }
 
+        VoidedTreasuryVoucher::create([
+            'idTV' => $treasuryVoucher->id,
+            'notes' => strtoupper($request->notes),
+            'idUserVoided' => Auth::id(),
+            'voided_at' => now(),
+        ]);
+
         $treasuryVoucher->update([
             'idVS' => 3,
             'idUserVoided' => Auth::id(),
@@ -557,6 +559,10 @@ class TreasuryVoucherController extends Controller {
 
         $treasuryVoucher->load('userCreated', 'userUpdated');
         event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));
+
+        /* $supplier = Supplier::where('id', $treasuryVoucher->idSupplier)->first();
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, 'update')); */
 
         return Redirect::back()->with([
             'info' => [

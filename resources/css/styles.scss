@@ -37,15 +37,31 @@ div[data-pc-section="wrapper"] ul[data-pc-section="list"] li[data-pc-section="it
 /* Dropdown */
 
 div[data-pc-name="card"],
+div[data-pc-name="confirmpopup"],
 div[data-pc-name="overlaypanel"] div[data-pc-section="content"] {
     border: 1px solid #e0e0e0;
     border-radius: 0.5rem;
     transition: box-shadow 0.3s;
 }
 
+/* Triangle */
+div[data-pc-name="confirmpopup"]::before {
+    margin-left: 85%;
+}
+
+.voidedVoucherPanel::before,
+.voidedVoucherPanel::after {
+    position: absolute;
+    margin-left: 46%;
+    left: 50%;
+}
+
+div[data-pc-name="confirmpopup"]::before,
 div[data-pc-name="overlaypanel"]::after {
     filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.5));
 }
+
+/* Triangle */
 
 .data-table {
     border-color: #bfdbfe !important;

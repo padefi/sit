@@ -28,6 +28,10 @@ export const dateFormat = (data) => {
     return format(data, "DD/MM/YYYY", "es");
 };
 
+export const dateTimeFormat = (data) => {
+    return format(data, "DD/MM/YYYY HH:mm:ss", "es");
+};
+
 export const invoiceNumberFormat = (data, length) => {
     return String(data).padStart(length, '0');
 };

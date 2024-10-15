@@ -1,8 +1,9 @@
 <script setup>
 import { inject, onMounted, ref } from "vue";
+import { dropdownClasses } from '@/utils/cssUtils';
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
-import { currencyNumber, addDate, dateFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
+import { currencyNumber, addDate, dateFormat, dateTimeFormat, percentNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
 import { FilterMatchMode, FilterOperator } from "primevue/api";
 import { useToast } from "primevue/usetoast";
@@ -15,10 +16,13 @@ import treasuryModal from './TreasuryModal.vue';
 const { hasPermission, hasPermissionColumn } = usePermissions();
 const vouchersArray = ref();
 const loading = ref(true);
+const voidNotes = ref('');
 const expandedRows = ref([]);
 const invoiceTypesSelect = ref([]);
 const invoiceTypeCodesSelect = ref([]);
 const payConditionsSelect = ref([]);
+const voidedVoucherPanel = ref();
+const dataVoidedVoucherArray = ref([]);
 const toast = useToast();
 const confirm = useConfirm();
 
@@ -77,7 +81,16 @@ const voucherDataStructure = (voucher) => {
         invoiceFullNumber: invoiceNumberFormat(voucher.pointOfNumber, 5) + '-' + invoiceNumberFormat(voucher.invoiceNumber, 8),
         payConditionName: voucher.payCondition.name,
         invoiceDueDate: addDate(voucher.invoiceDueDate, 1),
+        voidedVoucher: voucher.voidedVoucher ? voidedVoucherDataStructure(voucher.voidedVoucher) : null,
     }
+}
+
+const voidedVoucherDataStructure = (voidedVoucher) => {
+    return [{
+        userVoided: voidedVoucher.userVoided ? voidedVoucher.userVoided.name + ' ' + voidedVoucher.userVoided.surname : 'SIN DATOS',
+        notes: voidedVoucher.notes,
+        voided_at: voidedVoucher.voided_at,
+    }];
 }
 
 const onRowExpand = (data) => {
@@ -153,13 +166,30 @@ const editVoucher = (data) => {
 }
 
 const voidVoucher = (event, data) => {
+    voidNotes.value = '';
+    const isVoidNoteEmpty = () => !voidNotes.value || voidNotes.value.trim() === '';
+
     confirm.require({
         target: event.currentTarget,
+        group: 'voidTreasuryVoucherExpense',
+        header: 'Anular comprobante',
         message: '¿Está seguro de anular el comprobante?',
-        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        onShow: () => voidNotes.value = '',
+        onHide: () => voidNotes.value = '',
         accept: () => {
+            if (isVoidNoteEmpty()) {
+                toast.add({
+                    severity: 'error',
+                    detail: 'Debe completar el motivo de la anulación.',
+                    life: 3000,
+                });
+
+                return false;
+            }
+
             const form = useForm({
-                id: data.id
+                idVoucher: data.id,
+                notes: voidNotes.value,
             });
 
             form.put(route("vouchers.void", data.id), {
@@ -172,7 +202,26 @@ const voidVoucher = (event, data) => {
                 },
             });
         },
+        reject: () => {
+            voidNotes.value = '';
+        },
     });
+}
+
+const handleConfirmAccept = (acceptCallback) => {
+    const isVoidNoteEmpty = () => !voidNotes.value || voidNotes.value.trim() === '';
+
+    if (isVoidNoteEmpty()) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe completar el motivo de la anulación.',
+            life: 3000,
+        });
+
+        return false;
+    }
+
+    acceptCallback();
 }
 
 const treasuryVoucher = () => {
@@ -203,6 +252,11 @@ const treasuryVoucher = () => {
 
 const exportSupplierVouchers = async () => {
     window.location.href = route('vouchers.export', dialogRef.value.data.supplierId);
+}
+
+const voidedVoucherInfo = (data, event) => {
+    dataVoidedVoucherArray.value = data;
+    voidedVoucherPanel.value.toggle(event);
 }
 
 onMounted(async () => {
@@ -384,6 +438,10 @@ const info = (id) => {
                     v-if="hasPermissionColumn(['edit vouchers', 'view users'])">
                     <template #body="{ data }">
                         <div class="space-x-2">
+                            <template v-if="data.status === 0">
+                                <button v-tooltip="'Motivo anulación'" class="top-0.5 relative"><i class="pi pi-info-circle text-red-700 text-2xl"
+                                        @click="voidedVoucherInfo(data.voidedVoucher, $event)"></i></button>
+                            </template>
                             <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">
                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                         @click="editVoucher(data)"></i></button>
@@ -393,7 +451,28 @@ const info = (id) => {
                                         @click="info(data.id)"></i></button>
                             </template>
                             <template v-if="hasPermission('edit vouchers') && data.status === 1 && data.pendingToPay === data.totalAmount">
-                                <ConfirmPopup></ConfirmPopup>
+                                <ConfirmPopup group="voidTreasuryVoucherExpense">
+                                    <template #container="{ message, acceptCallback, rejectCallback }">
+                                        <div class="flex flex-col p-5 items-center">
+                                            <p>{{ message.message }}</p>
+                                            <FloatLabel class="w-full !top-3">
+                                                <Textarea v-model="voidNotes" maxlength="250" rows="2" autocomplete="off" id="voidNotes"
+                                                    class="w-full mt-2 resize-none peer uppercase" :class="dropdownClasses(voidNotes)" autofocus />
+                                                <label for="notes" class="peer-focus:!top-[-0.40rem]"
+                                                    :class="{ '!top-5': voidNotes.trim() === '', '!top-[-0.40rem]': voidNotes.trim() !== '' }">Motivo
+                                                    de anulación</label>
+                                            </FloatLabel>
+                                        </div>
+                                        <div class="flex items-center gap-2 m-4 justify-end">
+                                            <Button label="Cancelar"
+                                                class="bg-red-500 border-red-500 text-white hover:bg-red-600 hover:border-red-600"
+                                                @click="rejectCallback"></Button>
+                                            <Button label="Aceptar" class="bg-primary-500 text-white hover:bg-primary-600"
+                                                @click="handleConfirmAccept(acceptCallback)"
+                                                :disabled="!voidNotes || voidNotes.trim() === ''"></Button>
+                                        </div>
+                                    </template>
+                                </ConfirmPopup>
                                 <button v-tooltip="'Anular'"><i class="pi pi-ban text-red-500 text-lg font-extrabold"
                                         @click="voidVoucher($event, data)"></i></button>
                             </template>
@@ -435,6 +514,26 @@ const info = (id) => {
                     </DataTable>
                 </template>
             </DataTable>
+
+            <OverlayPanel ref="voidedVoucherPanel" appendTo="body" class="voidedVoucherPanel">
+                <DataTable :value="dataVoidedVoucherArray" scrollable scrollHeight="70vh" dataKey="id" class="data-table">
+                    <Column field="notes" header="Motivo Anulación">
+                        <template #body="{ data }">
+                            <span class="uppercase">{{ data.notes }}</span>
+                        </template>
+                    </Column>
+                    <Column field="userVoided" header="Usuario anulación">
+                        <template #body="{ data }">
+                            <span class="uppercase">{{ data.userVoided }}</span>
+                        </template>
+                    </Column>
+                    <Column field="voided_at" header="Fecha anulación">
+                        <template #body="{ data }">
+                            <span class="uppercase">{{ dateTimeFormat(data.voided_at) }}</span>
+                        </template>
+                    </Column>
+                </DataTable>
+            </OverlayPanel>
         </template>
     </Card>
 </template>
