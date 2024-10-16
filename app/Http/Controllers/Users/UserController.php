@@ -26,7 +26,7 @@ class UserController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view users')->only('index');
         $this->middleware('check.permission:create users')->only('store');
-        $this->middleware('check.permission:edit users')->only('update');
+        $this->middleware('check.permission:edit users')->only(['update', 'resetPassword']);
         $this->middleware('check.permission:permission users')->only('updatePermission');
     }
 
@@ -111,6 +111,19 @@ class UserController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Usuario modificado exitosamente.'
+            ],
+            'success' => true,
+        ]);
+    }
+
+    public function resetPassword(User $user) {
+        $user->password = Hash::make($user->username);
+        $user->save();
+
+        return Redirect::back()->with([
+            'info' => [
+                'type' => 'success',
+                'message' => 'Contraseña restablecida exitosamente.'
             ],
             'success' => true,
         ]);

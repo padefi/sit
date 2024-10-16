@@ -97,19 +97,18 @@ const allItems = ref([
         route: 'users.index',
         name: 'users',
     },
-    {
+    /* {
         label: user(),
         icon: 'pi pi-user',
         items: [
             {
                 label: 'Perfil',
                 icon: 'pi pi-user-edit',
-                /* method: 'post',
-                route: 'logout', */
+                // method: 'post',
+                // route: 'logout',
             },
         ]
-
-    },
+    }, */
 ]);
 
 const userItems = ref([

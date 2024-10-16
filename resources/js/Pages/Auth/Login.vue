@@ -1,11 +1,11 @@
 <script setup>
+import { ref } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3'
+import { LockClosedIcon } from '@heroicons/vue/24/outline'
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import FormInput from '@/Components/FormInput.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue'
-import { Head, useForm } from '@inertiajs/vue3'
-import { UserIcon, EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
-import { ref } from 'vue';
 
 defineProps({
     canResetPassword: {
@@ -40,7 +40,6 @@ const togglePassword = () => {
 }
 
 const submit = () => {
-
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
     });

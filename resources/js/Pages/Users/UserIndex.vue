@@ -202,6 +202,27 @@ const onRowEditCancel = () => {
     editingRows.value = [];
 };
 
+const resetPassword = (event, data) => {
+
+    const form = useForm({
+        id: data.id
+    })
+
+    confirm.require({
+        target: event.currentTarget,
+        message: '¿Está seguro de restablecer la contraseña del usuario?',
+        rejectClass: 'bg-red-500 text-white hover:bg-red-600',
+        accept: () => {
+            form.put(route("users.reset-password", data.id), {
+                onSuccess: () => {
+                },
+                onError: () => {
+                }
+            });
+        },
+    });
+}
+
 onMounted(() => {
     props.users.map((user) => {
         user.role = user.role[0]
@@ -302,11 +323,10 @@ const modalPermissions = (name, surname, userId, userRole) => {
                 </div>
             </template>
             <template #content>
-                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="usersArray" scrollable
-                    scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
-                    :globalFilterFields="['name', 'surname', 'email', 'username', 'role', 'is_active']"
-                    @row-edit-init="onRowEditInit($event)" @row-edit-save="onRowEditSave"
-                    @row-edit-cancel="onRowEditCancel" :pt="{
+                <DataTable v-model:editingRows="editingRows" v-model:filters="filters" :value="usersArray" scrollable scrollHeight="70vh"
+                    editMode="row" dataKey="id" filterDisplay="menu"
+                    :globalFilterFields="['name', 'surname', 'email', 'username', 'role', 'is_active']" @row-edit-init="onRowEditInit($event)"
+                    @row-edit-save="onRowEditSave" @row-edit-cancel="onRowEditCancel" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
@@ -325,8 +345,8 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             {{ data.surname }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="surname"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por apellido" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="surname" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por apellido" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="surname" autocomplete="off"
@@ -339,8 +359,8 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             {{ data.name }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por nombre" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por nombre" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
@@ -353,13 +373,12 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             {{ data.email }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por email" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="email" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por email" />
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])"
-                                placeholder="Email" />
+                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])" placeholder="Email" />
                             <InputError
                                 :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
                         </template>
@@ -369,19 +388,17 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             {{ data.username }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="username"
-                                autocomplete="off" class="p-column-filter" placeholder="Buscar por usuario" />
+                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="username" autocomplete="off"
+                                class="p-column-filter" placeholder="Buscar por usuario" />
                         </template>
                     </Column>
                     <Column field="role" header="Rol">
                         <template #body="{ data }">
-                            <Tag :value="data.role"
-                                class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
+                            <Tag :value="data.role" class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="rolesSelect"
-                                placeholder="Rol" class="p-column-filter" optionLabel="label" optionValue="value"
-                                style="min-width: 12rem" :showClear="true">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="rolesSelect" placeholder="Rol"
+                                class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value" name="role"
                                         class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
@@ -389,8 +406,8 @@ const modalPermissions = (name, surname, userId, userRole) => {
                             </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="rolesSelect" filter
-                                optionLabel="label" optionValue="value" placeholder="Seleccione un rol">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="rolesSelect" filter optionLabel="label"
+                                optionValue="value" placeholder="Seleccione un rol">
                                 <template #option="slotProps">
                                     <Tag :value="slotProps.option.value"
                                         class="bg-transparent !text-surface-700 !text-base !font-normal !p-0 uppercase" />
@@ -401,25 +418,23 @@ const modalPermissions = (name, surname, userId, userRole) => {
                     </Column>
                     <Column field="is_active" header="Estado">
                         <template #body="{ data }">
-                            <Tag :value="data.is_active" class="!text-sm uppercase"
-                                :severity="getStatusLabel(data.is_active)" />
+                            <Tag :value="data.is_active" class="!text-sm uppercase" :severity="getStatusLabel(data.is_active)" />
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
-                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses"
-                                placeholder="Estado" class="p-column-filter" optionLabel="label" optionValue="value"
-                                style="min-width: 12rem" :showClear="true">
+                            <Dropdown v-model="filterModel.value" @change="filterCallback()" :options="statuses" placeholder="Estado"
+                                class="p-column-filter" optionLabel="label" optionValue="value" style="min-width: 12rem" :showClear="true">
                                 <template #option="slotProps">
-                                    <Tag :value="slotProps.option.value" name="is_active"
-                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                    <Tag :value="slotProps.option.value" name="is_active" :severity="getStatusLabel(slotProps.option.value)"
+                                        class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
                         </template>
                         <template #editor="{ data, field }">
-                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses"
-                                optionLabel="label" optionValue="value" placeholder="Seleccione un estado">
+                            <Dropdown v-model="data[field]" :invalid="!data[field]" :options="statuses" optionLabel="label" optionValue="value"
+                                placeholder="Seleccione un estado">
                                 <template #option="slotProps">
-                                    <Tag :value="slotProps.option.value"
-                                        :severity="getStatusLabel(slotProps.option.value)" class="!text-sm uppercase" />
+                                    <Tag :value="slotProps.option.value" :severity="getStatusLabel(slotProps.option.value)"
+                                        class="!text-sm uppercase" />
                                 </template>
                             </Dropdown>
                             <InputError :message="!data[field] ? rules : ''" />
@@ -429,13 +444,16 @@ const modalPermissions = (name, surname, userId, userRole) => {
                         <template #body="{ editorInitCallback, data }">
                             <div class="space-x-2" v-if="data.username != username() && data.role != 'admin'">
                                 <template v-if="hasPermission('edit users')">
-                                    <button v-tooltip="'Editar'"><i
-                                            class="pi pi-pencil text-orange-500 text-lg font-extrabold"
+                                    <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
                                             @click="disabledEditButtons(editorInitCallback, $event)"></i></button>
                                 </template>
+                                <template v-if="hasPermission('edit users')">
+                                    <ConfirmPopup></ConfirmPopup>
+                                    <button v-tooltip="'Resetear contraseña'"><i class="pi pi-key text-emerald-400 text-lg font-extrabold"
+                                            @click="resetPassword($event, data)"></i></button>
+                                </template>
                                 <template v-if="hasPermission('permission users')">
-                                    <button v-tooltip="'Ver permisos'"><i
-                                            class="pi pi-eye text-cyan-500 text-lg font-extrabold"
+                                    <button v-tooltip="'Ver permisos'"><i class="pi pi-eye text-cyan-500 text-lg font-extrabold"
                                             @click="modalPermissions(data.name, data.surname, data.id, data.role)"></i></button>
                                 </template>
                             </div>

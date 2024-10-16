@@ -47,6 +47,7 @@ Route::get('/home', function () {
 
 Route::group(['middleware' => ['auth', 'check.permission:view users']], function () {
     Route::put('/users/{user}/update-permission', [UserController::class, 'updatePermission'])->name('users.updatePermission');
+    Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::resource('users', UserController::class);
 });
 
