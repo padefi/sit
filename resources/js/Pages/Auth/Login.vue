@@ -36,6 +36,29 @@ const visiblePassword = ref(false);
 const visiblecurrentPassword = ref(false);
 const visibleNewPassword = ref(false);
 const visibleConfirmPassword = ref(false);
+const newPasswordPattern = {
+    uppercase: 'pi pi-times text-red-600',
+    lowercase: 'pi pi-times text-red-600',
+    number: 'pi pi-times text-red-600',
+    special: 'pi pi-times text-red-600',
+    length: 'pi pi-times text-red-600',
+}
+
+const newPasswordConfirmPattern = {
+    uppercase: 'pi pi-times text-red-600',
+    lowercase: 'pi pi-times text-red-600',
+    number: 'pi pi-times text-red-600',
+    special: 'pi pi-times text-red-600',
+    length: 'pi pi-times text-red-600',
+    match: 'pi pi-times text-red-600',
+}
+
+const passwordPattern = {
+    uppercase: /[A-Z]/,
+    lowercase: /[a-z]/,
+    number: /[0-9]/,
+    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
+}
 const rules = 'Debe completar el campo'
 
 const openMailClient = () => {
@@ -57,6 +80,19 @@ const submit = () => {
             }
         }
     });
+}
+
+
+const passwordPatternValidation = (pattern, form) => {
+    pattern.uppercase = passwordPattern.uppercase.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    pattern.lowercase = passwordPattern.lowercase.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    pattern.number = passwordPattern.number.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    pattern.special = passwordPattern.special.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    pattern.length = form.length >= 8 ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+
+    if (pattern.match) {
+        pattern.match = form === formChangePassword.newPassword ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    }
 }
 
 const submitChangePassword = () => {
@@ -99,7 +135,6 @@ const submitChangePassword = () => {
     }
 
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
     if (!passwordPattern.test(formChangePassword.newPassword)) {
         toast.add({
             severity: 'error',
@@ -144,6 +179,32 @@ const submitChangePassword = () => {
 .back {
     transform: rotateY(180deg);
 }
+
+.panelPassword {
+    h6 {
+        margin-top: 0;
+        font-size: 0.80rem;
+        color: var(--surface-900);
+        font-family: inherit;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    div[data-pc-section="meter"] {
+        margin-bottom: 0.75rem;
+        background: #e2e8f0;
+        border-radius: 6px;
+    }
+
+    div[data-pc-section="meterlabel"] {
+        border-radius: 6px;
+    }
+
+    div[data-pc-name="divider"] {
+        margin: 1rem 0;
+    }
+}
 </style>
 <template>
     <GuestLayout>
@@ -169,23 +230,21 @@ const submitChangePassword = () => {
                                     <FloatLabel>
                                         <InputText name="username" v-model="form.username" autocomplete="off" class="w-full"
                                             :invalid="form.username && (form.username.trim() === '' || form.username === '')" />
-                                        <i class="pi pi-user absolute text-xl right-1 mt-2 h-6 text-gray-400"></i>
+                                        <i class="pi pi-user absolute text-lg right-3 mt-2 h-6 text-gray-600"></i>
                                         <label for="username">Usuario</label>
                                     </FloatLabel>
                                     <InputError :message="form.username && form.username.trim() === '' || form.username === '' ? rules : ''" />
                                 </div>
-                                <div class="relative z-0 group pb-4">
-                                    <FloatLabel>
-                                        <InputText name="password" :type="visiblePassword ? 'text' : 'password'" v-model="form.password"
-                                            autocomplete="off" class="w-full"
-                                            :invalid="form.password && (form.password.trim() === '' || form.password === '')" />
-                                        <i :class="visiblePassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                                            class="absolute text-xl right-1 mt-2 h-6 cursor-pointer text-gray-400"
-                                            @click="visiblePassword = !visiblePassword"></i>
-                                        <label for="password">Contraseña</label>
-                                    </FloatLabel>
-                                    <InputError :message="form.password && form.password.trim() === '' || form.password === '' ? rules : ''" />
-                                </div>
+
+                                <FloatLabel>
+                                    <Password name="password" v-model="form.password" toggleMask :feedback="false" autocormplete="off" class="w-full"
+                                        inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                        :class="form.password !== '' && form.password !== undefined ? 'filled' : ''"
+                                        :invalid="form.password && (form.password.trim() === '' || form.password === '')">
+                                    </Password>
+                                    <label for="password">Contraseña</label>
+                                </FloatLabel>
+                                <InputError :message="form.password && form.password.trim() === '' || form.password === '' ? rules : ''" />
 
                                 <div class="flex items-center justify-end my-4">
                                     <PrimaryButton :class="{ 'opacity-25': form.processing }"
@@ -220,47 +279,114 @@ const submitChangePassword = () => {
                                 <FloatLabel>
                                     <InputText name="usernameChangePassword" v-model="formChangePassword.username" autocomplete="off" class="w-full"
                                         :invalid="formChangePassword.username && (formChangePassword.username.trim() === '' || formChangePassword.username === '')" />
-                                    <i class="pi pi-user absolute text-xl right-1 mt-2 h-6 text-gray-400"></i>
+                                    <i class="pi pi-user absolute text-lg right-3 mt-2 h-6 text-gray-600"></i>
                                     <label for="username">Usuario</label>
                                 </FloatLabel>
                                 <InputError
                                     :message="formChangePassword.username && formChangePassword.username.trim() === '' || formChangePassword.username === '' ? rules : ''" />
 
                                 <FloatLabel>
-                                    <InputText name="currentPassword" :type="visiblecurrentPassword ? 'text' : 'password'"
-                                        v-model="formChangePassword.currentPassword" autocomplete="off" class="w-full"
-                                        :invalid="formChangePassword.currentPassword && (formChangePassword.currentPassword.trim() === '' || formChangePassword.currentPassword === '')" />
-                                    <i :class="visiblecurrentPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                                        class="absolute text-xl right-1 mt-2 h-6 cursor-pointer text-gray-400"
-                                        @click="visiblecurrentPassword = !visiblecurrentPassword"></i>
-                                    <label for="currentPassword">Contraseña anterior</label>
+                                    <Password name="currentPassword" v-model="formChangePassword.currentPassword" toggleMask :feedback="false"
+                                        autocomplete="off" class="w-full" inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                        :class="formChangePassword.currentPassword !== '' && formChangePassword.currentPassword !== undefined ? 'filled' : ''"
+                                        :invalid="formChangePassword.currentPassword && (formChangePassword.currentPassword.trim() === '' || formChangePassword.currentPassword === '')">
+                                    </Password>
+                                    <label for="currentPassword">Contraseña actual</label>
                                 </FloatLabel>
                                 <InputError
                                     :message="formChangePassword.currentPassword && formChangePassword.currentPassword.trim() === '' || formChangePassword.currentPassword === '' ? rules : ''" />
 
-                                <FloatLabel>
-                                    <InputText name="newPassword" :type="visibleNewPassword ? 'text' : 'password'"
-                                        v-model="formChangePassword.newPassword" autocomplete="off" class="w-full" minlength="8"
-                                        :invalid="formChangePassword.newPassword && (formChangePassword.newPassword.trim() === '' || formChangePassword.newPassword === '')" />
-                                    <i :class="visibleNewPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                                        class="absolute text-xl right-1 mt-2 h-6 cursor-pointer text-gray-400"
-                                        @click="visibleNewPassword = !visibleNewPassword"></i>
-                                    <label for="newPassword">Contraseña nueva</label>
-                                </FloatLabel>
-                                <InputError
-                                    :message="formChangePassword.newPassword && formChangePassword.newPassword.trim() === '' || formChangePassword.newPassword === '' ? rules : ''" />
+                                <div class="relative z-0 group">
+                                    <FloatLabel>
+                                        <Password name="newPassword" promptLabel="Ingrese contraseña" weakLabel="Debil" mediumLabel="Media"
+                                            strongLabel="Fuerte" v-model="formChangePassword.newPassword" toggleMask autocomplete="off" class="w-full"
+                                            inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                            @input="passwordPatternValidation(newPasswordPattern, formChangePassword.newPassword)"
+                                            :class="formChangePassword.newPassword !== '' && formChangePassword.newPassword !== undefined ? 'filled' : ''"
+                                            :invalid="formChangePassword.newPassword && (formChangePassword.newPassword.trim() === '' || formChangePassword.newPassword === '')">
+                                            <template #header>
+                                                <h6>Establezca su nueva contraseña</h6>
+                                            </template>
+                                            <template #footer>
+                                                <Divider />
+                                                <p class="my-2">Requisitos</p>
+                                                <ul class="pl-2 ml-2 mt-0 list-disc" style="line-height: 1.5">
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos una letra mayúscula</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordPattern.uppercase"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos una letra minúscula</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordPattern.lowercase"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos un número</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordPattern.number"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos un carácter especial</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordPattern.special"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos 8 caracteres</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordPattern.length"></i>
+                                                    </div>
+                                                </ul>
+                                            </template>
+                                        </Password>
+                                        <label for="newPassword">Contraseña nueva</label>
+                                    </FloatLabel>
+                                    <InputError
+                                        :message="formChangePassword.newPassword && formChangePassword.newPassword.trim() === '' || formChangePassword.newPassword === '' ? rules : ''" />
+                                </div>
 
-                                <FloatLabel>
-                                    <InputText name="newPassword_confirmation" :type="visibleConfirmPassword ? 'text' : 'password'"
-                                        v-model="formChangePassword.newPassword_confirmation" autocomplete="off" class="w-full" minlength="8"
-                                        :invalid="formChangePassword.newPassword_confirmation && (formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '')" />
-                                    <i :class="visibleConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                                        class="absolute text-xl right-1 mt-2 h-6 cursor-pointer text-gray-400"
-                                        @click="visibleConfirmPassword = !visibleConfirmPassword"></i>
-                                    <label for="newPassword_confirmation">Repetir contraseña</label>
-                                </FloatLabel>
-                                <InputError
-                                    :message="formChangePassword.newPassword_confirmation && formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '' ? rules : ''" />
+                                <div class="relative z-0 group">
+                                    <FloatLabel>
+                                        <Password name="newPassword_confirmation" promptLabel="Repetir contraseña" weakLabel="Debil"
+                                            mediumLabel="Media" strongLabel="Fuerte" v-model="formChangePassword.newPassword_confirmation" toggleMask
+                                            autocomplete="off" class="w-full" inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                            @input="passwordPatternValidation(newPasswordConfirmPattern, formChangePassword.newPassword_confirmation)"
+                                            :class="formChangePassword.newPassword_confirmation !== '' && formChangePassword.newPassword_confirmation !== undefined ? 'filled' : ''"
+                                            :invalid="formChangePassword.newPassword_confirmation && (formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '')">
+                                            <template #header>
+                                                <h6>Repita su nueva contraseña</h6>
+                                            </template>
+                                            <template #footer>
+                                                <Divider />
+                                                <p class="my-2">Requisitos</p>
+                                                <ul class="pl-2 ml-2 mt-0 list-disc" style="line-height: 1.5">
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos una letra mayúscula</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.uppercase"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos una letra minúscula</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.lowercase"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos un número</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.number"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos un carácter especial</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.special"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Al menos 8 caracteres</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.length"></i>
+                                                    </div>
+                                                    <div class="flex space-x-2">
+                                                        <li class="w-2/3">Las contraseñas deben coincidir</li>
+                                                        <i class="w-1/3 mt-1" :class="newPasswordConfirmPattern.match"></i>
+                                                    </div>
+                                                </ul>
+                                            </template>
+                                        </Password>
+                                        <label for="password">Repetir contraseña</label>
+                                    </FloatLabel>
+                                    <InputError
+                                        :message="formChangePassword.newPassword_confirmation && formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '' ? rules : ''" />
+                                </div>
 
                                 <div class="flex items-center justify-end !mt-5">
                                     <PrimaryButton :class="{ 'opacity-25': formChangePassword.processing }"

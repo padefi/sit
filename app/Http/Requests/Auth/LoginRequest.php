@@ -57,9 +57,9 @@ class LoginRequest extends FormRequest {
         $credentials = $this->only('username', 'password');
 
         if (Auth::attempt($credentials, $this->boolean('remember'))) {
-            if ($credentials['username'] === $credentials['password']) {
+            if (strtolower($credentials['username']) === strtolower($credentials['password'])) {
                 Auth::logout();
-                
+
                 throw ValidationException::withMessages([
                     'message' => trans('Debe cambiar la contraseña.'),
                     'changePassword' => true,
