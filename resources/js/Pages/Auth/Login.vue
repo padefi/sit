@@ -237,8 +237,8 @@ const submitChangePassword = () => {
                                 </div>
 
                                 <FloatLabel>
-                                    <Password name="password" v-model="form.password" toggleMask :feedback="false" autocormplete="off" class="w-full"
-                                        inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                    <Password name="password" v-model="form.password" toggleMask :feedback="false" autocomplete="off" class="w-full"
+                                        inputClass="w-full focus:!z-0" panelClass="panelPassword" minlength="8"
                                         :class="form.password !== '' && form.password !== undefined ? 'filled' : ''"
                                         :invalid="form.password && (form.password.trim() === '' || form.password === '')">
                                     </Password>
@@ -287,7 +287,7 @@ const submitChangePassword = () => {
 
                                 <FloatLabel>
                                     <Password name="currentPassword" v-model="formChangePassword.currentPassword" toggleMask :feedback="false"
-                                        autocomplete="off" class="w-full" inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                        autocomplete="off" class="w-full" inputClass="w-full focus:!z-0" panelClass="panelPassword" minlength="8"
                                         :class="formChangePassword.currentPassword !== '' && formChangePassword.currentPassword !== undefined ? 'filled' : ''"
                                         :invalid="formChangePassword.currentPassword && (formChangePassword.currentPassword.trim() === '' || formChangePassword.currentPassword === '')">
                                     </Password>
@@ -300,7 +300,7 @@ const submitChangePassword = () => {
                                     <FloatLabel>
                                         <Password name="newPassword" promptLabel="Ingrese contraseña" weakLabel="Debil" mediumLabel="Media"
                                             strongLabel="Fuerte" v-model="formChangePassword.newPassword" toggleMask autocomplete="off" class="w-full"
-                                            inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                            inputClass="w-full focus:!z-0" panelClass="panelPassword" minlength="8"
                                             @input="passwordPatternValidation(newPasswordPattern, formChangePassword.newPassword)"
                                             :class="formChangePassword.newPassword !== '' && formChangePassword.newPassword !== undefined ? 'filled' : ''"
                                             :invalid="formChangePassword.newPassword && (formChangePassword.newPassword.trim() === '' || formChangePassword.newPassword === '')">
@@ -344,7 +344,7 @@ const submitChangePassword = () => {
                                     <FloatLabel>
                                         <Password name="newPassword_confirmation" promptLabel="Repetir contraseña" weakLabel="Debil"
                                             mediumLabel="Media" strongLabel="Fuerte" v-model="formChangePassword.newPassword_confirmation" toggleMask
-                                            autocomplete="off" class="w-full" inputClass="w-full focus:z-0" panelClass="panelPassword" minlength="8"
+                                            autocomplete="off" class="w-full" inputClass="w-full focus:!z-0" panelClass="panelPassword" minlength="8"
                                             @input="passwordPatternValidation(newPasswordConfirmPattern, formChangePassword.newPassword_confirmation)"
                                             :class="formChangePassword.newPassword_confirmation !== '' && formChangePassword.newPassword_confirmation !== undefined ? 'filled' : ''"
                                             :invalid="formChangePassword.newPassword_confirmation && (formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '')">
