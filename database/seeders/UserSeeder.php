@@ -16,7 +16,7 @@ class UserSeeder extends Seeder {
             'surname' => 'Administrador',
             'email' => 'admin@admin.com',
             'username' => 'admin',
-            'password' => Hash::make('admin'),            
+            'password' => Hash::make('administrador'),            
             'is_active' => true,
             'created_at' => now(),
         ])->assignRole('admin');

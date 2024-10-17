@@ -54,16 +54,27 @@ class LoginRequest extends FormRequest {
             ]);
         }
 
+        $credentials = $this->only('username', 'password');
 
-        if (!Auth::attempt($this->only('username', 'password'), $this->boolean('remember'))) {
+        if (Auth::attempt($credentials, $this->boolean('remember'))) {
+            if ($credentials['username'] === $credentials['password']) {
+                Auth::logout();
+                
+                throw ValidationException::withMessages([
+                    'message' => trans('Debe cambiar la contraseña.'),
+                    'changePassword' => true,
+                ]);
+            }
+
             RateLimiter::hit($this->throttleKey());
-
-            throw ValidationException::withMessages([
-                'message' => trans('Usuario y/o contraseña incorrectos.')
-            ]);
+            return;
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        throw ValidationException::withMessages([
+            'message' => trans('Usuario y/o contraseña incorrectos.')
+        ]);
     }
 
     /**
