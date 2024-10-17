@@ -66,11 +66,11 @@ class LoginRequest extends FormRequest {
                 ]);
             }
 
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::clear($this->throttleKey());
             return;
         }
 
-        RateLimiter::clear($this->throttleKey());
+        RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
             'message' => trans('Usuario y/o contraseña incorrectos.')

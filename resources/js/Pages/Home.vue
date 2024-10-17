@@ -50,7 +50,7 @@ onMounted(async () => {
 <template>
     <AuthenticatedLayout>
         <div class="p-5">
-            <h1 class="text-3xl mb-4">Bienvenido {{ user() }}</h1>
+            <h1 class="text-3xl mb-4 capitalize">Bienvenido {{ user() }}</h1>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card v-if="hasPermission('view treasury vouchers')" class="dashboard-card">
                     <template #title>
