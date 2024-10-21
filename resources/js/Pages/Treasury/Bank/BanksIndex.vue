@@ -9,6 +9,7 @@ import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { validatePhoneNumber, validateEmail, validateAccountNumber, validateCBU, validateAlias } from '@/utils/validateFunctions';
+import { v4 as uuidv4 } from 'uuid';
 
 toastService();
 
@@ -161,7 +162,7 @@ const addNewBank = () => {
     originalBanksArray.value = [...banksArray.value];
 
     const newBank = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         name: newRow.value?.name,
         address: newRow.value?.address,
         phone: newRow.value?.phone,
@@ -288,8 +289,8 @@ const addNewBankAccount = (data) => {
     originalBanksArray.value = [...banksArray.value[data.bankIndex].accounts];
 
     const newBankAccount = {
-        id: crypto.randomUUID(),
-        idBankAccount: crypto.randomUUID(),
+        id: uuidv4(),
+        idBankAccount: uuidv4(),
         idBank: data.id,
         idAT: newRow.value?.idAT,
         bankIndex: data.bankIndex,

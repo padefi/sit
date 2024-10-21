@@ -4,10 +4,11 @@ import { inject, onMounted, ref, computed, watch } from "vue";
 import { dropdownClasses } from '@/utils/cssUtils';
 import { addDate } from "@/utils/formatterFunctions";
 import { useConfirm } from "primevue/useconfirm";
+import { v4 as uuidv4 } from 'uuid';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     voucherDate: undefined,
     voucherType: undefined,
     voucherSubtype: undefined,

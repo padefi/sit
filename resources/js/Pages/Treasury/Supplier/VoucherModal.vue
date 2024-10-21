@@ -5,10 +5,11 @@ import { dropdownClasses } from '@/utils/cssUtils';
 import { percentNumber, addDate, currencyNumber, invoiceNumberFormat } from "@/utils/formatterFunctions";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
+import { v4 as uuidv4 } from 'uuid';
 import InputError from '@/Components/InputError.vue';
 
 const form = useForm({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     idSupplier: undefined,
     voucherType: undefined,
     voucherSubtype: undefined,
@@ -97,7 +98,7 @@ const addNewItem = () => {
     originalVoucherItems.value = [...voucherItems.value];
 
     const newItem = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         description: undefined,
         vat: undefined,
         amount: undefined,

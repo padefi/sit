@@ -9,6 +9,7 @@ import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService'
 import { validateEmail } from '@/utils/validateFunctions';
+import { v4 as uuidv4 } from 'uuid';
 
 toastService();
 
@@ -78,7 +79,7 @@ const addNewUser = () => {
     originalUsersArray.value = [...usersArray.value];
 
     const newUser = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         surname: newRow.value?.surname,
         name: newRow.value?.name,
         email: newRow.value?.email,

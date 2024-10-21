@@ -9,6 +9,7 @@ import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
 import { toastService } from '@/composables/toastService'
 import { format } from "@formkit/tempo"
+import { v4 as uuidv4 } from 'uuid';
 
 toastService();
 
@@ -143,7 +144,7 @@ const addNewVoucherSubtype = () => {
     originalVoucherSubtypesArray.value = [...voucherSubtypesArray.value];
 
     const newVoucherSubtype = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         name: newRow.value?.name,
         expenses: [],
         suppliers: [],

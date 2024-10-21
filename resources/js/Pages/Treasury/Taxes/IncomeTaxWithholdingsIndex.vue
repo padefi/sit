@@ -6,6 +6,7 @@ import { useConfirm } from "primevue/useconfirm";
 import { useToast } from "primevue/usetoast";
 import { useForm } from '@inertiajs/vue3';
 import { percentNumber, addDate, currencyNumber, dateFormat } from "@/utils/formatterFunctions";
+import { v4 as uuidv4 } from 'uuid';
 import InputError from '@/Components/InputError.vue';
 
 const { hasPermission, hasPermissionColumn } = usePermissions();
@@ -161,7 +162,7 @@ const addNewIncomeTaxWithholding = async (data) => {
     }
 
     const newIncomeTax = {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         idCat: data.id,
         categoryIndex: data.categoryIndex,
         rate: newRow.value?.rate,
