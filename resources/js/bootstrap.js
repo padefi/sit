@@ -45,7 +45,18 @@ window.Pusher = Pusher;
     encryption: true,
 }); */
 
-// Reverb config
+// Ably Channelsconfig
+/* window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_ABLY_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    wsHost: 'realtime-pusher.ably.io',
+    wsPort: 443,
+    disableStats: true,
+    encrypted: true,
+}); */
+
+// Reverb Channels config
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,

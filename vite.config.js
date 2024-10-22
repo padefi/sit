@@ -6,10 +6,11 @@ export default defineConfig({
     // This is for production build
     /* server: {
         hmr: {
-            host: '192.168.0.39',
+            host: '192.168.2.195',
         },
         port: 3000,
         host: true,
+        // https: true,
     }, */
     plugins: [
         laravel({
