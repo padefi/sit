@@ -304,6 +304,7 @@ const addNewBankAccount = (data) => {
     banksArray.value[data.bankIndex].accounts.unshift(newBankAccount);
     editing.value = true;
     editingRows.value = [newBankAccount];
+    rowClassEditing(data);
 };
 
 const validateBankAccount = (event, saveCallback, data) => {
@@ -399,8 +400,17 @@ const onRowEditCancelBankAccount = (event) => {
     editing.value = false;
     newRow.value = [];
     editingRows.value = [];
+    rowClassEditing(banksArray.value[event.data.bankIndex]);
 };
 /* Bank Account validations */
+
+const rowClassEditing = (rowData) => {
+    if (editingRows.value.some(row => row.idBank === rowData.id)) {
+        return 'bg-red-200';
+    }
+
+    return '';
+}
 
 onMounted(() => {
     setBankAccount(props.banks, props.bankAccounts);
@@ -526,7 +536,7 @@ const info = (route, data, id) => {
                         }
                     }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                    currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table" :row-class="rowClassEditing">
                     <template #empty>
                         <div class="text-center text-lg text-red-500">
                             Sin bancos cargados
@@ -536,6 +546,7 @@ const info = (route, data, id) => {
                     <Column field="name" header="Nombre" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
+                            {{ expandedRows.hasOwnProperty(data.id) ? ' (Cuentas)' : '' }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
                             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name" autocomplete="off"

@@ -74,14 +74,6 @@ class SupplierController extends Controller {
      */
     public function store(SupplierRequest $request) {
         $cuit = str_replace('-', '', $request->cuit);
-        $SupplierCuit = Supplier::where('cuit', $cuit)->first();
-
-        if ($SupplierCuit) {
-            throw ValidationException::withMessages([
-                'message' => trans('El proveedor ya se encuentra ingresado.')
-            ]);
-        }
-
         $address = $request->address();
         $supplier = Supplier::create([
             'name' => strtoupper($request->name),
@@ -137,14 +129,6 @@ class SupplierController extends Controller {
      */
     public function update(SupplierRequest $request, Supplier $supplier) {
         $cuit = str_replace('-', '', $request->cuit);
-        $supplierCuit = Supplier::where('cuit', $cuit)->whereNot('id', $supplier->id)->first();
-
-        if ($supplierCuit) {
-            throw ValidationException::withMessages([
-                'message' => trans('El proveedor ya se encuentra ingresado.')
-            ]);
-        }
-
         $address = $request->address();
         $supplier->update([
             'name' => strtoupper($request->name),

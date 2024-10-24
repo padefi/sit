@@ -18,7 +18,7 @@ class BankAccountController extends Controller {
         $this->middleware('check.permission:view users')->only('info');
     }
     public function store(BankAccountRequest $request) {
-        $bankAccountNumber = BankAccount::where('accountNumber', $request->accountNumber)
+        /* $bankAccountNumber = BankAccount::where('accountNumber', $request->accountNumber)
             ->where('idBank', $request->idBank)
             ->where('idAT', $request->idAT)->first();
 
@@ -26,7 +26,7 @@ class BankAccountController extends Controller {
             throw ValidationException::withMessages([
                 'message' => trans('La cuenta bancaria ya se encuentra ingresada.')
             ]);
-        }
+        } */
 
         $bankAccount = BankAccount::create([
             'idBank' => $request->idBank,
@@ -69,7 +69,7 @@ class BankAccountController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(BankAccountRequest $request, BankAccount $bankAccount) {
-        $bankAccountNumber = BankAccount::where('accountNumber', $request->accountNumber)
+        /* $bankAccountNumber = BankAccount::where('accountNumber', $request->accountNumber)
             ->where('idBank', $request->idBank)
             ->where('idAT', $request->idAT)
             ->whereNot('id', $bankAccount->id)->first();
@@ -78,7 +78,7 @@ class BankAccountController extends Controller {
             throw ValidationException::withMessages([
                 'message' => trans('La cuenta bancaria ya se encuentra ingresada.')
             ]);
-        }
+        } */
 
         $bankAccount->update([
             'idAT' => $request->idAT,

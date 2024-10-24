@@ -48,14 +48,6 @@ class UserController extends Controller {
     }
 
     public function store(UserRequest $request) {
-        $userEmail = User::where('email', $request->email)->first();
-
-        if ($userEmail) {
-            throw ValidationException::withMessages([
-                'message' => trans('El email ya se encuentra registrado.')
-            ]);
-        }
-
         $user = User::create([
             'surname' => $request->surname,
             'name' => $request->name,
@@ -82,14 +74,6 @@ class UserController extends Controller {
     }
 
     public function update(UserRequest $request, User $user) {
-        $userEmail = User::where('email', $request->email)->whereNot('id', $user->id)->first();
-
-        if ($userEmail) {
-            throw ValidationException::withMessages([
-                'message' => trans('El email ya se encuentra registrado.')
-            ]);
-        }
-
         $user->update([
             'surname' => $request->surname,
             'name' => $request->name,

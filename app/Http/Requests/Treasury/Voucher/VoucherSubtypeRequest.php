@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Treasury\Voucher;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class VoucherSubtypeRequest extends FormRequest {
     /**
@@ -19,7 +20,7 @@ class VoucherSubtypeRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', Rule::unique('voucher_subtypes', 'name')->ignore($this->route('voucher_subtype'))],
             'is_active' => ['boolean'],
         ];
     }
@@ -28,6 +29,7 @@ class VoucherSubtypeRequest extends FormRequest {
         return [
             'name.required' => 'La Descripción es obligatoria.',
             'name.max' => 'La Descripción no puede exceder los :max caracteres.',
+            'name.unique' => 'El subtipo ya existe.',
             'is_active.required' => 'El Estado es obligatorio.',
         ];
     }

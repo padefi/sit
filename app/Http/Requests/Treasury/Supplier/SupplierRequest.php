@@ -4,6 +4,7 @@ namespace App\Http\Requests\Treasury\Supplier;
 
 use App\Address;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SupplierRequest extends FormRequest {
     /**
@@ -20,7 +21,7 @@ class SupplierRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', Rule::unique('suppliers', 'name')->ignore($this->route('supplier'))],
             'businessName' => ['required', 'string', 'max:100'],
             'cuit' => ['required', 'integer', 'min:11111111111', 'max:99999999999'],
             'idVC' => ['required', 'integer', 'exists:vat_conditions,id'],
@@ -45,6 +46,7 @@ class SupplierRequest extends FormRequest {
         return [
             'name.required' => 'El nombre del proveedor es obligatorio.',
             'name.max' => 'El nombre del proveedor no puede exceder los :max caracteres.',
+            'name.unique' => 'El proveedor ya se encuentra registrado.',
             'businessName.required' => 'El nombre de fantasía del proveedor es obligatorio.',
             'businessName.max' => 'El nombre de fantasía del proveedor no puede exceder los :max caracteres.',
             'cuit.required' => 'El cuit es obligatorio.',

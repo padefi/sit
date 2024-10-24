@@ -41,14 +41,6 @@ class BankController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(BankRequest $request) {
-        $bankName = Bank::where('name', $request->name)->first();
-
-        if ($bankName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El banco ya se encuentra ingresado.')
-            ]);
-        }
-
         $bank = Bank::create([
             'name' => $request->name,
             'address' => $request->address,
@@ -85,14 +77,6 @@ class BankController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(BankRequest $request, Bank $bank) {
-        $bankName = Bank::where('name', $request->name)->whereNot('id', $bank->id)->first();
-
-        if ($bankName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El banco ya se encuentra ingresado.')
-            ]);
-        }
-
         $bank->update([
             'name' => $request->name,
             'address' => $request->address,

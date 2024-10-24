@@ -366,19 +366,17 @@ class TreasuryVoucherController extends Controller {
                 ]);
             }
 
-            if ($treasuryVoucherExist->idVS === 2) {
-                throw ValidationException::withMessages([
+            match ($treasuryVoucherExist->idVS) {
+                2 => throw ValidationException::withMessages([
                     'message' => trans('El comprobante ya ha sido confirmado.')
-                ]);
-            }
-
-            if ($treasuryVoucherExist->idVS === 3) {
-                throw ValidationException::withMessages([
+                ]),
+                3 => throw ValidationException::withMessages([
                     'message' => trans('El comprobante ya ha sido anulado.')
-                ]);
-            }
+                ]),
+                default => null
+            };
 
-            if ($item['paymentMethod'] == 2) {
+            if ($item['paymentMethod'] === 2) {
                 $transaction = CheckTransaction::where('idBA', $item['bankAccountId'])
                     ->where('number', $item['transactionNumber'])
                     ->where('status', 1)
@@ -483,9 +481,8 @@ class TreasuryVoucherController extends Controller {
                 event(new TreasuryVoucherEvent($vatTaxTreasuryVoucher, $vatTaxTreasuryVoucher->id, 'create'));
             }
 
-            switch ($item['paymentMethod']) {
-                case 1:
-                case 3:
+            match ($item['paymentMethod']) {
+                1, 3 =>
                     BankTransaction::create([
                         'idBA' => $item['bankAccountId'],
                         'idTV' => $item['id'],
@@ -494,10 +491,8 @@ class TreasuryVoucherController extends Controller {
                         'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
-                    ]);
-
-                    break;
-                case 2:
+                    ]),
+                2 =>
                     CheckTransaction::create([
                         'idBA' => $item['bankAccountId'],
                         'idTV' => $item['id'],
@@ -506,20 +501,16 @@ class TreasuryVoucherController extends Controller {
                         'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
-                    ]);
-
-                    break;
-                case 4:
+                    ]),
+                4 =>
                     CashTransaction::create([
                         'idTV' => $item['id'],
                         'amount' => $item['totalAmount'],
                         'idUserConfirmed' => Auth::id(),
                         'confirmed_at' => now(),
                         'status' => 1,
-                    ]);
-
-                    break;
-            }
+                    ]),
+            };
 
             $treasuryVoucher->load('userCreated', 'userUpdated');
             event(new TreasuryVoucherEvent($treasuryVoucher, $treasuryVoucher->id, 'update'));
@@ -567,7 +558,7 @@ class TreasuryVoucherController extends Controller {
         $supplierController = new SupplierController();
         $vouchers = $supplierController->calculatePendingToPay($vouchers);
         $pendingToPay = $vouchers->sum('pendingToPay');
-        
+
         $supplier->load('userCreated', 'userUpdated');
         event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 

@@ -28,7 +28,7 @@ class VoucherExpenseController extends Controller {
 
     public function index(): Response {
         $voucherExpenses = VoucherExpense::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
-        
+
         return Inertia::render('Treasury/Voucher/VoucherExpensesIndex', [
             'voucherExpenses' => VoucherExpenseResource::collection($voucherExpenses),
         ]);
@@ -38,14 +38,6 @@ class VoucherExpenseController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(VoucherExpenseRequest $request) {
-        $voucherExpenseName = VoucherExpense::where('name', $request->name)->first();
-
-        if ($voucherExpenseName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El subtipo ya se encuentra ingresado.')
-            ]);
-        }
-
         $voucherExpense = VoucherExpense::create([
             'name' => $request->name,
             'idUserCreated' => Auth::id(),
@@ -72,14 +64,6 @@ class VoucherExpenseController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(VoucherExpenseRequest $request, VoucherExpense $voucherExpense) {
-        $voucherExpenseName = VoucherExpense::where('name', $request->name)->whereNot('id', $voucherExpense->id)->first();
-
-        if ($voucherExpenseName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El gasto ya se encuentra ingresado.')
-            ]);
-        }
-
         $voucherExpense->update([
             'name' => $request->name,
             'idUserUpdated' => Auth::id(),

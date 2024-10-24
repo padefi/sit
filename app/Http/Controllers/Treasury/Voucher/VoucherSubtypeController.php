@@ -50,14 +50,6 @@ class VoucherSubtypeController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(VoucherSubtypeRequest $request) {
-        $voucherSubtypeName = VoucherSubtype::where('name', $request->name)->first();
-
-        if ($voucherSubtypeName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El subtipo ya se encuentra ingresado.')
-            ]);
-        }
-
         $voucherSubtype = VoucherSubtype::create([
             'name' => $request->name,
             'idUserCreated' => Auth::id(),
@@ -84,14 +76,6 @@ class VoucherSubtypeController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(VoucherSubtypeRequest $request, VoucherSubtype $voucherSubtype) {
-        $voucherSubtypeName = VoucherSubtype::where('name', $request->name)->whereNot('id', $voucherSubtype->id)->first();
-
-        if ($voucherSubtypeName) {
-            throw ValidationException::withMessages([
-                'message' => trans('El subtipo ya se encuentra ingresado.')
-            ]);
-        }
-
         $voucherSubtype->update([
             'name' => $request->name,
             'idUserUpdated' => Auth::id(),

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Treasury\Voucher;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class VoucherExpenseRequest extends FormRequest {
     /**
@@ -19,7 +20,7 @@ class VoucherExpenseRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', Rule::unique('voucher_expenses', 'name')->ignore($this->route('voucher_expense'))],
             'is_active' => ['boolean'],
         ];
     }
@@ -28,6 +29,7 @@ class VoucherExpenseRequest extends FormRequest {
         return [
             'name.required' => 'La Descripción es obligatoria.',
             'name.max' => 'La Descripción no puede exceder los :max caracteres.',
+            'name.unique' => 'El gasto ya existe.',
             'is_active.required' => 'El Estado es obligatorio.',
         ];
     }
