@@ -12,7 +12,15 @@ return new class extends Migration {
         Schema::create('banks', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->collation('utf8mb4_general_ci');
-            $table->string('address', 100)->collation('utf8mb4_general_ci');
+            $table->string('street', 100)->collation('utf8mb4_general_ci');
+            $table->integer('streetNumber');
+            $table->string('city', 100)->collation('utf8mb4_general_ci');
+            $table->string('state', 100)->collation('utf8mb4_general_ci');
+            $table->string('country', 100)->collation('utf8mb4_general_ci');
+            $table->tinyText('postalCode')->collation('utf8mb4_general_ci');
+            $table->unsignedBigInteger('osm_id');
+            $table->string('latitude', 20);
+            $table->string('longitude', 20);
             $table->string('phone', 20)->collation('utf8mb4_general_ci')->nullable();
             $table->string('email', 100)->collation('utf8mb4_general_ci')->nullable();
             $table->string('notes', 250)->collation('utf8mb4_general_ci')->nullable();

@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import InputError from '@/Components/InputError.vue';
+import { ref, onMounted, nextTick } from 'vue';
+import { dropdownClasses } from '@/utils/cssUtils';
+import { nominatim, nominatimOsmId } from '@/utils/apis';
 import { useForm } from '@inertiajs/vue3';
 import { useToast } from "primevue/usetoast";
 import { usePermissions } from '@/composables/permissions';
@@ -10,6 +10,9 @@ import { toastService } from '@/composables/toastService';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { validatePhoneNumber, validateEmail, validateAccountNumber, validateCBU, validateAlias } from '@/utils/validateFunctions';
 import { v4 as uuidv4 } from 'uuid';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import L from 'leaflet';
 
 toastService();
 
@@ -35,8 +38,10 @@ const newRow = ref([]);
 const editingRows = ref([]);
 const expandedRows = ref({});
 const rules = 'Debe completar el campo'
+const addressArray = ref([]);
 const editing = ref(false);
 const confirm = useConfirm();
+const OverlayPanelMap = ref();
 
 const banksArray = ref([]);
 const originalBanksArray = ref([]);
@@ -54,13 +59,12 @@ const statuses = ref([
 
 const banksFilters = ref({
     name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
-    address: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     phone: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
     email: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }] },
 });
 
 const setBankAccount = (bankData, accountData) => {
-    bankData.map((bank, index) => {
+    bankData.map(async (bank, index) => {
         const bankAccount = accountData
             .filter(account => account.bank.id === bank.id)
             .map(account =>
@@ -71,7 +75,19 @@ const setBankAccount = (bankData, accountData) => {
             id: bank.id,
             bankIndex: index,
             name: bank.name,
-            address: bank.address,
+            address: {
+                street: bank.street,
+                streetNumber: bank.streetNumber,
+                city: bank.city,
+                state: bank.state,
+                country: bank.country,
+                postalCode: bank.postalCode,
+                latitude: bank.latitude,
+                longitude: bank.longitude,
+                osm_id: bank.osm_id,
+            },
+            selectedAddress: null,
+            invalidAddress: false,
             phone: bank.phone,
             email: bank.email,
             accounts: bankAccount,
@@ -109,6 +125,40 @@ const getStatusLabel = (status) => {
     }
 };
 
+const search = async (event) => {
+    addressArray.value = await nominatim(event.query);
+}
+
+const selectData = (e, bankData) => {
+    const data = e.value ?? e;
+    bankData.selectedAddress = data.display_name;
+
+    bankData.address = {
+        display_name: data.display_name,
+        street: data.address?.road || '',
+        streetNumber: parseInt(data.address?.house_number) || '',
+        city: data.address?.city || data.address?.town || '',
+        state: data.address?.state || '',
+        country: data.address?.country || '',
+        postalCode: data.address?.postcode || '',
+        latitude: data.lat,
+        longitude: data.lon,
+        osm_id: data.osm_id,
+    }
+}
+
+const cleanIfEmpty = (data, index) => {
+    setTimeout(() => {
+        if (data.selectedAddress === '' || !data.selectedAddress || !data.address.display_name || data.address.display_name === '') {
+            document.querySelector('#address_' + index).value = '';
+            data.address = {};
+            data.invalidAddress = true;
+        } else {
+            data.invalidAddress = false;
+        }
+    }, 200);
+}
+
 const onRowExpand = (event) => {
     const originalExpandedRows = { ...expandedRows.value };
     const newExpandedRows = banksArray.value.reduce((acc) => (acc[event.data.id] = true) && acc, {});
@@ -143,7 +193,10 @@ const enabledEditButtons = (callback, event) => {
 }
 
 /* Bank validations */
-const onRowEditInitBank = (event) => {
+const onRowEditInitBank = async (event) => {
+    const address = await nominatimOsmId(event.data.address.osm_id);
+    await selectData(address[0], event.data);
+
     originalBanksArray.value = [...banksArray.value];
     editingRows.value = [event.data];
 }
@@ -163,10 +216,12 @@ const addNewBank = () => {
 
     const newBank = {
         id: uuidv4(),
-        name: newRow.value?.name,
-        address: newRow.value?.address,
-        phone: newRow.value?.phone,
-        email: newRow.value?.email,
+        name: null,
+        address: {},
+        selectedAddress: null,
+        invalidAddress: false,
+        phone: null,
+        email: null,
         condition: 'newBank',
         accounts: [],
     };
@@ -177,7 +232,7 @@ const addNewBank = () => {
 };
 
 const validateBank = (event, saveCallback, data) => {
-    if (!data.name.trim() || !data.address.trim() || !validatePhoneNumber(data.phone) || !validateEmail(data.email)) {
+    if ((data.name && !data.name.trim()) || (Object.keys(data.address).length === 0) || !validatePhoneNumber(data.phone) || !validateEmail(data.email)) {
         toast.add({
             severity: 'error',
             detail: 'Debe completar todos los campos.',
@@ -230,7 +285,17 @@ const onRowEditSaveBank = (event) => {
                 newData.id = result.props.flash.info.bank.id;
                 newData.bankIndex = 0;
                 newData.name = result.props.flash.info.bank.name;
-                newData.address = result.props.flash.info.bank.address;
+                newData.address = {
+                    street: result.props.flash.info.bank.street,
+                    streetNumber: result.props.flash.info.bank.streetNumber,
+                    city: result.props.flash.info.bank.city,
+                    state: result.props.flash.info.bank.state,
+                    country: result.props.flash.info.bank.country,
+                    postalCode: result.props.flash.info.bank.postalCode,
+                    latitude: result.props.flash.info.bank.latitude,
+                    longitude: result.props.flash.info.bank.longitude,
+                    osm_id: result.props.flash.info.bank.osm_id,
+                }
                 newData.phone = result.props.flash.info.bank.phone;
                 newData.email = result.props.flash.info.bank.email;
                 newData.notes = result.props.flash.info.bank.notes;
@@ -412,7 +477,19 @@ const rowClassEditing = (rowData) => {
     return '';
 }
 
-onMounted(() => {
+const viewOnMap = async (data, event) => {
+    OverlayPanelMap.value.toggle(event);
+
+    await nextTick();
+
+    const map = L.map('map').setView([data.latitude, data.longitude], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    L.marker([data.latitude, data.longitude]).addTo(map).openPopup();
+}
+
+onMounted(async () => {
     setBankAccount(props.banks, props.bankAccounts);
 
     Echo.channel('banks')
@@ -525,10 +602,9 @@ const info = (route, data, id) => {
             </template>
             <template #content>
                 <DataTable v-model:editingRows="editingRows" v-model:filters="banksFilters" :expandedRows="expandedRows" :value="banksArray"
-                    scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu"
-                    :globalFilterFields="['name', 'address', 'phone', 'email']" @row-edit-init="onRowEditInitBank($event)"
-                    @row-edit-save="onRowEditSaveBank" @row-edit-cancel="onRowEditCancelBank" @row-expand="onRowExpand($event)"
-                    @row-toggle="onRowToggle($event)" @row-collapse="onRowCollapse($event)" :pt="{
+                    scrollable scrollHeight="70vh" editMode="row" dataKey="id" filterDisplay="menu" :globalFilterFields="['name', 'phone', 'email']"
+                    @row-edit-init="onRowEditInitBank($event)" @row-edit-save="onRowEditSaveBank" @row-edit-cancel="onRowEditCancelBank"
+                    @row-expand="onRowExpand($event)" @row-toggle="onRowToggle($event)" @row-collapse="onRowCollapse($event)" :pt="{
                         table: { style: 'min-width: 50rem' },
                         paginator: {
                             root: { class: 'p-paginator-custom' },
@@ -543,7 +619,7 @@ const info = (route, data, id) => {
                         </div>
                     </template>
                     <Column expander class="min-w-2 w-2 !px-0" v-if="hasPermission('view bank accounts')" />
-                    <Column field="name" header="Nombre" sortable>
+                    <Column field="name" header="Nombre" class="w-3/12" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
                             {{ expandedRows.hasOwnProperty(data.id) ? ' (Cuentas)' : '' }}
@@ -554,25 +630,37 @@ const info = (route, data, id) => {
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="name" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Nombre" style="width: 100%;" maxlength="100" />
-                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
+                                :invalid="data[field] && data[field].trim() === ''" placeholder="Nombre" style="width: 100%;" maxlength="100" />
+                            <InputError :message="data[field] !== null && data[field].trim() === '' ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="address" header="Dirección" sortable>
-                        <template #body="{ data }">
-                            {{ data.address }}
+                    <Column field="address" header="Domicilio" class="w-5/12" sortable>
+                        <template #body="{ data, field }">
+                            {{ data[field].street }} {{ data[field].streetNumber }} {{ data[field].floor }} {{ data[field].apartment }}
+                            - {{ data[field].postalCode }},
+                            {{ data[field].city }}, {{ data[field].state }} - {{ data[field].country }}
+                            <Button icon="pi pi-map-marker"
+                                class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent" text rounded
+                                v-tooltip="'Ver en mapa'" @click="viewOnMap(data[field], $event)" />
                         </template>
-                        <template #filter="{ filterModel, filterCallback }">
-                            <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="address" autocomplete="off"
-                                class="p-column-filter" placeholder="Buscar por dirección" />
-                        </template>
-                        <template #editor="{ data, field }">
-                            <InputText :class="'uppercase'" v-model="data[field]" name="address" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === ''" placeholder="Dirección" style="width: 100%;" maxlength="100" />
-                            <InputError :message="!data[field] || data[field].trim() === '' ? rules : ''" />
+                        <template #editor="{ data, field, index }">
+                            <FloatLabel>
+                                <AutoComplete v-model="data[field].display_name" :inputId="'address_' + index" ref="autoCompleteAddress"
+                                    :suggestions="addressArray" @complete="search" @item-select="selectData($event, data)"
+                                    @blur="cleanIfEmpty(data, index)" class="w-full uppercase" :invalid="data['invalidAddress']"
+                                    :class="dropdownClasses(data[field].display_name)">
+                                    <template #option="slotProps">
+                                        <div class="flex items-center">
+                                            <div>{{ slotProps.option.display_name }}</div>
+                                        </div>
+                                    </template>
+                                </AutoComplete>
+                                <label for="address">Domicilio</label>
+                            </FloatLabel>
+                            <InputError :message="data['invalidAddress'] ? rules : ''" />
                         </template>
                     </Column>
-                    <Column field="phone" header="Teléfono" sortable>
+                    <Column field="phone" header="Teléfono" class="w-1/12" sortable>
                         <template #body="{ data }">
                             {{ data.phone }}
                         </template>
@@ -582,13 +670,14 @@ const info = (route, data, id) => {
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="phone" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field])" placeholder="Teléfono"
+                                :invalid="data[field] && (data[field].trim() === '' || !validatePhoneNumber(data[field]))" placeholder="Teléfono"
                                 style="width: 100%;" maxlength="15"
                                 onkeypress='return event.keyCode >= 47 && event.keyCode <= 57 || event.keyCode === 45' />
-                            <InputError :message="!data[field] || data[field].trim() === '' || !validatePhoneNumber(data[field]) ? rules : ''" />
+                            <InputError
+                                :message="data[field] !== null && data[field].trim() === '' ? rules : data[field] && !validatePhoneNumber(data[field]) ? 'N° de telefono invalido' : ''" />
                         </template>
                     </Column>
-                    <Column field="email" header="Email" sortable>
+                    <Column field="email" header="Email" class="w-2/12" sortable>
                         <template #body="{ data }">
                             {{ data.email }}
                         </template>
@@ -598,10 +687,10 @@ const info = (route, data, id) => {
                         </template>
                         <template #editor="{ data, field }">
                             <InputText :class="'uppercase'" v-model="data[field]" name="email" autocomplete="off"
-                                :invalid="!data[field] || data[field].trim() === '' || !validateEmail(data[field])" placeholder="Email"
+                                :invalid="data[field] && (data[field].trim() === '' || !validateEmail(data[field]))" placeholder="Email"
                                 style="width: 100%;" maxlength="100" />
                             <InputError
-                                :message="!data[field] || data[field].trim() === '' ? rules : validateEmail(data[field]) ? '' : 'Dirección de mail invalida'" />
+                                :message="data[field] !== null && data[field].trim() === '' ? rules : data[field] && !validateEmail(data[field]) ? 'Domicilio de mail invalida' : ''" />
                         </template>
                     </Column>
                     <Column header="Acciones" class="action-column text-center" headerClass="min-w-32 w-32"
@@ -726,6 +815,12 @@ const info = (route, data, id) => {
                         </template>
                     </template>
                 </DataTable>
+
+                <OverlayPanel ref="OverlayPanelMap">
+                    <div class="flex flex-col gap-3 w-[25rem]">
+                        <div id="map" style="height: 400px;"></div>
+                    </div>
+                </OverlayPanel>
             </template>
         </Card>
 

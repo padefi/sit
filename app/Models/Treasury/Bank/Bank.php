@@ -11,7 +11,15 @@ class Bank extends Model {
 
     protected $fillable = [
         'name',
-        'address',
+        'street',
+        'streetNumber',
+        'city',
+        'state',
+        'country',
+        'postalCode',
+        'osm_id',
+        'latitude',
+        'longitude',
         'phone',
         'email',
         'notes',

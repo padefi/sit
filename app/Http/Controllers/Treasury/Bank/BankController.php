@@ -41,9 +41,18 @@ class BankController extends Controller {
      * Store a newly created resource in storage.
      */
     public function store(BankRequest $request) {
+        $address = $request->address();
         $bank = Bank::create([
             'name' => $request->name,
-            'address' => $request->address,
+            'street' => $address->street,
+            'streetNumber' => $address->streetNumber,
+            'city' => $address->city,
+            'state' => $address->state,
+            'country' => $address->country,
+            'postalCode' => $address->postalCode,
+            'osm_id' => $address->osm_id,
+            'latitude' => $address->latitude,
+            'longitude' => $address->longitude,
             'phone' => $request->phone,
             'email' => $request->email,
             'idUserCreated' => Auth::id(),
@@ -77,9 +86,18 @@ class BankController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(BankRequest $request, Bank $bank) {
+        $address = $request->address();
         $bank->update([
             'name' => $request->name,
-            'address' => $request->address,
+            'street' => $address->street,
+            'streetNumber' => $address->streetNumber,
+            'city' => $address->city,
+            'state' => $address->state,
+            'country' => $address->country,
+            'postalCode' => $address->postalCode,
+            'osm_id' => $address->osm_id,
+            'latitude' => $address->latitude,
+            'longitude' => $address->longitude,
             'phone' => $request->phone,
             'email' => $request->email,
             'idUserUpdated' => Auth::id(),
