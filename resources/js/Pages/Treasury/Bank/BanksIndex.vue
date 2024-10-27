@@ -75,17 +75,15 @@ const setBankAccount = (bankData, accountData) => {
             id: bank.id,
             bankIndex: index,
             name: bank.name,
-            address: {
-                street: bank.street,
-                streetNumber: bank.streetNumber,
-                city: bank.city,
-                state: bank.state,
-                country: bank.country,
-                postalCode: bank.postalCode,
-                latitude: bank.latitude,
-                longitude: bank.longitude,
-                osm_id: bank.osm_id,
-            },
+            street: bank.street,
+            streetNumber: bank.streetNumber,
+            city: bank.city,
+            state: bank.state,
+            country: bank.country,
+            postalCode: bank.postalCode,
+            latitude: bank.latitude,
+            longitude: bank.longitude,
+            osm_id: bank.osm_id,
             selectedAddress: null,
             invalidAddress: false,
             phone: bank.phone,
@@ -169,7 +167,7 @@ const onRowCollapse = (event) => {
     delete expandedRows.value[event.data.id]
 }
 
-const disabledEditButtons = (callback, event, dataType) => {
+const disabledEditButtons = async (callback, event, data, dataType) => {
     if (editing.value) {
         const message = (dataType === 'banks') ? 'un banco' : 'una cuenta';
 
@@ -182,11 +180,21 @@ const disabledEditButtons = (callback, event, dataType) => {
         return;
     }
 
+    if (dataType === 'banks') {
+        const address = await nominatimOsmId(data.osm_id);
+        selectData(address[0], data);
+    }
+
     editing.value = true;
     callback(event);
 }
 
-const enabledEditButtons = (callback, event) => {
+const enabledEditButtons = async (callback, event, data, dataType) => {
+    if (data.condition === 'editBank') {
+        const address = await nominatimOsmId(data.osm_id);
+        selectData(address[0], data);
+    }
+
     editing.value = false;
     editingRows.value = [];
     callback(event);
@@ -194,9 +202,6 @@ const enabledEditButtons = (callback, event) => {
 
 /* Bank validations */
 const onRowEditInitBank = async (event) => {
-    const address = await nominatimOsmId(event.data.address.osm_id);
-    await selectData(address[0], event.data);
-
     originalBanksArray.value = [...banksArray.value];
     editingRows.value = [event.data];
 }
@@ -279,23 +284,21 @@ const onRowEditSaveBank = (event) => {
 
     if (newData.condition === 'newBank') {
         form.post(route("banks.store", newData.id), {
-            onSuccess: (result) => {
+            onSuccess: async (result) => {
                 editing.value = false;
                 newData.condition = 'editBank';
                 newData.id = result.props.flash.info.bank.id;
                 newData.bankIndex = 0;
                 newData.name = result.props.flash.info.bank.name;
-                newData.address = {
-                    street: result.props.flash.info.bank.street,
-                    streetNumber: result.props.flash.info.bank.streetNumber,
-                    city: result.props.flash.info.bank.city,
-                    state: result.props.flash.info.bank.state,
-                    country: result.props.flash.info.bank.country,
-                    postalCode: result.props.flash.info.bank.postalCode,
-                    latitude: result.props.flash.info.bank.latitude,
-                    longitude: result.props.flash.info.bank.longitude,
-                    osm_id: result.props.flash.info.bank.osm_id,
-                }
+                newData.street = result.props.flash.info.bank.street;
+                newData.streetNumber = result.props.flash.info.bank.streetNumber;
+                newData.city = result.props.flash.info.bank.city;
+                newData.state = result.props.flash.info.bank.state;
+                newData.country = result.props.flash.info.bank.country;
+                newData.postalCode = result.props.flash.info.bank.postalCode;
+                newData.latitude = result.props.flash.info.bank.latitude;
+                newData.longitude = result.props.flash.info.bank.longitude;
+                newData.osm_id = result.props.flash.info.bank.osm_id;
                 newData.phone = result.props.flash.info.bank.phone;
                 newData.email = result.props.flash.info.bank.email;
                 newData.notes = result.props.flash.info.bank.notes;
@@ -312,8 +315,20 @@ const onRowEditSaveBank = (event) => {
     }
 
     form.put(route("banks.update", newData.id), {
-        onSuccess: () => {
+        onSuccess: (result) => {
             editing.value = false;
+            // Address update
+            newData.street = result.props.flash.info.bank.street;
+            newData.streetNumber = result.props.flash.info.bank.streetNumber;
+            newData.city = result.props.flash.info.bank.city;
+            newData.state = result.props.flash.info.bank.state;
+            newData.country = result.props.flash.info.bank.country;
+            newData.postalCode = result.props.flash.info.bank.postalCode;
+            newData.latitude = result.props.flash.info.bank.latitude;
+            newData.longitude = result.props.flash.info.bank.longitude;
+            newData.osm_id = result.props.flash.info.bank.osm_id;
+            // Address update
+
             banksArray.value[index] = newData;
         },
         onError: () => {
@@ -471,7 +486,7 @@ const onRowEditCancelBankAccount = (event) => {
 
 const rowClassEditing = (rowData) => {
     if (editingRows.value.some(row => row.idBank === rowData.id)) {
-        return 'bg-red-200';
+        return '!bg-amber-100';
     }
 
     return '';
@@ -622,7 +637,6 @@ const info = (route, data, id) => {
                     <Column field="name" header="Nombre" class="w-3/12" sortable>
                         <template #body="{ data }">
                             {{ data.name }}
-                            {{ expandedRows.hasOwnProperty(data.id) ? ' (Cuentas)' : '' }}
                         </template>
                         <template #filter="{ filterModel, filterCallback }">
                             <InputText v-model="filterModel.value" type="text" @input="filterCallback()" name="name" autocomplete="off"
@@ -636,9 +650,9 @@ const info = (route, data, id) => {
                     </Column>
                     <Column field="address" header="Domicilio" class="w-5/12" sortable>
                         <template #body="{ data, field }">
-                            {{ data[field].street }} {{ data[field].streetNumber }} {{ data[field].floor }} {{ data[field].apartment }}
-                            - {{ data[field].postalCode }},
-                            {{ data[field].city }}, {{ data[field].state }} - {{ data[field].country }}
+                            {{ data['street'] }} {{ data['streetNumber'] }} {{ data['floor'] }} {{ data['apartment'] }}
+                            - {{ data['postalCode'] }},
+                            {{ data['city'] }}, {{ data['state'] }} - {{ data['country'] }}
                             <Button icon="pi pi-map-marker"
                                 class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent" text rounded
                                 v-tooltip="'Ver en mapa'" @click="viewOnMap(data[field], $event)" />
@@ -699,7 +713,7 @@ const info = (route, data, id) => {
                             <div class="space-x-2">
                                 <template v-if="hasPermission('edit banks')">
                                     <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
-                                            @click="disabledEditButtons(editorInitCallback, $event, 'banks')"></i></button>
+                                            @click="disabledEditButtons(editorInitCallback, $event, data, 'banks')"></i></button>
                                 </template>
                                 <template v-if="hasPermission('view users')">
                                     <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"
@@ -793,7 +807,7 @@ const info = (route, data, id) => {
                                         <div class="space-x-2">
                                             <template v-if="hasPermission('edit banks')">
                                                 <button v-tooltip="'Editar'"><i class="pi pi-pencil text-orange-500 text-lg font-extrabold"
-                                                        @click="disabledEditButtons(editorInitCallback, $event, 'bankAccounts')"></i></button>
+                                                        @click="disabledEditButtons(editorInitCallback, $event, data, 'bankAccounts')"></i></button>
                                             </template>
                                             <template v-if="hasPermission('view users')">
                                                 <button v-tooltip="'+Info'" class="btn-info"><i class="pi pi-id-card text-cyan-500 text-2xl"

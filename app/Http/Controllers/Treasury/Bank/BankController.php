@@ -111,6 +111,7 @@ class BankController extends Controller {
             'info' => [
                 'type' => 'success',
                 'message' => 'Banco modificado exitosamente.',
+                'bank' => $bank,
             ],
             'success' => true,
         ]);
