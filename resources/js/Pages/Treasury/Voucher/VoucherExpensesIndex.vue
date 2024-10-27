@@ -192,7 +192,7 @@ onMounted(() => {
 
     Echo.channel('expenses')
         .listen('Treasury\\Voucher\\VoucherExpenseEvent', (e) => {
-            e.voucherExpense.status = e.voucherExpense.status === 1 ? 'ACTIVO' : 'INACTIVO';
+            e.voucherExpense.status = e.voucherExpense.status === 1 || e.voucherExpense.status === 'ACTIVO' ? 'ACTIVO' : 'INACTIVO';
 
             if (e.type === 'create') {
                 if (!voucherExpensesArray.value.some(voucherExpense => voucherExpense.id === e.voucherExpenseId)) {

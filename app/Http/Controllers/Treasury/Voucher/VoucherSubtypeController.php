@@ -142,7 +142,6 @@ class VoucherSubtypeController extends Controller {
     public function supplierRelate(Request $request, VoucherSubtype $voucherSubtype) {
         $supplier = Supplier::where('id', $request->supplier)->first();
 
-
         if (!$supplier) {
             throw ValidationException::withMessages([
                 'message' => trans('El proveedor no existe.')

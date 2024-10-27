@@ -104,7 +104,7 @@ onMounted(() => {
                     voucherTypesArray.value[index] = e.voucherType;
                 }
 
-                if (voucherTypeRelated.value.id != e.voucherType.id) return;
+                if (voucherTypeRelated.value && voucherTypeRelated.value.id != e.voucherType.id) return;
 
                 voucherSubtypesArray.value.map((voucherSubtype) => {
                     const data = e.voucherType.subtypes.find(subtypeRelated => subtypeRelated.id === voucherSubtype.id);
@@ -127,7 +127,7 @@ onMounted(() => {
 
     Echo.channel('subtypes')
         .listen('Treasury\\Voucher\\VoucherSubtypeEvent', (e) => {
-            e.voucherSubtype.status = e.voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
+            e.voucherSubtype.status = e.voucherSubtype.status === 1 || e.voucherSubtype.status === 'ACTIVO' ? 'ACTIVO' : 'INACTIVO';
 
             if (e.type === 'create') {
                 if (!dataVoucherSubtypesArray.value.some(voucherSubtype => voucherSubtype.id === e.voucherSubtypeId)) {
@@ -144,8 +144,6 @@ onMounted(() => {
                 if (dataIndex !== -1) {
                     dataVoucherSubtypesArray.value[dataIndex].name = e.voucherSubtype.name;
                     dataVoucherSubtypesArray.value[dataIndex].status = e.voucherSubtype.status;
-                    /* voucherSubtypesArray.value[index].name = e.voucherSubtype.name;
-                    voucherSubtypesArray.value[index].status = e.voucherSubtype.status; */
                 }
             }
         });
@@ -176,7 +174,7 @@ onMounted(() => {
                     </Column>
                     <Column header="Subtipos relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="related(data, $event)">
+                            <Button severity="info" v-tooltip="'Relacionar subtipo'" raised rounded outlined @click="related(data, $event)">
                                 {{ data.subtypes.length }}
                             </Button>
                         </template>

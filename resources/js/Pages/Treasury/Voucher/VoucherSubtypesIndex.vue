@@ -50,6 +50,16 @@ dataVoucherExpensesArray.value = props.voucherExpenses;
 dataSuppliersArray.value = props.suppliers;
 
 const related = (data, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de relacionar un gasto.',
+            life: 3000,
+        });
+
+        return;
+    }
+
     voucherSubtypeRelated.value = data;
     voucherExpensesArray.value = [];
 
@@ -71,10 +81,21 @@ const related = (data, event) => {
         voucherExpensesArray.value.push(voucherExpense);
     });
 
+    suppliersPanel.value.hide();
     expensesPanel.value.toggle(event);
 };
 
 const supplierRelated = (data, event) => {
+    if (editing.value) {
+        toast.add({
+            severity: 'error',
+            detail: 'Debe guardar los cambios antes de relacionar un subtipo.',
+            life: 3000,
+        });
+
+        return;
+    }
+
     voucherSubtypeRelated.value = data;
     suppliersArray.value = [];
 
@@ -96,6 +117,7 @@ const supplierRelated = (data, event) => {
         suppliersArray.value.push(supplier);
     });
 
+    expensesPanel.value.hide();
     suppliersPanel.value.toggle(event);
 };
 
@@ -131,6 +153,9 @@ const suppliersFilters = ref({
 });
 
 const addNewVoucherSubtype = () => {
+    expensesPanel.value.hide();
+    suppliersPanel.value.hide();
+
     if (editing.value) {
         toast.add({
             severity: 'error',
@@ -163,6 +188,9 @@ const onRowEditInit = (event) => {
 }
 
 const disabledEditButtons = (callback, event) => {
+    expensesPanel.value.hide();
+    suppliersPanel.value.hide();
+
     if (editing.value) {
         toast.add({
             severity: 'error',
@@ -313,7 +341,7 @@ onMounted(() => {
 
     Echo.channel('subtypes')
         .listen('Treasury\\Voucher\\VoucherSubtypeEvent', (e) => {
-            e.voucherSubtype.status = e.voucherSubtype.status === 1 ? 'ACTIVO' : 'INACTIVO';
+            e.voucherSubtype.status = e.voucherSubtype.status === 1 || e.voucherSubtype.status === 'ACTIVO' ? 'ACTIVO' : 'INACTIVO';
 
             if (e.type === 'create') {
                 if (!voucherSubtypesArray.value.some(voucherSubtype => voucherSubtype.id === e.voucherSubtypeId)) {
@@ -332,7 +360,7 @@ onMounted(() => {
                     voucherSubtypesArray.value[index] = e.voucherSubtype;
                 }
 
-                if (voucherSubtypeRelated.value.id != e.voucherSubtype.id) return;
+                if (voucherSubtypeRelated.value && voucherSubtypeRelated.value.id !== e.voucherSubtype.id) return;
 
                 voucherExpensesArray.value.map((voucherExpense) => {
                     const data = e.voucherSubtype.expenses.find(expenseRelated => expenseRelated.id === voucherExpense.id);
@@ -357,7 +385,7 @@ onMounted(() => {
                     voucherSubtypesArray.value[index] = e.voucherSubtype;
                 }
 
-                if (voucherSubtypeRelated.value.id != e.voucherSubtype.id) return;
+                if (voucherSubtypeRelated.value && voucherSubtypeRelated.value.id != e.voucherSubtype.id) return;
 
                 suppliersArray.value.map((supplier) => {
                     const data = e.voucherSubtype.suppliers.find(supplierRelated => supplierRelated.id === supplier.id);
@@ -505,7 +533,7 @@ const info = (data) => {
                     </Column>
                     <Column header="Gastos relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="related(data, $event)"
+                            <Button severity="info" v-tooltip="'Relacionar gasto'" raised rounded outlined @click="related(data, $event)"
                                 :disabled="data.condition === 'newVoucherSubtype'">
                                 {{ data.expenses.length }}
                             </Button>
@@ -513,7 +541,7 @@ const info = (data) => {
                     </Column>
                     <Column header="Proveedores relacionados">
                         <template #body="{ data }">
-                            <Button severity="info" raised rounded outlined @click="supplierRelated(data, $event)"
+                            <Button severity="info" v-tooltip="'Relacionar proveedor'" raised rounded outlined @click="supplierRelated(data, $event)"
                                 :disabled="data.condition === 'newVoucherSubtype'">
                                 {{ data.suppliers.length }}
                             </Button>
