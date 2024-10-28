@@ -80,9 +80,10 @@ Route::group(['middleware' => ['auth', 'check.permission:view voucher expenses']
 Route::group(['middleware' => ['auth', 'check.permission:view suppliers']], function () {
     Route::get('/suppliers/{supplier}/info', [SupplierController::class, 'info'])->name('suppliers.info');
     Route::get('/suppliers/{voucher_subtype}/subtype-related', [SupplierController::class, 'subtypeRelated'])->name('suppliers.subtype-related');
+    Route::get('/suppliers/export', [SupplierController::class, 'exportSuppliers'])->name('suppliers.export');
     Route::get('/voucher-subtypes/{voucher_type}/data-related', [VoucherSubtypeController::class, 'dataRelated'])->name('voucher-subtypes.data-related');
     Route::get('/voucher-expenses/{voucher_subtype}/data-related', [VoucherExpenseController::class, 'dataRelated'])->name('voucher-expenses.data-related');
-    Route::get('/suppliers/export', [SupplierController::class, 'exportSuppliers'])->name('suppliers.export');
+    Route::get('/update-supplier-event/{supplier}', [SupplierController::class, 'updateSupplierEvent'])->name('suppliers.update-supplier-event');
     Route::resource('suppliers', SupplierController::class);
 });
 

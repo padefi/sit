@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\Users\UserEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
@@ -61,6 +62,9 @@ class AuthController extends Controller {
             throw ValidationException::withMessages([
                 'message' => trans('Usuario bloqueado.')
             ]);
+
+            $user->load('roles');
+            event(new UserEvent($user, $user->id, 'update'));
         }
 
         if (!Hash::check($request->currentPassword, $user->password)) {
@@ -70,7 +74,8 @@ class AuthController extends Controller {
         }
 
         $user->update([
-            'password' => Hash::make($request->newPassword)
+            'password' => Hash::make($request->newPassword),
+            'reset_password' => 0,
         ]);
 
         Auth::logout();

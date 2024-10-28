@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Events\Users\UserEvent;
 use App\Models\Users\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
@@ -49,6 +50,9 @@ class LoginRequest extends FormRequest {
             ->where('is_active', false)->first();
 
         if ($user) {
+            $user->load('roles');
+            event(new UserEvent($user, $user->id, 'update'));
+
             throw ValidationException::withMessages([
                 'message' => trans('Usuario bloqueado.')
             ]);
@@ -57,7 +61,7 @@ class LoginRequest extends FormRequest {
         $credentials = $this->only('username', 'password');
 
         if (Auth::attempt($credentials, $this->boolean('remember'))) {
-            if (strtolower($credentials['username']) === strtolower($credentials['password'])) {
+            if (Auth()->user()->reset_password) {
                 Auth::logout();
 
                 throw ValidationException::withMessages([
@@ -98,6 +102,9 @@ class LoginRequest extends FormRequest {
                 'is_active' => false,
             ]);
         }
+
+        $user->load('roles');
+        event(new UserEvent($user, $user->id, 'update'));
 
         throw ValidationException::withMessages([
             'message' => trans('Demasiados intentos de inicio de sesión. Usuario bloqueado.', [

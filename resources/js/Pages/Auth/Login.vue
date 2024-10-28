@@ -83,12 +83,12 @@ const submit = () => {
 }
 
 
-const passwordPatternValidation = (pattern, form) => {
+const passwordPatternValidation = (pattern, form) => {    
     pattern.uppercase = passwordPattern.uppercase.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
     pattern.lowercase = passwordPattern.lowercase.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
     pattern.number = passwordPattern.number.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
     pattern.special = passwordPattern.special.test(form) ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
-    pattern.length = form.length >= 8 ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
+    pattern.length = form && form.length >= 8 ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
 
     if (pattern.match) {
         pattern.match = form === formChangePassword.newPassword ? 'pi pi-check text-emerald-600' : 'pi pi-times text-red-600';
@@ -346,6 +346,7 @@ const submitChangePassword = () => {
                                             mediumLabel="Media" strongLabel="Fuerte" v-model="formChangePassword.newPassword_confirmation" toggleMask
                                             autocomplete="off" class="w-full" inputClass="w-full focus:!z-0" panelClass="panelPassword" minlength="8"
                                             @input="passwordPatternValidation(newPasswordConfirmPattern, formChangePassword.newPassword_confirmation)"
+                                            @focus="passwordPatternValidation(newPasswordConfirmPattern, formChangePassword.newPassword_confirmation)"
                                             :class="formChangePassword.newPassword_confirmation !== '' && formChangePassword.newPassword_confirmation !== undefined ? 'filled' : ''"
                                             :invalid="formChangePassword.newPassword_confirmation && (formChangePassword.newPassword_confirmation.trim() === '' || formChangePassword.newPassword_confirmation === '')">
                                             <template #header>

@@ -37,7 +37,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SupplierController extends Controller {
     public function __construct() {
-        $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'calculatePendingToPay', 'invoicePendingToPay']);
+        $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'calculatePendingToPay', 'invoicePendingToPay', 'updateSupplierEvent']);
         $this->middleware('check.permission:create suppliers')->only('store');
         $this->middleware('check.permission:edit suppliers')->only('update');
         $this->middleware('check.permission:view users')->only('info');
@@ -172,6 +172,15 @@ class SupplierController extends Controller {
             ],
             'success' => true,
         ]);
+    }
+
+    public function updateSupplierEvent(Supplier $supplier) {
+        $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
+        $vouchers = $this->calculatePendingToPay($vouchers);
+        $pendingToPay = $vouchers->sum('pendingToPay');
+
+        $supplier->load('userCreated', 'userUpdated');
+        event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
     }
 
     public function info(Supplier $supplier) {

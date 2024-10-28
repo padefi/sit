@@ -53,6 +53,7 @@ class UserController extends Controller {
             'name' => $request->name,
             'email' => $request->email,
             'is_active' => ($request->is_active) ? 1 : 0,
+            'reset_password' => 0,
             'username' => User::generateUsername($request->name, $request->surname),
             'password' => Hash::make(User::generateUsername($request->name, $request->surname)),
         ])->assignRole($request->role);
@@ -101,8 +102,10 @@ class UserController extends Controller {
     }
 
     public function resetPassword(User $user) {
-        $user->password = Hash::make($user->username);
-        $user->save();
+        $user->update([
+            'password' => Hash::make($user->username),
+            'reset_password' => 1,
+        ]);
 
         return Redirect::back()->with([
             'info' => [

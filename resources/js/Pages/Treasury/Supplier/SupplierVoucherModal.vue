@@ -93,6 +93,14 @@ const voidedVoucherDataStructure = (voidedVoucher) => {
     }];
 }
 
+const updateSupplierEvent = async () => {
+    try {
+        await fetch(`/update-supplier-event/${dialogRef.value.data.supplierId}`);
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 const onRowExpand = (data) => {
     const originalExpandedRows = { ...expandedRows.value };
     const newExpandedRows = vouchersArray.value.reduce((acc) => (acc[data.id] = true) && acc, {});
@@ -286,7 +294,8 @@ onMounted(async () => {
             } else if (e.type === 'voucherToTreasury') {
                 setTimeout(async () => {
                     await getVouchers();
-                }, 200);
+                    await updateSupplierEvent();
+                }, 1000);
             }
         });
 });

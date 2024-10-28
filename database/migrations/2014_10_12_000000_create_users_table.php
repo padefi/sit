@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('name', 50)->collation('utf8mb4_general_ci');
             $table->string('surname', 50)->collation('utf8mb4_general_ci');
             $table->boolean('is_active')->default(true);
+            $table->boolean('reset_password')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

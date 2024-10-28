@@ -25,6 +25,7 @@ class UserRequest extends FormRequest {
             'email' => ['required', 'string', 'max:100', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
             'role' => ['required', 'string', 'exists:roles,name'],
             'is_active' => ['boolean'],
+            'reset_password' => ['boolean'],
         ];
     }
 
