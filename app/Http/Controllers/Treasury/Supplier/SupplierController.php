@@ -11,6 +11,7 @@ use App\Http\Resources\Treasury\Taxes\VatConditionResource;
 use App\Http\Resources\Treasury\Taxes\VatRateResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\PayConditionResource;
 use App\Http\Resources\Treasury\Voucher\VoucherTypeResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\VatCondition;
@@ -174,7 +175,9 @@ class SupplierController extends Controller {
     }
 
     public function info(Supplier $supplier) {
-        $supplier = Supplier::with(['userCreated', 'userUpdated'])->where('id', $supplier->id)->first();
+        $supplier = Supplier::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $supplier->id)->first();
 
         if (!$supplier) {
             throw ValidationException::withMessages([
@@ -182,7 +185,7 @@ class SupplierController extends Controller {
             ]);
         }
 
-        return new SupplierResource($supplier);
+        return new UserInfoResource($supplier);
     }
 
     public function subtypeRelated(VoucherSubtype $voucherSubtype) {

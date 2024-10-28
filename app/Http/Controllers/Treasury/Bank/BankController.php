@@ -8,6 +8,7 @@ use App\Http\Requests\Treasury\Bank\BankRequest;
 use App\Http\Resources\Treasury\Bank\BankAccountResource;
 use App\Http\Resources\Treasury\Bank\BankAccountTypeResource;
 use App\Http\Resources\Treasury\Bank\BankResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Bank\Bank;
 use App\Models\Treasury\Bank\BankAccount;
 use App\Models\Treasury\Bank\BankAccountType;
@@ -118,7 +119,9 @@ class BankController extends Controller {
     }
 
     public function info(Bank $bank) {
-        $bank = Bank::with(['userCreated', 'userUpdated'])->where('id', $bank->id)->first();
+        $bank = Bank::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $bank->id)->first();
 
         if (!$bank) {
             throw ValidationException::withMessages([
@@ -126,6 +129,6 @@ class BankController extends Controller {
             ]);
         }
 
-        return new BankResource($bank);
+        return new UserInfoResource($bank);
     }
 }

@@ -300,14 +300,14 @@ const info = (id) => {
     axios.get(`/vouchers/${id}/info`)
         .then((response) => {
             const data = response.data;
-            const voucherData = data.invoiceType.name + '  ' + data.invoiceTypeCode.name + ' ' + invoiceNumberFormat(data.pointOfNumber, 5) + '-' + invoiceNumberFormat(data.invoiceNumber, 8);
+            const voucherData = data.voucherData.invoiceType + '  ' + data.voucherData.invoiceTypeCode + ' ' + invoiceNumberFormat(data.voucherData.pointOfNumber, 5) + '-' + invoiceNumberFormat(data.voucherData.invoiceNumber, 8);
             const header = `Información del comprobante ${voucherData.toUpperCase()}`;
 
             dialogInfo.open(infoModal, {
                 props: {
                     header: header,
                     style: {
-                        width: '50vw',
+                        width: '75vw',
                     },
                     breakpoints: {
                         '960px': '75vw',
@@ -315,7 +315,7 @@ const info = (id) => {
                     },
                     modal: true
                 },
-                data: data
+                data: data.userData
             });
         })
         .catch((error) => {

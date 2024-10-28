@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, defineExpose } from 'vue';
+import { onMounted, ref } from 'vue';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
 import { usePermissions } from '@/composables/permissions';
 import { useConfirm } from "primevue/useconfirm";
@@ -302,7 +302,7 @@ const info = (data) => {
                 props: {
                     header: `Información de la retención de la categoría ${data.category.toUpperCase()}`,
                     style: {
-                        width: '50vw',
+                        width: '75vw',
                     },
                     breakpoints: {
                         '960px': '75vw',

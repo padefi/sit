@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingScaleRequest;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingTable;
@@ -62,7 +63,7 @@ class IncomeTaxWithholdingScaleController extends Controller {
                 ->where('idCat', $request->idCat)
                 ->update(['table' => 'scale']);
         }
-        
+
         $tempUUID = $request->keys()[7];
         $incomeTaxWithholdingScale->load('category', 'userCreated', 'userUpdated');
         event(new IncomeTaxWithholdingScaleEvent($incomeTaxWithholdingScale, $tempUUID, 'create'));
@@ -105,7 +106,9 @@ class IncomeTaxWithholdingScaleController extends Controller {
     }
 
     public function info(IncomeTaxWithholdingScale $incomeTaxWithholdingScale) {
-        $incomeTaxWithholdingScale = IncomeTaxWithholdingScale::with(['userCreated', 'userUpdated'])->where('id', $incomeTaxWithholdingScale->id)->first();
+        $incomeTaxWithholdingScale = IncomeTaxWithholdingScale::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $incomeTaxWithholdingScale->id)->first();
 
         if (!$incomeTaxWithholdingScale) {
             throw ValidationException::withMessages([
@@ -113,6 +116,6 @@ class IncomeTaxWithholdingScaleController extends Controller {
             ]);
         }
 
-        return new IncomeTaxWithholdingScaleResource($incomeTaxWithholdingScale);
+        return new UserInfoResource($incomeTaxWithholdingScale);
     }
 }

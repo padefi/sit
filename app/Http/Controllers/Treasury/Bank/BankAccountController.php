@@ -6,6 +6,7 @@ use App\Events\Treasury\Bank\BankAccountEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Bank\BankAccountRequest;
 use App\Http\Resources\Treasury\Bank\BankAccountResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Bank\BankAccount;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -104,7 +105,9 @@ class BankAccountController extends Controller {
     }
 
     public function info(BankAccount $bankAccount) {
-        $bankAccount = BankAccount::with(['userCreated', 'userUpdated'])->where('id', $bankAccount->id)->first();
+        $bankAccount = BankAccount::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $bankAccount->id)->first();
 
         if (!$bankAccount) {
             throw ValidationException::withMessages([
@@ -112,6 +115,6 @@ class BankAccountController extends Controller {
             ]);
         }
 
-        return new BankAccountResource($bankAccount);
+        return new UserInfoResource($bankAccount);
     }
 }

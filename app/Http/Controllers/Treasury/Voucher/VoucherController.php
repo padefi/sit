@@ -14,6 +14,7 @@ use App\Http\Requests\Treasury\Voucher\VoucherRequest;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeCodeResource;
 use App\Http\Resources\Treasury\Voucher\InvoiceTypeResource;
 use App\Http\Resources\Treasury\Voucher\VoucherResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Voucher\InvoiceType;
 use App\Models\Treasury\Voucher\InvoiceTypeCode;
@@ -264,6 +265,8 @@ class VoucherController extends Controller {
         ]);
 
         $voucher->update([
+            'idUserVoided' => Auth::id(),
+            'voided_at' => now(),
             'status' => false,
         ]);
 
@@ -421,7 +424,9 @@ class VoucherController extends Controller {
     }
 
     public function info(Voucher $voucher) {
-        $voucher = Voucher::with(['userCreated', 'userUpdated'])->where('id', $voucher->id)->first();
+        $voucher = Voucher::with(['invoiceType', 'invoiceTypeCode', 'userCreated', 'userUpdated', 'userVoided'])
+            ->select('idIT', 'idITCode', 'pointOfNumber', 'invoiceNumber', 'idUserCreated', 'idUserUpdated', 'idUserVoided', 'created_at', 'updated_at', 'voided_at')
+            ->where('id', $voucher->id)->first();
 
         if (!$voucher) {
             throw ValidationException::withMessages([
@@ -429,7 +434,16 @@ class VoucherController extends Controller {
             ]);
         }
 
-        return new VoucherResource($voucher);
+        // return new UserInfoResource($voucher);
+        return response()->json([
+            'userData' => new UserInfoResource($voucher),
+            'voucherData' => [
+                'invoiceType' => $voucher->invoiceType->name,
+                'invoiceTypeCode' => $voucher->invoiceTypeCode->name,
+                'pointOfNumber' => $voucher->pointOfNumber,
+                'invoiceNumber' => $voucher->invoiceNumber,
+            ],
+        ]);
     }
 
     private function calculatePendingToPay($vouchers) {

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Taxes\VatTaxWithholdingRequest;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\VatTaxWithholdingResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Taxes\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
@@ -91,7 +92,9 @@ class VatTaxWithholdingController extends Controller {
     }
 
     public function info(VatTaxWithholding $vatTaxWithholding) {
-        $vatTaxWithholding = VatTaxWithholding::with(['userCreated', 'userUpdated'])->where('id', $vatTaxWithholding->id)->first();
+        $vatTaxWithholding = VatTaxWithholding::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $vatTaxWithholding->id)->first();
 
         if (!$vatTaxWithholding) {
             throw ValidationException::withMessages([
@@ -99,6 +102,6 @@ class VatTaxWithholdingController extends Controller {
             ]);
         }
 
-        return new VatTaxWithholdingResource($vatTaxWithholding);
+        return new UserInfoResource($vatTaxWithholding);
     }
 }

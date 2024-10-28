@@ -8,6 +8,7 @@ use App\Http\Requests\Treasury\Taxes\IncomeTaxWithholdingRequest;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingResource;
 use App\Http\Resources\Treasury\Taxes\IncomeTaxWithholdingScaleResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
@@ -95,7 +96,9 @@ class IncomeTaxWithholdingController extends Controller {
     }
 
     public function info(IncomeTaxWithholding $incomeTaxWithholding) {
-        $incomeTaxWithholding = IncomeTaxWithholding::with(['userCreated', 'userUpdated'])->where('id', $incomeTaxWithholding->id)->first();
+        $incomeTaxWithholding = IncomeTaxWithholding::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $incomeTaxWithholding->id)->first();
 
         if (!$incomeTaxWithholding) {
             throw ValidationException::withMessages([
@@ -103,6 +106,6 @@ class IncomeTaxWithholdingController extends Controller {
             ]);
         }
 
-        return new IncomeTaxWithholdingResource($incomeTaxWithholding);
+        return new UserInfoResource($incomeTaxWithholding);
     }
 }

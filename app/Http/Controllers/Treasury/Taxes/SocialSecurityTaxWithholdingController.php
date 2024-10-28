@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Taxes\SocialSecurityTaxWithholdingRequest;
 use App\Http\Resources\Treasury\Taxes\CategoryResource;
 use App\Http\Resources\Treasury\Taxes\SocialSecurityTaxWithholdingResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Taxes\Category;
 use App\Models\Treasury\Taxes\SocialSecurityTaxWithholding;
 use Illuminate\Support\Facades\Auth;
@@ -91,7 +92,9 @@ class SocialSecurityTaxWithholdingController extends Controller {
     }
 
     public function info(SocialSecurityTaxWithholding $socialSecurityTaxWithholding) {
-        $socialSecurityTaxWithholding = SocialSecurityTaxWithholding::with(['userCreated', 'userUpdated'])->where('id', $socialSecurityTaxWithholding->id)->first();
+        $socialSecurityTaxWithholding = SocialSecurityTaxWithholding::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $socialSecurityTaxWithholding->id)->first();
 
         if (!$socialSecurityTaxWithholding) {
             throw ValidationException::withMessages([
@@ -99,6 +102,6 @@ class SocialSecurityTaxWithholdingController extends Controller {
             ]);
         }
 
-        return new SocialSecurityTaxWithholdingResource($socialSecurityTaxWithholding);
+        return new UserInfoResource($socialSecurityTaxWithholding);
     }
 }

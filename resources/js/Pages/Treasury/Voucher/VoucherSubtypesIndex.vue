@@ -462,7 +462,7 @@ const info = (data) => {
                 props: {
                     header: `Información del subtipo ${data.name.toUpperCase()}`,
                     style: {
-                        width: '50vw',
+                        width: '75vw',
                     },
                     breakpoints: {
                         '960px': '75vw',

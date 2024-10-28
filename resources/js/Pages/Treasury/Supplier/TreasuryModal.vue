@@ -74,6 +74,10 @@ const onRowCollapse = (data) => {
     delete expandedRows.value[data.id];
 }
 
+const rowClassVoid = (data) => {
+    return data.voucherStatus.id === 3 ? '!text-red-500' : '';
+};
+
 const addNewTreasuryVoucher = () => {
     dialog.open(treasuryVoucherModal, {
         props: {
@@ -140,7 +144,7 @@ const info = (id) => {
                 props: {
                     header: header,
                     style: {
-                        width: '50vw',
+                        width: '75vw',
                     },
                     breakpoints: {
                         '960px': '75vw',
@@ -185,7 +189,7 @@ const info = (id) => {
                     }
                 }" :paginator="true" :rows="5" :rowsPerPageOptions="[5, 10, 25]"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table">
+                currentPageReportTemplate="{first} - {last} de {totalRecords}" class="data-table" :row-class="rowClassVoid">
                 <template #empty>
                     <div :class="loading ? 'py-4' : ''">
                         <template v-if="!loading">

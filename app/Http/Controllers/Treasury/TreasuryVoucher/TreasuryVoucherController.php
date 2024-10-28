@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Treasury\TreasuryVoucher;
 
 use App\Events\Treasury\Supplier\SupplierEvent;
 use App\Events\Treasury\TreasuryVoucher\TreasuryVoucherEvent;
+use App\Events\Treasury\Voucher\VoucherEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Treasury\Supplier\SupplierController;
 use App\Http\Requests\Treasury\TreasuryVoucher\TreasuryCustomVoucherRequest;
@@ -11,6 +12,7 @@ use App\Http\Requests\Treasury\TreasuryVoucher\VoidedTreasuryVoucherRequest;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryCustomVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherResource;
 use App\Http\Resources\Treasury\TreasuryVoucher\TreasuryVoucherStatusResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Taxes\IncomeTaxWithholding;
 use App\Models\Treasury\Taxes\IncomeTaxWithholdingScale;
@@ -483,33 +485,33 @@ class TreasuryVoucherController extends Controller {
 
             match ($item['paymentMethod']) {
                 1, 3 =>
-                    BankTransaction::create([
-                        'idBA' => $item['bankAccountId'],
-                        'idTV' => $item['id'],
-                        'number' => strtoupper($item['transactionNumber']),
-                        'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => Auth::id(),
-                        'confirmed_at' => now(),
-                        'status' => 1,
-                    ]),
+                BankTransaction::create([
+                    'idBA' => $item['bankAccountId'],
+                    'idTV' => $item['id'],
+                    'number' => strtoupper($item['transactionNumber']),
+                    'amount' => $item['totalAmount'],
+                    'idUserConfirmed' => Auth::id(),
+                    'confirmed_at' => now(),
+                    'status' => 1,
+                ]),
                 2 =>
-                    CheckTransaction::create([
-                        'idBA' => $item['bankAccountId'],
-                        'idTV' => $item['id'],
-                        'number' => strtoupper($item['transactionNumber']),
-                        'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => Auth::id(),
-                        'confirmed_at' => now(),
-                        'status' => 1,
-                    ]),
+                CheckTransaction::create([
+                    'idBA' => $item['bankAccountId'],
+                    'idTV' => $item['id'],
+                    'number' => strtoupper($item['transactionNumber']),
+                    'amount' => $item['totalAmount'],
+                    'idUserConfirmed' => Auth::id(),
+                    'confirmed_at' => now(),
+                    'status' => 1,
+                ]),
                 4 =>
-                    CashTransaction::create([
-                        'idTV' => $item['id'],
-                        'amount' => $item['totalAmount'],
-                        'idUserConfirmed' => Auth::id(),
-                        'confirmed_at' => now(),
-                        'status' => 1,
-                    ]),
+                CashTransaction::create([
+                    'idTV' => $item['id'],
+                    'amount' => $item['totalAmount'],
+                    'idUserConfirmed' => Auth::id(),
+                    'confirmed_at' => now(),
+                    'status' => 1,
+                ]),
             };
 
             $treasuryVoucher->load('userCreated', 'userUpdated');
@@ -526,7 +528,8 @@ class TreasuryVoucherController extends Controller {
     }
 
     public function voidTreasuryVoucher(VoidedTreasuryVoucherRequest $request, TreasuryVoucher $treasuryVoucher) {
-        $treasuryVoucher = TreasuryVoucher::where('id', $treasuryVoucher->id)
+        $treasuryVoucher = TreasuryVoucher::with(['voucherToTreasury'])
+            ->where('id', $treasuryVoucher->id)
             ->where('idVS', 1)
             ->first();
 
@@ -562,6 +565,17 @@ class TreasuryVoucherController extends Controller {
         $supplier->load('userCreated', 'userUpdated');
         event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
 
+        if (!$treasuryVoucher->voucherToTreasury->isEmpty()) {
+            foreach ($treasuryVoucher->voucherToTreasury as $voucherToTreasury) {
+                $voucher = Voucher::where('id', $voucherToTreasury->idVoucher)->first();
+                if ($voucher) {
+                    $voucher->load('userCreated', 'userUpdated', 'items');
+                    event(new VoucherEvent($voucher, $voucher->id, 'update'));
+                    event(new VoucherEvent($voucher, $voucher->id, 'voucherToTreasury'));
+                }
+            }
+        }
+
         return Redirect::back()->with([
             'info' => [
                 'type' => 'success',
@@ -573,7 +587,9 @@ class TreasuryVoucherController extends Controller {
     }
 
     public function info(TreasuryVoucher $treasuryVoucher) {
-        $treasuryVoucher = TreasuryVoucher::with(['userCreated', 'userUpdated'])->where('id', $treasuryVoucher->id)->first();
+        $treasuryVoucher = TreasuryVoucher::with(['userCreated', 'userUpdated', 'userConfirmed', 'userVoided'])
+            ->select('idUserCreated', 'idUserUpdated', 'idUserConfirmed', 'idUserVoided', 'created_at', 'updated_at', 'confirmed_at', 'voided_at')
+            ->where('id', $treasuryVoucher->id)->first();
 
         if (!$treasuryVoucher) {
             throw ValidationException::withMessages([
@@ -581,7 +597,7 @@ class TreasuryVoucherController extends Controller {
             ]);
         }
 
-        return new TreasuryVoucherResource($treasuryVoucher);
+        return new UserInfoResource($treasuryVoucher);
     }
 
     private function calculateTotalAmountCollected(TreasuryVoucher $treasuryVoucher, $tax) {

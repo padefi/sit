@@ -6,6 +6,7 @@ use App\Events\Treasury\Voucher\VoucherExpenseEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Treasury\Voucher\VoucherExpenseRequest;
 use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,9 @@ class VoucherExpenseController extends Controller {
     }
 
     public function info(VoucherExpense $voucherExpense) {
-        $voucherExpense = VoucherExpense::with(['userCreated', 'userUpdated'])->where('id', $voucherExpense->id)->first();
+        $voucherExpense = VoucherExpense::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $voucherExpense->id)->first();
 
         if (!$voucherExpense) {
             throw ValidationException::withMessages([
@@ -92,7 +95,7 @@ class VoucherExpenseController extends Controller {
             ]);
         }
 
-        return new VoucherExpenseResource($voucherExpense);
+        return new UserInfoResource($voucherExpense);
     }
 
     public function dataRelated(VoucherSubtype $voucherSubtype) {

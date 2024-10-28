@@ -8,6 +8,7 @@ use App\Http\Requests\Treasury\Voucher\VoucherSubtypeRequest;
 use App\Http\Resources\Treasury\Supplier\SupplierResource;
 use App\Http\Resources\Treasury\Voucher\VoucherExpenseResource;
 use App\Http\Resources\Treasury\Voucher\VoucherSubtypeResource;
+use App\Http\Resources\Users\UserInfoResource;
 use App\Models\Treasury\Supplier\Supplier;
 use App\Models\Treasury\Voucher\VoucherExpense;
 use App\Models\Treasury\Voucher\VoucherSubtype;
@@ -96,7 +97,9 @@ class VoucherSubtypeController extends Controller {
     }
 
     public function info(VoucherSubtype $voucherSubtype) {
-        $voucherSubtype = VoucherSubtype::with(['userCreated', 'userUpdated'])->where('id', $voucherSubtype->id)->first();
+        $voucherSubtype = VoucherSubtype::with(['userCreated', 'userUpdated'])
+            ->select('idUserCreated', 'idUserUpdated', 'created_at', 'updated_at')
+            ->where('id', $voucherSubtype->id)->first();
 
         if (!$voucherSubtype) {
             throw ValidationException::withMessages([
@@ -104,7 +107,7 @@ class VoucherSubtypeController extends Controller {
             ]);
         }
 
-        return new VoucherSubtypeResource($voucherSubtype);
+        return new UserInfoResource($voucherSubtype);
     }
 
     public function relate(Request $request, VoucherSubtype $voucherSubtype) {

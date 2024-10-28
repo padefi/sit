@@ -184,7 +184,7 @@ const info = (data, id) => {
                 props: {
                     header: header,
                     style: {
-                        width: '50vw',
+                        width: '75vw',
                     },
                     breakpoints: {
                         '960px': '75vw',
