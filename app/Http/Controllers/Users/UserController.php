@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Permission;
@@ -106,6 +105,9 @@ class UserController extends Controller {
             'password' => Hash::make($user->username),
             'reset_password' => 1,
         ]);
+
+        $user->load('roles');
+        event(new UserEvent($user, $user->id, 'update'));
 
         return Redirect::back()->with([
             'info' => [
