@@ -1,5 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { currencyNumber } from "@/utils/formatterFunctions";
 import { Link } from '@inertiajs/vue3';
 import { usePermissions } from '@/composables/permissions'
 import { onMounted, ref } from 'vue';
@@ -19,10 +20,10 @@ const getData = async () => {
     }
 
     const data = await response.json();
-    treasuryVouchers.value = data.totalTreasuryVouchers;
+    treasuryVouchers.value = data.treasuryVouchers;
     dailyTransactions.value = data.totalTransactions;
     invoiceSuppliers.value = data.totalInvoiceSuppliers;
-    loading.value = false;
+    loading.value = false;    
 }
 onMounted(async () => {
     loading.value = true;
@@ -73,12 +74,32 @@ onMounted(async () => {
                         </template>
                         <template v-else>
                             <div class="text-primary text-lg">
-                                <template v-if="treasuryVouchers > 0">
-                                    <span class="text-red-500 font-bold">{{ treasuryVouchers }}</span>
+                                <template v-if="treasuryVouchers.totalTreasuryVouchers > 0">
+                                    <span class="text-orange-500 font-bold">{{ treasuryVouchers.totalTreasuryVouchers }}</span>
                                     <span> comprobantes pendientes.</span>
+                                    <div class="flex flex-wrap items-center mt-2">
+                                        <div class="flex items-center space-x-2 mr-6">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-green-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-up !text-sm text-green-500"></i>
+                                            </div>
+                                            <span class="font-bold">Ingresos: </span>
+                                            <span class="text-green-500 font-bold">
+                                                {{ currencyNumber(treasuryVouchers.amountIncomeTreasuryVouchers) }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-red-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-down !text-sm text-red-500"></i>
+                                            </div>
+                                            <span class="font-bold">Egresos: </span>
+                                            <span class="text-red-500 font-bold">
+                                                {{ currencyNumber(treasuryVouchers.amountExpenseTreasuryVouchers) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </template>
                                 <template v-else>
-                                    <span>No hay nuevos movimientos</span>
+                                    <span>No hay comprobantes pendientes.</span>
                                 </template>
                             </div>
                         </template>
@@ -105,9 +126,29 @@ onMounted(async () => {
                         </template>
                         <template v-else>
                             <div class="text-primary text-lg">
-                                <template v-if="dailyTransactions > 0">
-                                    <span class="text-emerald-500 font-bold">{{ dailyTransactions }}</span>
+                                <template v-if="dailyTransactions.totalTransactions > 0">
+                                    <span class="text-orange-500 font-bold">{{ dailyTransactions.totalTransactions }}</span>
                                     <span> nuevos movimientos.</span>
+                                    <div class="flex flex-wrap items-center mt-2">
+                                        <div class="flex items-center space-x-2 mr-6">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-green-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-up !text-sm text-green-500"></i>
+                                            </div>
+                                            <span class="font-bold">Ingresos: </span>
+                                            <span class="text-green-500 font-bold">
+                                                {{ currencyNumber(dailyTransactions.amountIncomeTransactions) }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-red-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-down !text-sm text-red-500"></i>
+                                            </div>
+                                            <span class="font-bold">Egresos: </span>
+                                            <span class="text-red-500 font-bold">
+                                                {{ currencyNumber(dailyTransactions.amountExpenseTransactions) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </template>
                                 <template v-else>
                                     <span>No hay nuevos movimientos.</span>
@@ -137,9 +178,29 @@ onMounted(async () => {
                         </template>
                         <template v-else>
                             <div class="text-primary text-lg">
-                                <template v-if="invoiceSuppliers > 0">
-                                    <span class="text-red-500 font-bold">{{ invoiceSuppliers }}</span>
+                                <template v-if="invoiceSuppliers.totalInvoiceSuppliers > 0">
+                                    <span class="text-orange-500 font-bold">{{ invoiceSuppliers.totalInvoiceSuppliers }}</span>
                                     <span> facturas pendientes.</span>
+                                    <div class="flex flex-wrap items-center mt-2">
+                                        <div class="flex items-center space-x-2 mr-6">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-green-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-up !text-sm text-green-500"></i>
+                                            </div>
+                                            <span class="font-bold">Ingresos: </span>
+                                            <span class="text-green-500 font-bold">
+                                                {{ currencyNumber(invoiceSuppliers.amountIncomeInvoiceSuppliers) }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="w-6 h-6 flex items-center justify-center bg-red-100 rounded-full shrink-0">
+                                                <i class="pi pi-arrow-down !text-sm text-red-500"></i>
+                                            </div>
+                                            <span class="font-bold">Egresos: </span>
+                                            <span class="text-red-500 font-bold">
+                                                {{ currencyNumber(invoiceSuppliers.amountExpenseInvoiceSuppliers) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </template>
                                 <template v-else>
                                     <span>No hay facturas pendientes.</span>

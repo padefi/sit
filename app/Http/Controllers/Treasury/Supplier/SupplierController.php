@@ -33,6 +33,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SupplierController extends Controller {
@@ -210,12 +211,13 @@ class SupplierController extends Controller {
             if ($voucher->status === 0) {
                 $voucher->pendingToPay = 0;
             } else {
-                $voucher->pendingToPay = $voucher->totalAmount;
+                $voucher->pendingToPay = ($voucher->idType === 1) ? $voucher->totalAmount * -1 : $voucher->totalAmount;
 
                 foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
                     if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
-                        $voucher->pendingToPay -= $voucherToTreasury->amount;
-                        if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                        /* $voucher->pendingToPay -= $voucherToTreasury->amount;
+                        if ($voucher->idType === 1) $voucher->pendingToPay *= -1; */
+                        $voucher->pendingToPay -= ($voucher->idType === 1) ? $voucherToTreasury->amount * -1 : $voucherToTreasury->amount;
                     }
                 }
             }
@@ -227,30 +229,49 @@ class SupplierController extends Controller {
     public function invoicePendingToPay() {
         $suppliers = Supplier::with(['userCreated', 'userUpdated'])->orderBy('name', 'asc')->get();
         $countInvoicePendingToPay = 0;
+        $incomePendingToPay = 0;
+        $expensePendingToPay = 0;
 
         foreach ($suppliers as $supplier) {
             $vouchers = Voucher::where('idSupplier', $supplier->id)->get();
-            $vouchers->each(function ($voucher) use (&$countInvoicePendingToPay) {
+            $vouchers->each(function ($voucher) use (&$countInvoicePendingToPay, &$incomePendingToPay, &$expensePendingToPay) {
                 if ($voucher->status === 0) {
                     $voucher->pendingToPay = 0;
                     return;
                 }
 
-                $voucher->pendingToPay = $voucher->totalAmount;
+                // $voucher->pendingToPay = $voucher->totalAmount;
+                $voucher->pendingToPay = ($voucher->idType === 1) ? $voucher->totalAmount * -1 : $voucher->totalAmount;
+                $voucher->pendingToPayIncome = ($voucher->idType === 1) ? $voucher->totalAmount : 0;
+                $voucher->pendingToPayExpense = ($voucher->idType === 1) ? 0 : $voucher->totalAmount;
 
                 foreach ($voucher->voucherToTreasury as $voucherToTreasury) {
                     if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
-                        $voucher->pendingToPay -= $voucherToTreasury->amount;
-                        if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                        if ($voucherToTreasury->treasuryVoucher && $voucherToTreasury->treasuryVoucher->idVS != 3) {
+                            // if ($voucher->idType === 1) $voucher->pendingToPay *= -1;
+                            if ($voucher->idType === 1) {
+                                $voucher->pendingToPay += $voucherToTreasury->amount;
+                                $voucher->pendingToPayIncome += $voucherToTreasury->amount;
+                            } else {
+                                $voucher->pendingToPay -= $voucherToTreasury->amount;
+                                $voucher->pendingToPayExpense -= $voucherToTreasury->amount;
+                            }
+                        }
                     }
                 }
 
-                if ($voucher->pendingToPay > 0) $countInvoicePendingToPay++;
+                if ($voucher->pendingToPay != 0) {
+                    $countInvoicePendingToPay++;
+                    $incomePendingToPay += $voucher->pendingToPayIncome;
+                    $expensePendingToPay += $voucher->pendingToPayExpense;
+                }
             });
         }
 
         return response()->json([
             'countInvoicePendingToPay' => $countInvoicePendingToPay,
+            'incomePendingToPay' => $incomePendingToPay,
+            'expensePendingToPay' => $expensePendingToPay
         ]);
     }
 
@@ -308,7 +329,7 @@ class SuppliersExport implements FromCollection, WithMapping, WithHeadings, Shou
             $supplier->incomeTaxWithholding ? 'SI' : 'NO',
             $supplier->socialTax ? 'SI' : 'NO',
             $supplier->incomeTaxWithholding ? 'SI' : 'NO',
-            $supplier->pendingToPay > 0 ? $supplier->pendingToPay : '0',
+            $supplier->pendingToPay != 0 ? $supplier->pendingToPay : '0',
         ];
     }
 
@@ -326,11 +347,38 @@ class SuppliersExport implements FromCollection, WithMapping, WithHeadings, Shou
     public function registerEvents(): array {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $event->sheet->getStyle('A1:L1')->applyFromArray([
+                /* $event->sheet->getStyle('A1:L1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                    ],
+                ]); */
+                $sheet = $event->sheet;
+
+                // Estilo para la fila de encabezado
+                $sheet->getStyle('A1:L1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ],
                 ]);
+
+                $lastRow = $sheet->getHighestRow();
+                $range = 'L2:L' . $lastRow;
+
+                // Aplicar formato condicional
+                $conditional = new Conditional();
+                $conditional->setConditionType(Conditional::CONDITION_CELLIS)
+                    ->setOperatorType(Conditional::OPERATOR_LESSTHAN)
+                    ->addCondition(0);
+                $conditional->getStyle()->applyFromArray([
+                    'font' => [
+                        'color' => [
+                            'rgb' => 'FF0000',
+                        ],
+                    ],
+                ]);
+                $conditional->setStopIfTrue(true);
+
+                $sheet->getStyle($range)->setConditionalStyles([$conditional]);
             },
         ];
     }
