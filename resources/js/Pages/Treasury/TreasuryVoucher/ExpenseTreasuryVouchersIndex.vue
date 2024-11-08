@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
 import { dropdownClasses } from '@/utils/cssUtils';
-import { currencyNumber, dateFormat, dateTimeFormat, invoiceNumberFormat, addDate } from "@/utils/formatterFunctions";
+import { currencyNumber, roundedNumber, dateFormat, dateTimeFormat, invoiceNumberFormat, addDate } from "@/utils/formatterFunctions";
 import { compareDates } from "@/utils/validateFunctions";
 import { usePermissions } from '@/composables/permissions';
 import { useDialog } from 'primevue/usedialog';
@@ -172,7 +172,9 @@ const voidedVoucherDataStructure = (voidedVoucher) => {
 }
 
 const setTotalPaymentAmount = (event, data) => {
-    form.totalPaymentAmount = event.target.checked ? form.totalPaymentAmount + data.amount : form.totalPaymentAmount - data.amount;
+    form.totalPaymentAmount = event.target.checked
+        ? roundedNumber(form.totalPaymentAmount || 0) + roundedNumber(data.amount || 0)
+        : roundedNumber(form.totalPaymentAmount || 0) - roundedNumber(data.amount || 0);
     if (!event.target.checked) data.paymentAmount = data.pendingToPay;
 }
 
@@ -371,8 +373,8 @@ const paymentMethodInfo = (data, event) => {
     paymentMethodPanel.value.toggle(event);
 }
 
-const voidedTreasuryVoucherExpenseInfo = (data, event) => { 
-    dataVoidedVoucherArray.value = data;    
+const voidedTreasuryVoucherExpenseInfo = (data, event) => {
+    dataVoidedVoucherArray.value = data;
     voidedVoucherPanel.value.toggle(event);
 }
 
@@ -533,7 +535,7 @@ defineExpose({ fetchExpenseTreasuryVouchers });
                     name="paymentDate" class="p-column-filter" />
             </template>
         </Column>
-        <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28" v-if="hasPermissionColumn(['view users'])">
+        <Column header="Acciones" class="action-column text-center" headerClass="min-w-28 w-28">
             <template #body="{ data }">
                 <div class="space-x-2 flex justify-center">
                     <template v-if="data.status === 1">
@@ -810,17 +812,19 @@ defineExpose({ fetchExpenseTreasuryVouchers });
         </DataTable>
     </OverlayPanel>
 
-    <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
-        <div class="flex w-fit space-x-4">
-            <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
-            <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
-                {{ currencyNumber(form.totalPaymentAmount) }}
+    <div v-if="hasPermission('edit treasury vouchers')">
+        <div class="flex mt-3 pb-0 items-center justify-between" v-if="selectStatus === 1">
+            <div class="flex w-fit space-x-4">
+                <div class="w-fit text-left text-surface-900/60 font-bold">Total a Pagar: </div>
+                <div class="w-fit text-left font-bold" :class="form.totalPaymentAmount < 0 ? 'text-red-500' : ''">
+                    {{ currencyNumber(form.totalPaymentAmount) }}
+                </div>
             </div>
-        </div>
 
-        <div>
-            <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount === 0 || isProcessing"
-                @click="confirmTreasuryVoucherModal()" />
+            <div>
+                <Button label="Confirmar" icon="pi pi-save" iconPos="right" :disabled="form.totalPaymentAmount <= 0 || isProcessing"
+                    @click="confirmTreasuryVoucherModal()" />
+            </div>
         </div>
     </div>
 </template>

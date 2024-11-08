@@ -18,6 +18,11 @@ export const percentNumber = (data) => {
     }).format(data / 100);
 };
 
+export const roundedNumber = (data) => {
+    const rounded = Math.round(data * 100) / 100;
+    return Math.abs(rounded) < 0.001 ? 0 : rounded;
+};
+
 export const addDate = (date, days) => {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
@@ -33,5 +38,5 @@ export const dateTimeFormat = (data) => {
 };
 
 export const invoiceNumberFormat = (data, length) => {
-    return String(data).padStart(length, '0');
+    return String(data).padStart(length, "0");
 };
