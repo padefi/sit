@@ -1,66 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bank-API-INSTP-UTN
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## :newspaper: Introducción
+S.I.T. es una aplicación web SPA desarrollada utilizando los frameworks Laravel y VueJS.
+Dicho sistema ha sido diseñado para facilitar la gestión y administración de los ingresos y egresos financieros de la tesorería de una PyME. Las funciones que ofrece el sistema permiten relizar la carga, consulta y modificación de datos, aplicar filtros de búsqueda para obtener información precisa y emitir informes detallados para un control adecuado del dinero y el trabajo realizado por los usuarios.
 
-## About Laravel
+## Índice
+- [Introducción](#newspaper-introducción)
+- [Funcionalidades](#hammer-funcionalidades-del-sistema)
+- [Instalación](#rocket-instalación)
+- [Tecnologías utilizadas](#heavy_check_mark-tecnologías-utilizadas)
+- [Créditos](#coffee-créditos)
+- [Autor](#blue_book-autor)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## :hammer: Funcionalidades del sistema
++ ### Inicio: 
+    + Resumen comprobantes pendientes tesorería.
+    + Resumen movimientos diarios.
+    + Resumen facturas pendientes proveedores.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
++ ### Configuración                
+    + #### Bancos
+        + ABM bancos
+        + ABM cuentas bancarias.
+    + ####  Relaciones
+        + #####  Tipos
+            + Relación Tipo - Subtipo
+        + #####  Subtipos
+            + ABM subtipos
+            + Relación Subtipo - Gasto
+            + Relación Subtipo - Proveedor
+        + #####  Gastos
+            + ABM gastos
+    + ####  Retenciones
+        + #####  Ganancias
+            + ABM retenciones ganancias.
+        + #####  SUSS
+            + ABM retenciones Suss
+        + #####  I.V.A.
+            + ABM retenciones I.V.A.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
++ ### Operaciones:
+    + #### Comrpobantes
+        + ABM comprobantes de tesorería 
+    + #### Mov. Diarios
+        + Movimientos diarios de ingreso y egreso de la tesorería.
+    + #### Proveedores
+        + ABM proveedores
+        + ABM facturas
+        + Generación de orden de pago/cobro a la tesorería
 
-## Learning Laravel
++ ### Panel de usuarios: Únicamente disponible para el rol Administrador y Tesorero
+    + ABM usuarios.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## :rocket: Instalación
+La aplicación cuenta con diferentes directorios
++ #### App
+Contiene todo el backend del sistema (funciones necesarias para la conexión, consultas y almacenamientos de los datos en la BD).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
++ #### Database
+Contiene la estructura de todas las tablas de la BD, las migraciones y seeders necesarios para poder configurar el sistema por primera vez.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
++ #### Resources
+Contiene todo el frontend del sistema (views, funciones y css).
 
-## Laravel Sponsors
++ #### Routes
+Contiene todas las rutas, junto con los permisos, del sistema.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Antes que nada, deberá tener instalado NodeJS, Composer y un entorno de desarrollo (Xampp, Docker, etc).
+<https://nodejs.org/en>
 
-### Premium Partners
+<https://getcomposer.org/>
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+<https://www.apachefriends.org>
 
-## Contributing
+<https://www.docker.com/>
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+crear un archivo **.env** en la raíz.
+```sh
+cp .env.example .env
+```
 
-## Code of Conduct
+Una vez hecho esto se deberá ejecutar los siguientes comandos que instalará las librerías necesarias:
+```sh
+npm i
+composer i
+php artisan key:generate
+php artisan config:cache
+php artisan migrate
+php artisan db:seed
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Finalizada la instalación de todas las librerías se deberá ejecutar el siguiente comando (ya que se utiliza el script npm-run-all, el cual permite ejecutar varios scripts en paralelo):
+```sh
+npm start
+```
+Se puede acceder al sistema a través de la ruta <http://127.0.0.1:8000> o <http://localhost:8000>
 
-## Security Vulnerabilities
+Si se desea poner la app en producción, se deberán ejecutar los siguientes comandos
+```sh
+npm run build
+npm run serve
+php artisan reverb:start
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Se puede acceder al sistema a través de la ruta <http://127.0.0.1:8000> o <http://localhost:8000>
 
-## License
+Puede utilizar los siguientes usuarios:
++ ##### Usuarios:
+    + **Usuario**: admin
+    + **Contraseña**: administrador
+    + **Perfil**: Admin
+    + **Usuario**: jperez
+    + **Contraseña**: 12345678
+    + **Perfil**: Tesorero
+    + **Usuario**: jgonzalez
+    + **Contraseña**: 12345678
+    + **Perfil**: Auxiliar
+    + **Usuario**: rgomez
+    + **Contraseña**: 12345678
+    + **Perfil**: Administrativo
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## :heavy_check_mark: Tecnologías utilizadas
+- Laravel 10/11
+- VueJS
+- InertiaJS
+- PrimeVue 3.53
+- Tailwind
+- Axios
+- Pusher
+- Laravel Reverb
+- Laravel Sanctum
+- Spatie
+- MPDF
+- Laravel Excel/ Maatwebsite
+- Entre otras
+
+## :coffee: Créditos
+El sistema está desarrollado teniendo como referencia la guía gratuita **MERN Crash Course** [Parte 1 ](https://www.traversymedia.com/blog/mern-crash-course-part-1) y [Parte 2](https://www.traversymedia.com/blog/mern-crash-course-part-2), ofrecida por **Brad Traversy** en su sitio web <https://www.traversymedia.com>
+
+## :blue_book: Autor
+**Desarrollado por Pablo De Filpo**

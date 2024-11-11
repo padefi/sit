@@ -213,7 +213,7 @@ const submitChangePassword = () => {
         <div v-if="status" class="mb-4 font-medium text-base text-green-600">
             {{ status }}
         </div>
-        <div class="flip-container relative bottom-10">
+        <div class="flip-container relative">
             <div class="flipper transition-transform duration-1000 relative"
                 :style="flip ? 'transform: rotateY(180deg)' : 'transform: rotateY(0deg)'">
                 <Card class="front">
