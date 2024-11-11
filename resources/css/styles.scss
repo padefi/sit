@@ -1,0 +1,196 @@
+ul[data-pc-section="submenu"] {
+    z-index: 50;
+}
+
+.menubar {
+
+    ul[data-pc-section="submenu"],
+    div[data-pc-section="content"] {
+        border-radius: 6px;
+    }
+
+    div[data-pc-section="submenu"] {}
+
+    a[data-pc-section="action"] {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+/* Modal header */
+button[data-pc-section="closebutton"]:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+button[data-pc-section="closebutton"]:hover {
+    background-color: transparent;
+}
+
+/* Modal header */
+
+/* Dropdown */
+div[data-pc-name="dropdown"],
+div[data-pc-section="wrapper"] ul[data-pc-section="list"] li[data-pc-section="item"] span[data-pc-section="itemlabel"] {
+    text-transform: uppercase;
+}
+
+/* Dropdown */
+
+div[data-pc-name="card"],
+div[data-pc-name="confirmpopup"],
+div[data-pc-name="overlaypanel"] div[data-pc-section="content"] {
+    border: 1px solid #e0e0e0;
+    border-radius: 0.5rem;
+    transition: box-shadow 0.3s;
+}
+
+/* Triangle */
+div[data-pc-name="confirmpopup"]::before {
+    margin-left: 85%;
+}
+
+.voidedVoucherPanel::before,
+.voidedVoucherPanel::after {
+    position: absolute;
+    margin-left: 46%;
+    left: 50%;
+}
+
+div[data-pc-name="confirmpopup"]::before,
+div[data-pc-name="overlaypanel"]::after {
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.5));
+}
+
+/* Triangle */
+
+.data-table {
+    border-color: #bfdbfe !important;
+}
+
+.data-table-expanded {
+    border-color: #10b98180 !important;
+}
+
+.data-table,
+.data-table-expanded {
+    border: 0.1rem;
+    border-style: solid;
+    border-radius: 0.5rem;
+    border-collapse: separate;
+    overflow: hidden;
+
+    td,
+    th {
+        padding: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .p-paginator-custom {
+        display: flex;
+        // justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0.25rem 2rem;
+    }
+
+    .p-paginator-custom .p-paginator-current {
+        flex-grow: 1;
+        text-align: right;
+        font-size: 0.95rem;
+        text-transform: lowercase;
+        // width: 50%;
+        // margin-left: 25%;
+    }
+
+    button[data-pc-section="firstpagebutton"] {
+        margin-left: 40%;
+    }
+
+    div[data-pc-name="rowperpagedropdown"] {
+        margin-left: 1%;
+    }
+
+    .btn-info {
+        position: relative;
+        top: 0.2rem
+    }
+
+    .btn-plus {
+        position: relative;
+        top: 0.1rem
+    }
+
+    .action-column div[data-pc-section="headercontent"] {
+        justify-content: center;
+    }
+
+    td[data-pc-section="emptymessagecell"] {
+        text-align: center;
+        color: red;
+    }
+}
+
+.data-table-expanded,
+.div-expanded {
+    animation: slide-in 2.5s ease-out;
+}
+
+
+@keyframes slide-in {
+    0% {
+        max-height: 0;
+        overflow: hidden;
+    }
+
+    100% {
+        max-height: 500px;
+    }
+}
+
+@keyframes slide-out {
+    0% {
+        max-height: 500px;
+    }
+
+    100% {
+        max-height: 0;
+        overflow: hidden;
+    }
+}
+
+span[data-pc-name=floatlabel] label {
+    text-transform: capitalize;
+}
+
+span[data-pc-name=floatlabel] span[data-pc-name=inputnumber] input:not(:focus)::placeholder,
+span[data-pc-name=floatlabel] span[data-pc-name=calendar] input:not(:focus)::placeholder {
+    color: transparent;
+}
+
+.datatable-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+/* Scrollbar color */
+/* Track */
+.datatable-scrollbar::-webkit-scrollbar-track {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(229 231 235 / var(--tw-bg-opacity)) !important;
+    border-radius: .25rem !important;
+}
+
+/* Handle */
+.datatable-scrollbar::-webkit-scrollbar-thumb {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(209 213 219 / var(--tw-bg-opacity)) !important;
+    border-radius: .25rem !important;
+}
+
+/* Handle on hover */
+.datatable-scrollbar::-webkit-scrollbar-thumb:hover {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(156 163 175 / var(--tw-bg-opacity)) !important;
+}
+
+/* Scrollbar color */
