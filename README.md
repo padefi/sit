@@ -1,4 +1,4 @@
-# Bank-API-INSTP-UTN
+# S.I.T.
 
 ## :newspaper: Introducción
 S.I.T. es una aplicación web SPA desarrollada utilizando los frameworks Laravel y VueJS.
@@ -9,7 +9,6 @@ Dicho sistema ha sido diseñado para facilitar la gestión y administración de 
 - [Funcionalidades](#hammer-funcionalidades-del-sistema)
 - [Instalación](#rocket-instalación)
 - [Tecnologías utilizadas](#heavy_check_mark-tecnologías-utilizadas)
-- [Créditos](#coffee-créditos)
 - [Autor](#blue_book-autor)
 
 ## :hammer: Funcionalidades del sistema
@@ -18,7 +17,7 @@ Dicho sistema ha sido diseñado para facilitar la gestión y administración de 
     + Resumen movimientos diarios.
     + Resumen facturas pendientes proveedores.
 
-+ ### Configuración                
++ ### Configuración
     + #### Bancos
         + ABM bancos
         + ABM cuentas bancarias.
@@ -49,7 +48,7 @@ Dicho sistema ha sido diseñado para facilitar la gestión y administración de 
         + ABM facturas
         + Generación de orden de pago/cobro a la tesorería
 
-+ ### Panel de usuarios: Únicamente disponible para el rol Administrador y Tesorero
++ ### Panel de usuarios: disponible para los roles Administrador y Tesorero
     + ABM usuarios.
 
 ## :rocket: Instalación
@@ -134,9 +133,6 @@ Puede utilizar los siguientes usuarios:
 - MPDF
 - Laravel Excel/ Maatwebsite
 - Entre otras
-
-## :coffee: Créditos
-El sistema está desarrollado teniendo como referencia la guía gratuita **MERN Crash Course** [Parte 1 ](https://www.traversymedia.com/blog/mern-crash-course-part-1) y [Parte 2](https://www.traversymedia.com/blog/mern-crash-course-part-2), ofrecida por **Brad Traversy** en su sitio web <https://www.traversymedia.com>
 
 ## :blue_book: Autor
 **Desarrollado por Pablo De Filpo**
