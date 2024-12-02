@@ -1,6 +1,7 @@
 <script setup>
 import { useForm } from "@inertiajs/vue3";
 import { inject, onMounted, ref, computed } from "vue";
+import { useToast } from "primevue/usetoast";
 import { dropdownClasses } from '@/utils/cssUtils';
 import { nominatim, nominatimOsmId } from '@/utils/apis';
 import { validatePhoneNumber, validateEmail, cuitValidator, validateCBU } from '@/utils/validateFunctions';
@@ -24,6 +25,7 @@ const form = useForm({
     notes: null,
 });
 
+const toast = useToast();
 const rules = 'Debe completar el campo'
 const loading = ref(true);
 const addressArray = ref([]);
@@ -55,6 +57,26 @@ const selectData = async (e) => {
         latitude: data.lat,
         longitude: data.lon,
         osm_id: data.osm_id,
+    }
+}
+
+const verifyCuit = async (cuit) => {
+    try {
+        const value = cuit.replace(/[-_]/g, "");
+        const url = editing.value ?
+            `/suppliers/${dialogRef.value.data.supplierData.id}/verify-cuit/${value}` :
+            `/suppliers/verify-new-cuit/${value}`
+        const response = await axios.get(url);
+
+        if (response.status !== 200) {
+            throw new Error('Error al verificar el cuit');
+        }
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            detail: error.response.data.message,
+            life: 3000,
+        });
     }
 }
 
@@ -172,7 +194,8 @@ onMounted(async () => {
                                     <template v-if="!loading">
                                         <FloatLabel>
                                             <InputMask id="cuit" v-model="form.cuitDisplay" mask="99-99999999-9" autocomplete="off" class="w-full"
-                                                :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)" />
+                                                :invalid="form.cuitDisplay && !cuitValidator(form.cuitDisplay)"
+                                                @blur="verifyCuit(form.cuitDisplay)" />
                                             <label for="cuit">CUIT</label>
                                         </FloatLabel>
                                         <InputError
