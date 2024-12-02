@@ -135,6 +135,12 @@ const viewOnMap = async (data, event) => {
 
     await nextTick();
 
+    const isProduction = import.meta.env.VITE_APP_ENV === 'production';
+
+    L.Icon.Default.imagePath = isProduction 
+        ? '/images/'
+        : 'http://[::1]:3000/node_modules/leaflet/dist/images/';
+
     const map = L.map('map').setView([data.latitude, data.longitude], 16);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

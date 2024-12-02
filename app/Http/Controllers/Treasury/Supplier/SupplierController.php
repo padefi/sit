@@ -39,8 +39,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class SupplierController extends Controller {
     public function __construct() {
         $this->middleware('check.permission:view suppliers')->only(['index', 'exportSuppliers', 'show', 'subtypeRelated', 'calculatePendingToPay', 'invoicePendingToPay', 'updateSupplierEvent']);
-        $this->middleware('check.permission:create suppliers')->only('store');
-        $this->middleware('check.permission:edit suppliers')->only('update');
+        $this->middleware('check.permission:create suppliers')->only('store', 'verifyNewCuit', 'verifyCuit');
+        $this->middleware('check.permission:edit suppliers')->only('update', 'verifyNewCuit', 'verifyCuit');
         $this->middleware('check.permission:view users')->only('info');
     }
 
@@ -183,6 +183,26 @@ class SupplierController extends Controller {
         $supplier->load('userCreated', 'userUpdated');
         event(new SupplierEvent($supplier, $supplier->id, $pendingToPay, 'update'));
     }
+
+    public function verifyNewCuit(string $cuit) {
+        $cuitExist = Supplier::where('cuit', $cuit)->first();
+        
+        if ($cuitExist) {
+            throw ValidationException::withMessages([
+                'message' => trans('El cuit ya ha sido ingresado.')
+            ]);
+        }
+    }
+
+    public function verifyCuit(Supplier $supplier, string $cuit) {
+        $cuitExist = Supplier::where('cuit', $cuit)->whereNot('id', $supplier->id)->first();
+        
+        if ($cuitExist) {
+            throw ValidationException::withMessages([
+                'message' => trans('El cuit ya ha sido ingresado.')
+            ]);
+        }
+    }    
 
     public function info(Supplier $supplier) {
         $supplier = Supplier::with(['userCreated', 'userUpdated'])

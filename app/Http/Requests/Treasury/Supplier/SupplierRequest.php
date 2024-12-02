@@ -23,7 +23,7 @@ class SupplierRequest extends FormRequest {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('suppliers', 'name')->ignore($this->route('supplier'))],
             'businessName' => ['required', 'string', 'max:100'],
-            'cuit' => ['required', 'integer', 'min:11111111111', 'max:99999999999'],
+            'cuit' => ['required', 'integer', 'min:11111111111', 'max:99999999999', Rule::unique('suppliers', 'cuit')->ignore($this->route('supplier'))],
             'idVC' => ['required', 'integer', 'exists:vat_conditions,id'],
             'idCat' => ['required', 'integer', 'exists:categories,id'],
             'address' => ['required', 'array'],
@@ -51,6 +51,7 @@ class SupplierRequest extends FormRequest {
             'businessName.max' => 'El nombre de fantasía del proveedor no puede exceder los :max caracteres.',
             'cuit.required' => 'El cuit es obligatorio.',
             'cuit.max' => 'El cuit no puede exceder los :max caracteres.',
+            'cuit.unique' => 'El cuit ya se encuentra registrado.',
             'idVC.required' => 'La condición de I.V.A. es obligatoria.',
             'idVC.exists' => 'La condición de I.V.A. debe existir en el sistema.',
             'idCat.required' => 'El rubro es obligatorio.',

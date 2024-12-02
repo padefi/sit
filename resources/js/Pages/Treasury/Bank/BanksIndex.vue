@@ -497,6 +497,12 @@ const viewOnMap = async (data, event) => {
 
     await nextTick();
 
+    const isProduction = import.meta.env.VITE_APP_ENV === 'production';
+
+    L.Icon.Default.imagePath = isProduction 
+        ? '/images/'
+        : 'http://[::1]:3000/node_modules/leaflet/dist/images/';
+
     const map = L.map('map').setView([data.latitude, data.longitude], 16);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -543,10 +549,10 @@ onMounted(async () => {
                 }
             }
 
-            if (indexBank !== -1) {
+            if (indexBank !== -1) {                
                 if (e.type === 'create') {
                     setTimeout(() => {
-                        if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id)) {
+                        if (!banksArray.value[indexBank].accounts.some(account => account.idBankAccount === e.bankAccount.id || (account.accountNumber === e.bankAccount.accountNumber && account.idAT === e.bankAccount.idAT))) {
                             banksArray.value[indexBank].accounts.unshift(accountEventDataStructure(indexBank, e.bankAccount));
                         }
                     }, 500);
@@ -655,7 +661,7 @@ const info = (route, data, id) => {
                             {{ data['city'] }}, {{ data['state'] }} - {{ data['country'] }}
                             <Button icon="pi pi-map-marker"
                                 class="!p-0 !text-cyan-500 text-lg hover:!bg-transparent focus:!bg-transparent focus:!ring-transparent" text rounded
-                                v-tooltip="'Ver en mapa'" @click="viewOnMap(data[field], $event)" />
+                                v-tooltip="'Ver en mapa'" @click="viewOnMap(data, $event)" />
                         </template>
                         <template #editor="{ data, field, index }">
                             <FloatLabel>
